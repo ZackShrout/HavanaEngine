@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31321.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HavanaEditor", "HavanaEditor\HavanaEditor.csproj", "{90A76972-505E-4F35-903C-2DE00461ED25}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{99D326A7-33F0-4667-8CA2-3419AA5C2D80}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{99D326A7-33F0-4667-8CA2-3419AA5C2D80}.Debug|x64.ActiveCfg = Debug|x64
+		{99D326A7-33F0-4667-8CA2-3419AA5C2D80}.Debug|x64.Build.0 = Debug|x64
+		{99D326A7-33F0-4667-8CA2-3419AA5C2D80}.Release|x64.ActiveCfg = Release|x64
+		{99D326A7-33F0-4667-8CA2-3419AA5C2D80}.Release|x64.Build.0 = Release|x64
+		{90A76972-505E-4F35-903C-2DE00461ED25}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{90A76972-505E-4F35-903C-2DE00461ED25}.Debug|x64.Build.0 = Debug|Any CPU
+		{90A76972-505E-4F35-903C-2DE00461ED25}.Release|x64.ActiveCfg = Release|Any CPU
+		{90A76972-505E-4F35-903C-2DE00461ED25}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BC0A4185-A0A3-449B-8AAE-662C87072A9F}
+	EndGlobalSection
+EndGlobal
