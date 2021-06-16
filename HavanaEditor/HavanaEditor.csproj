@@ -17,4 +17,11 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="ProjectTemplates\EmptyProject\" />
+    <Folder Include="ProjectTemplates\FirstPersonProject\" />
+    <Folder Include="ProjectTemplates\TopDownProject\" />
+    <Folder Include="ProjectTemplates\ThirdPersonProject\" />
+  </ItemGroup>
+
 </Project>

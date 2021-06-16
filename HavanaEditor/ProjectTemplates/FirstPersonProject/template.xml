@@ -1,0 +1,10 @@
+<ProjectTemplate xmlns="http://schemas.datacontract.org/2004/07/HavanaEditor.GameProject"
+                 xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+    <Folders xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+        <a:string>.havana</a:string>
+        <a:string>Assets</a:string>
+        <a:string>Scripts</a:string>
+    </Folders>
+    <ProjectFile>project.hvproj</ProjectFile>
+    <ProjectType>First Person Project</ProjectType>
+</ProjectTemplate>
