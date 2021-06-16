@@ -12,7 +12,7 @@ using System.Text;
 namespace HavanaEditor.GameProject
 {
     /// <summary>
-    /// Class that describes the contents of the different templates available
+    /// Model that describes the contents of the different templates available
     /// in the Havana Editor.
     /// </summary>
     [DataContract]
