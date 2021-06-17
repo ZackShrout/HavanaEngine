@@ -22,5 +22,19 @@ namespace HavanaEditor.GameProject
         {
             InitializeComponent();
         }
+
+        private void OnCreate_Button_Click(object sender, RoutedEventArgs e)
+        {
+            NewProject viewModel = DataContext as NewProject;
+            string projectPath = viewModel.CreateProject(templateListBox.SelectedItem as ProjectTemplate);
+            bool dialogResult = false;
+            Window window = Window.GetWindow(this);
+            if (!string.IsNullOrEmpty(projectPath))
+            {
+                dialogResult = true;
+            }
+            window.DialogResult = dialogResult;
+            window.Close();
+        }
     }
 }

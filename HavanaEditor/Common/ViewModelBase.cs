@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Runtime.Serialization;
 
 namespace HavanaEditor
 {
@@ -6,6 +7,7 @@ namespace HavanaEditor
     /// Base class for all view models in this project, that implements INotifyPropertyChanged
     /// for each view model
     /// </summary>
+    [DataContract(IsReference = true)]
     public class ViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
