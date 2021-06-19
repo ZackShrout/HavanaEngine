@@ -3,7 +3,7 @@
 
 namespace Havana::Transform
 {
-	DEFINE_TYPED_ID(transform_id);
+	
 
 	struct InitInfo
 	{
@@ -12,6 +12,6 @@ namespace Havana::Transform
 		f32 scale[3]{ 1.f, 1.f, 1.f };
 	};
 
-	transform_id CreateTransform(const InitInfo& info, Entity::entity_id entityID);
-	void RemoveTransform(transform_id id);
+	Component CreateTransform(const InitInfo& info, Entity::Entity entity);
+	void RemoveTransform(Component component);
 }

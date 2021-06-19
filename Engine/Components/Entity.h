@@ -15,8 +15,8 @@ namespace Havana
 			Transform::InitInfo* transform{ nullptr };
 		};
 
-		entity_id CreateEntity(const EntityInfo& info);
-		void RemoveEntity(entity_id id);
-		bool IsAlive(entity_id id);
+		Entity CreateEntity(const EntityInfo& info);
+		void RemoveEntity(Entity id);
+		bool IsAlive(Entity id);
 	}
 }
