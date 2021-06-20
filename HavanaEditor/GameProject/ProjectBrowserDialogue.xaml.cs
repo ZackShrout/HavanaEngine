@@ -17,11 +17,13 @@ namespace HavanaEditor.GameProject
     /// </summary>
     public partial class ProjectBrowserDialogue : Window
     {
+        // PUBLIC
         public ProjectBrowserDialogue()
         {
             InitializeComponent();
         }
 
+        // PRIVATE
         private void OnToggleButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender == openProjectButton)

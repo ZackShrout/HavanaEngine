@@ -157,7 +157,7 @@ namespace HavanaEditor.GameProject
                 DirectoryInfo directoryInfo = new DirectoryInfo(path + @".Havana\");
                 directoryInfo.Attributes |= FileAttributes.Hidden;
                 File.Copy(template.IconFilePath, Path.GetFullPath(Path.Combine(directoryInfo.FullName, "Icon.png")));
-                File.Copy(template.IconFilePath, Path.GetFullPath(Path.Combine(directoryInfo.FullName, "ScreenShot.png")));
+                File.Copy(template.ScreenShotFilePath, Path.GetFullPath(Path.Combine(directoryInfo.FullName, "ScreenShot.png")));
 
                 string projectXML = File.ReadAllText(template.ProjectFilePath);
                 projectXML = string.Format(projectXML, ProjectName, ProjectPath);

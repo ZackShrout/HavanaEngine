@@ -10,8 +10,10 @@ namespace HavanaEditor
     [DataContract(IsReference = true)]
     public class ViewModelBase : INotifyPropertyChanged
     {
+        // PUBLIC
         public event PropertyChangedEventHandler PropertyChanged;
 
+        // PROTECTED
         protected void OnPropertyChanged(string propertyChanged)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyChanged));

@@ -18,11 +18,13 @@ namespace HavanaEditor.GameProject
     /// </summary>
     public partial class NewProjectView : UserControl
     {
+        // PUBLIC
         public NewProjectView()
         {
             InitializeComponent();
         }
 
+        // PRIVATE
         private void OnCreate_Button_Click(object sender, RoutedEventArgs e)
         {
             NewProject viewModel = DataContext as NewProject;
@@ -32,6 +34,8 @@ namespace HavanaEditor.GameProject
             if (!string.IsNullOrEmpty(projectPath))
             {
                 dialogResult = true;
+                Project project = OpenProject.Open(new ProjectData() { ProjectName = viewModel.ProjectName, ProjectPath = projectPath });
+                window.DataContext = project;
             }
             window.DialogResult = dialogResult;
             window.Close();

@@ -14,6 +14,7 @@ namespace HavanaEditor.GameProject
     {
         // STATE
         private string name;
+        private bool isActive;
         
         // PROPERTIES
         [DataMember]
@@ -31,6 +32,19 @@ namespace HavanaEditor.GameProject
         }
         [DataMember]
         public Project Project { get; private set; }
+        [DataMember]
+        public bool IsActive
+        {
+            get => isActive;
+            set
+            {
+                if (isActive != value)
+                {
+                    isActive = value;
+                    OnPropertyChanged(nameof(IsActive));
+                }
+            }
+        }
 
         // PUBLIC
         public Scene(Project project, string name)

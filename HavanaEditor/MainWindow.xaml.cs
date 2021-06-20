@@ -1,6 +1,7 @@
 ﻿using HavanaEditor.GameProject;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,10 +22,19 @@ namespace HavanaEditor
     /// </summary>
     public partial class MainWindow : Window
     {
+        // PUBLIC
         public MainWindow()
         {
             InitializeComponent();
             Loaded += OnMainWindowLoaded;
+            Closing += OnMainWindowClosing;
+        }
+
+        // PRIVATE
+        private void OnMainWindowClosing(object sender, CancelEventArgs e)
+        {
+            Closing -= OnMainWindowClosing;
+            Project.Current?.Unload();
         }
 
         private void OnMainWindowLoaded(object sender, RoutedEventArgs e)
@@ -36,13 +46,14 @@ namespace HavanaEditor
         private void OpenProjectBrowserDialogue()
         {
             var projectBrowser = new ProjectBrowserDialogue();
-            if (projectBrowser.ShowDialog() == false)
+            if (projectBrowser.ShowDialog() == false || projectBrowser.DataContext == null)
             {
                 Application.Current.Shutdown();
             }
             else
             {
-                // TODO: load game project info
+                Project.Current?.Unload();
+                DataContext = projectBrowser.DataContext;
             }
         }
     }
