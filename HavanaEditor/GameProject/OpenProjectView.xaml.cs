@@ -22,6 +22,12 @@ namespace HavanaEditor.GameProject
         public OpenProjectView()
         {
             InitializeComponent();
+
+            Loaded += (s, e) =>
+            {
+                ListBoxItem item = projectsListBox.ItemContainerGenerator.ContainerFromIndex(projectsListBox.SelectedIndex) as ListBoxItem;
+                item?.Focus();
+            };
         }
 
         // PRIVATE
