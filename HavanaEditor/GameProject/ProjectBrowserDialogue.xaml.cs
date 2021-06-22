@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,6 +22,18 @@ namespace HavanaEditor.GameProject
         public ProjectBrowserDialogue()
         {
             InitializeComponent();
+            Loaded += OnProjectBrowserDialogueLoaded;
+        }
+
+        private void OnProjectBrowserDialogueLoaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= OnProjectBrowserDialogueLoaded;
+            if (!OpenProject.Projects.Any())
+            {
+                openProjectButton.IsEnabled = false;
+                openProjectView.Visibility = Visibility.Hidden;
+                OnToggleButton_Click(newProjectButton, new RoutedEventArgs());
+            }
         }
 
         // PRIVATE

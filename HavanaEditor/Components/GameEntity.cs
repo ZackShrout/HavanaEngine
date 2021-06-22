@@ -13,11 +13,25 @@ namespace HavanaEditor.Components
     public class GameEntity : ViewModelBase
     {
         // STATE
+        private bool isEnabled = true;
         private string name;
         [DataMember(Name = nameof(Components))]
         private readonly ObservableCollection<Component> components = new ObservableCollection<Component>();
-        
+
         // PROPERTIES
+        [DataMember]
+        public bool IsEnabled
+        {
+            get => isEnabled;
+            set
+            {
+                if (isEnabled != value)
+                {
+                    isEnabled = value;
+                    OnPropertyChanged(nameof(IsEnabled));
+                }
+            }
+        }
         [DataMember]
         public string Name
         {
@@ -41,6 +55,7 @@ namespace HavanaEditor.Components
             Debug.Assert(scene != null);
             ParentScene = scene;
             components.Add(new Transform(this));
+            OnDeserialized(new StreamingContext());
         }
 
         // PRIVATE

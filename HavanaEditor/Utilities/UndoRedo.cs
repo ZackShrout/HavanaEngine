@@ -67,6 +67,7 @@ namespace HavanaEditor.Utilities
     public class UndoRedo
     {
         // STATE
+        private bool enableAdd = true;
         private readonly ObservableCollection<IUndoRedo> redoList = new ObservableCollection<IUndoRedo>();
         private readonly ObservableCollection<IUndoRedo> undoList = new ObservableCollection<IUndoRedo>();
 
@@ -87,8 +88,11 @@ namespace HavanaEditor.Utilities
         /// </summary>
         public void Add(IUndoRedo command)
         {
-            undoList.Add(command);
-            redoList.Clear();
+            if (enableAdd)
+            {
+                undoList.Add(command);
+                redoList.Clear();
+            }
         }
 
         /// <summary>
@@ -110,7 +114,9 @@ namespace HavanaEditor.Utilities
             {
                 IUndoRedo command = undoList.Last();
                 undoList.RemoveAt(undoList.Count - 1);
+                enableAdd = false;
                 command.Undo();
+                enableAdd = true;
                 redoList.Insert(0, command);
             }
         }
@@ -125,7 +131,9 @@ namespace HavanaEditor.Utilities
             {
                 IUndoRedo command = redoList.First();
                 redoList.RemoveAt(0);
+                enableAdd = false;
                 command.Redo();
+                enableAdd = true;
                 undoList.Add(command);
             }
         }
