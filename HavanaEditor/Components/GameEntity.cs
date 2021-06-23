@@ -1,10 +1,12 @@
 ﻿using HavanaEditor.GameProject;
+using HavanaEditor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Windows.Input;
 
 namespace HavanaEditor.Components
 {
@@ -48,6 +50,8 @@ namespace HavanaEditor.Components
         [DataMember]
         public Scene ParentScene { get; private set; }
         public ReadOnlyObservableCollection<Component> Components { get; private set; }
+        public ICommand RenameCommand { get; private set; }
+        public ICommand EnableCommand { get; private set; }
 
         // PUBLIC
         public GameEntity(Scene scene)
@@ -67,6 +71,14 @@ namespace HavanaEditor.Components
                 Components = new ReadOnlyObservableCollection<Component>(components);
                 OnPropertyChanged(nameof(Components));
             }
+
+            RenameCommand = new RelayCommand<string>(x =>
+            {
+                string oldName = name;
+                Name = x;
+
+                Project.UndoRedo.Add(new UndoRedoAction(nameof(Name), this, oldName, x, $"Rename entity '{oldName}' to '{x}'"));
+            }, x => x != name);
             
         }
     }

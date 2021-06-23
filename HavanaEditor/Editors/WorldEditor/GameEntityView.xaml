@@ -34,7 +34,8 @@
                        Grid.Column="0"
                        Margin="5,0,0,0"/>
             <TextBox Text="{Binding Name}"
-                     Grid.Column="1"/>
+                     Grid.Column="1"
+                     Tag="{Binding RenameCommand}"/>
             <StackPanel Orientation="Horizontal"
                         Grid.Column="2">
                 <TextBlock Text="Enabled"
