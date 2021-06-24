@@ -21,6 +21,35 @@ namespace HavanaEditor.Utilities
         public LoggerView()
         {
             InitializeComponent();
+            Loaded += (s, e) =>
+            {
+                Logger.Log(MessageTypes.Info, "This is an info message");
+                Logger.Log(MessageTypes.Warning, "This is a warning message");
+                Logger.Log(MessageTypes.Error, "This is an error message");
+            };            
+        }
+
+        private void OnClear_Button_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Clear();
+        }
+
+        private void OnMessageFilter_Button_Click(object sender, RoutedEventArgs e)
+        {
+            int filter = 0x0;
+            if (toggleInfo.IsChecked == true)
+            {
+                filter |= (int)MessageTypes.Info;
+            }
+            if (toggleWarning.IsChecked == true)
+            {
+                filter |= (int)MessageTypes.Warning;
+            }
+            if (toggleError.IsChecked == true)
+            {
+                filter |= (int)MessageTypes.Error;
+            }
+            Logger.SetFilter(filter);
         }
     }
 }

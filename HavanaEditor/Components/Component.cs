@@ -6,8 +6,11 @@ using System.Text;
 
 namespace HavanaEditor.Components
 {
+    interface IMSComponent
+    { }
+
     [DataContract]
-    public class Component : ViewModelBase
+    abstract class Component : ViewModelBase
     {
         // PROPERTIES
         [DataMember]
@@ -19,5 +22,10 @@ namespace HavanaEditor.Components
             Debug.Assert(owner != null);
             Owner = owner;
         }
+    }
+
+    abstract class MSComponent<T> : ViewModelBase, IMSComponent where T : Component
+    {
+
     }
 }

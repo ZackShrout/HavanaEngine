@@ -7,7 +7,7 @@ using System.Text;
 namespace HavanaEditor.Components
 {
     [DataContract]
-    public class Transform : Component
+    class Transform : Component
     {
         // STATE
         private Vector3 position;

@@ -16,7 +16,7 @@ namespace HavanaEditor.GameProject
     /// Describes a Havana Project.
     /// </summary>
     [DataContract(Name = "Game")]
-    public class Project : ViewModelBase
+    class Project : ViewModelBase
     {
         // STATE
         [DataMember(Name = "Scenes")]

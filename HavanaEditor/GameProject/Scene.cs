@@ -14,7 +14,7 @@ namespace HavanaEditor.GameProject
     /// Describes any scene that may exist within a Havana Project.
     /// </summary>
     [DataContract]
-    public class Scene : ViewModelBase
+    class Scene : ViewModelBase
     {
         // STATE
         private string name;
