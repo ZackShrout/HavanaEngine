@@ -29,7 +29,8 @@ namespace HavanaEditor.Utilities
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
-                // TODO: log error
+                Logger.Log(MessageTypes.Error, $"Failed to serialize {instance} to {path}");
+                throw;
             }
         }
 
@@ -51,7 +52,7 @@ namespace HavanaEditor.Utilities
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
-                // TODO: log error
+                Logger.Log(MessageTypes.Error, $"Failed to deserialize from {path}");
                 return default(T);
             }
         }

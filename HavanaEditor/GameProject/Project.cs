@@ -79,6 +79,7 @@ namespace HavanaEditor.GameProject
         public static void Save(Project project)
         {
             Serializer.ToFile<Project>(project, project.FullPath);
+            Logger.Log(MessageTypes.Info, $"Project saved to {project.FullPath}");
         }
 
         /// <summary>
@@ -94,7 +95,7 @@ namespace HavanaEditor.GameProject
 
         public void Unload()
         {
-            // TODO: implement
+            UndoRedo.Reset();
         }
 
         // PRIVATE

@@ -121,7 +121,8 @@ namespace HavanaEditor.GameProject
             catch(Exception e)
             {
                 Debug.WriteLine(e.Message);
-                // TODO: log error
+                Logger.Log(MessageTypes.Error, "Failed to read project templates.");
+                throw;
             }
 
         }
@@ -168,8 +169,8 @@ namespace HavanaEditor.GameProject
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
-                // TODO: log error
-                return string.Empty;
+                Logger.Log(MessageTypes.Error, $"Failed to create {ProjectName}");
+                throw;
             }
         }
 
