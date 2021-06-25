@@ -20,13 +20,7 @@ namespace HavanaEditor.Utilities
     {
         public LoggerView()
         {
-            InitializeComponent();
-            Loaded += (s, e) =>
-            {
-                Logger.Log(MessageTypes.Info, "This is an info message");
-                Logger.Log(MessageTypes.Warning, "This is a warning message");
-                Logger.Log(MessageTypes.Error, "This is an error message");
-            };            
+            InitializeComponent();           
         }
 
         private void OnClear_Button_Click(object sender, RoutedEventArgs e)

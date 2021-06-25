@@ -1,4 +1,5 @@
-﻿using HavanaEditor.GameProject;
+﻿using HavanaEditor.DllWrapper;
+using HavanaEditor.GameProject;
 using HavanaEditor.Utilities;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,8 @@ namespace HavanaEditor.Components
         private string name;
         [DataMember(Name = nameof(Components))]
         private readonly ObservableCollection<Component> components = new ObservableCollection<Component>();
+        private int entityID = ID.INVALID_ID;
+        private bool isActive;
 
         // PROPERTIES
         [DataMember]
@@ -51,6 +54,40 @@ namespace HavanaEditor.Components
         [DataMember]
         public Scene ParentScene { get; private set; }
         public ReadOnlyObservableCollection<Component> Components { get; private set; }
+        public int EntityID
+        {
+            get => entityID;
+            set
+            {
+                if (entityID != value)
+                {
+                    entityID = value;
+                    OnPropertyChanged(nameof(EntityID));
+                }
+            }
+        }
+        public bool IsActive
+        {
+            get => isActive;
+            set
+            {
+                if (isActive != value)
+                {
+                    isActive = value;
+                    if (isActive) // Add to engine if active
+                    {
+                        EntityID = EngineAPI.CreateGameEntity(this);
+                        Debug.Assert(ID.IsValid(entityID));
+                    }
+                    else // Remove from engine if not
+                    {
+                        EngineAPI.RemoveGameEntity(this);
+                    }
+
+                    OnPropertyChanged(nameof(IsActive));
+                }
+            }
+        }
 
         // PUBLIC
         public GameEntity(Scene scene)
@@ -60,6 +97,20 @@ namespace HavanaEditor.Components
             components.Add(new Transform(this));
             OnDeserialized(new StreamingContext());
         }
+
+        /// <summary>
+        /// Get specified component from it's parent entity. You must type-cast the value that comes back.
+        /// </summary>
+        /// <param name="type">- Type of component to get.</param>
+        /// <returns>Component object.</returns>
+        public Component GetComponent(Type type) => Components.FirstOrDefault(c => c.GetType() == type);
+
+        /// <summary>
+        /// Get specified component from it's parent entity.
+        /// </summary>
+        /// <typeparam name="T">- Type of component to get.</typeparam>
+        /// <returns>Component object.</returns>
+        public T GetComponent<T>() where T : Component => GetComponent(typeof(T)) as T;
 
         // PRIVATE
         [OnDeserialized]

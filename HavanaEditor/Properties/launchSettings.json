@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HavanaEditor": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

@@ -9,7 +9,7 @@ namespace Havana::Id
 	// constants for index and generation bits for ECS system
 	namespace internal
 	{
-		constexpr u32 GENERATION_BITS{ 8 };
+		constexpr u32 GENERATION_BITS{ 10 };
 		constexpr u32 INDEX_BITS{ sizeof(id_type) * 8 - GENERATION_BITS };
 		constexpr id_type INDEX_MASK{ (id_type{1} << INDEX_BITS) - 1 };
 		constexpr id_type GENERATION_MASK{ (id_type{1} << GENERATION_BITS) - 1 };
