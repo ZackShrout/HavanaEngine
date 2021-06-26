@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:HavanaEditor"
         xmlns:editors="clr-namespace:HavanaEditor.Editors"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
-        Title="Havana Editor" Height="950" Width="1580">
+        Title="Havana Editor" Height="950" Width="1580"
+        Style="{DynamicResource HavanaWindowStyle}">
+        <!-- TODO: switch this to a static resource when Visual Sudio fixes the bug. -->
     <Grid>
         <editors:WorldEditorView/>
     </Grid>
