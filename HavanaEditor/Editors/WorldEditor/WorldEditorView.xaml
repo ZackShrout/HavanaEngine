@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:HavanaEditor.Editors"
              xmlns:utl="clr-namespace:HavanaEditor.Utilities"
+             xmlns:ctrl="clr-namespace:HavanaEditor.Utilities.Controls"
              mc:Ignorable="d" Focusable="True"
              d:DesignHeight="450" d:DesignWidth="800">
         
@@ -35,6 +36,20 @@
                     <RowDefinition/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
+                <Border Background="DarkBlue">
+                    <StackPanel VerticalAlignment="Center">
+                        <ctrl:NumberBox Value="0" Foreground="{DynamicResource Editor.FontBrush}"/>
+                        <ctrl:ScalarBox Value="10" Multiplier="10"/>
+                        <ctrl:VectorBox X="0" Y="1" Z="2" W="3" VectorType="Vector2"/>
+                        <ctrl:VectorBox X="0" Y="1" Z="2" W="3" VectorType="Vector3"/>
+                        <ctrl:VectorBox X="0" Y="1" Z="2" W="3" VectorType="Vector4"/>
+                        
+                        <ctrl:VectorBox X="0" Y="1" Z="2" W="3" VectorType="Vector2" Orientation="Vertical"/>
+                        <ctrl:VectorBox X="0" Y="1" Z="2" W="3" VectorType="Vector3" Orientation="Vertical"/>
+                        <ctrl:VectorBox X="0" Y="1" Z="2" W="3" VectorType="Vector4" Orientation="Vertical"/>
+
+                    </StackPanel>
+                </Border>
                 <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" 
                               VerticalAlignment="Top" Background="Transparent"/>
                 <TabControl Grid.Row="1" Background="{DynamicResource Editor.Window.GreyBrush2}"
