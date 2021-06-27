@@ -47,6 +47,7 @@ namespace HavanaEditor.Editors
         // PRIVATE
         private void OnName_TextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
+            propertyName = string.Empty;
             undoAction = GetRenameAction();
         }
 

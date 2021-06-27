@@ -101,6 +101,7 @@ namespace HavanaEditor.Utilities.Controls
             e.Handled = true;
             multiplier = 0.01;
             mouseXStart = e.GetPosition(this).X;
+            Focus();
         }
     }
 }

@@ -79,9 +79,10 @@ namespace HavanaEditor.Components
                         EntityID = EngineAPI.CreateGameEntity(this);
                         Debug.Assert(ID.IsValid(entityID));
                     }
-                    else // Remove from engine if not
+                    else if (ID.IsValid(EntityID)) // Remove from engine if not
                     {
                         EngineAPI.RemoveGameEntity(this);
+                        EntityID = ID.INVALID_ID;
                     }
 
                     OnPropertyChanged(nameof(IsActive));
@@ -176,73 +177,60 @@ namespace HavanaEditor.Components
         {
             enableUpdates = false;
             UpdateMSGameEntities();
+            MakeComponentList();
             enableUpdates = true;
         }
-        
+
         /// <summary>
-        /// Goes through a specified property in each selected entity
+        /// Goes through a specified property in each selected object
         /// and checks whether or not they are the same.
         /// </summary>
-        /// <param name="entities">List of selected entities to check.</param>
+        /// <typeparam name="T">Type of object to look through.</typeparam>
+        /// <param name="objects">List of selected entities to check.</param>
         /// <param name="getProperty">Property in each selected entity to compare.</param>
         /// <returns>True, false, or null.</returns>
-        public static float? GetMixedValue(List<GameEntity> entities, Func<GameEntity, float> getProperty)
+        public static float? GetMixedValue<T>(List<T> objects, Func<T, float> getProperty)
         {
-            float value = getProperty(entities.First());
-
-            foreach (GameEntity entity in entities.Skip(1))
-            {
-                if (!value.IsTheSameAs(getProperty(entity)))
-                {
-                    return null;
-                }
-            }
-
-            return value;
+            float value = getProperty(objects.First());
+            return objects.Skip(1).Any(x => !getProperty(x).IsTheSameAs(value)) ? (float?)null : value;
         }
 
         /// <summary>
-        /// Goes through a specified property in each selected entity
+        /// Goes through a specified property in each selected object
         /// and checks whether or not they are the same.
         /// </summary>
-        /// <param name="entities">List of selected entities to check.</param>
+        /// <typeparam name="T">Type of object to look through.</typeparam>
+        /// <param name="objects">List of selected entities to check.</param>
         /// <param name="getProperty">Property in each selected entity to compare.</param>
         /// <returns>True, false, or null.</returns>
-        public static bool? GetMixedValue(List<GameEntity> entities, Func<GameEntity, bool> getProperty)
+        public static bool? GetMixedValue<T>(List<T> objects, Func<T, bool> getProperty)
         {
-            bool value = getProperty(entities.First());
-
-            foreach (GameEntity entity in entities.Skip(1))
-            {
-                if (value != getProperty(entity))
-                {
-                    return null;
-                }
-            }
-
-            return value;
+            bool value = getProperty(objects.First());
+            return objects.Skip(1).Any(x => value != getProperty(x)) ? (bool?)null : value;
         }
 
         /// <summary>
-        /// Goes through a specified property in each selected entity
+        /// Goes through a specified property in each selected object
         /// and checks whether or not they are the same.
         /// </summary>
-        /// <param name="entities">List of selected entities to check.</param>
+        /// <typeparam name="T">Type of object to look through.</typeparam>
+        /// <param name="objects">List of selected entities to check.</param>
         /// <param name="getProperty">Property in each selected entity to compare.</param>
         /// <returns>True, false, or null.</returns>
-        public static string GetMixedValue(List<GameEntity> entities, Func<GameEntity, string> getProperty)
+        public static string GetMixedValue<T>(List<T> objects, Func<T, string> getProperty)
         {
-            string value = getProperty(entities.First());
+            string value = getProperty(objects.First());
+            return objects.Skip(1).Any(x => value != getProperty(x)) ? null : value;
+        }
 
-            foreach (GameEntity entity in entities.Skip(1))
-            {
-                if (value != getProperty(entity))
-                {
-                    return null;
-                }
-            }
-
-            return value;
+        /// <summary>
+        /// Get specified multiselect component from it's parent entity.
+        /// </summary>
+        /// <typeparam name="T">- Type of multiselect component to get.</typeparam>
+        /// <returns>Multiselect Component object.</returns>
+        public T GetMSComponent<T>() where T : IMSComponent
+        {
+            return (T)Components.FirstOrDefault(x => x.GetType() == typeof(T));
         }
 
         // PROTECTED
@@ -266,6 +254,24 @@ namespace HavanaEditor.Components
             Name = GetMixedValue(SelectedEntities, new Func<GameEntity, string>(x => x.Name));
 
             return true;
+        }
+
+        // PRIVATE
+        private void MakeComponentList()
+        {
+            components.Clear();
+            GameEntity firstEntity = SelectedEntities.FirstOrDefault();
+            if (firstEntity == null) return;
+
+            foreach (Component component in firstEntity.Components)
+            {
+                Type type = component.GetType();
+                if (!SelectedEntities.Skip(1).Any(entity => entity.GetComponent(type) == null))
+                {
+                    Debug.Assert(Components.FirstOrDefault(x => x.GetType() == type) == null);
+                    components.Add(component.GetMSComponent(this));
+                }
+            }
         }
     }
 

@@ -66,11 +66,11 @@ namespace HavanaEditor.Dictionaries
         private void OnTextBoxRename_LostFocus(object sender, RoutedEventArgs e)
         {
             TextBox textBox = sender as TextBox;
+            if (!textBox.IsVisible) return;
             var expression = textBox.GetBindingExpression(TextBox.TextProperty);
             if (expression != null)
             {
-                expression.UpdateTarget();
-                textBox.MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous));
+                expression.UpdateTarget();                
                 textBox.Visibility = Visibility.Collapsed;
             }
         }

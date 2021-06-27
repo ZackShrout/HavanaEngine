@@ -30,7 +30,6 @@ namespace HavanaEditor.Editors
         {
             Loaded -= OnWorldEditorLoaded;
             Focus();
-            ((INotifyCollectionChanged)Project.UndoRedo.UndoList).CollectionChanged += (s, e) => Focus();
         }
     }
 }
