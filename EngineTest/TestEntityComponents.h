@@ -47,7 +47,7 @@ private:
 			Entity::Entity entity{ Entity::CreateEntity(entityInfo) };
 			assert(entity.IsValid() && Id::IsValid(entity.GetID()));
 			entities.push_back(entity);
-			assert(Entity::IsAlive(entity));
+			assert(Entity::IsAlive(entity.GetID()));
 			--count;
 		}
 	}
@@ -64,9 +64,9 @@ private:
 			assert(entity.IsValid() && Id::IsValid(entity.GetID()));
 			if (entity.IsValid())
 			{
-				Entity::RemoveEntity(entity);
+				Entity::RemoveEntity(entity.GetID());
 				entities.erase(entities.begin() + index);
-				assert(!Entity::IsAlive(entity));
+				assert(!Entity::IsAlive(entity.GetID()));
 				++removed;
 			}
 			--count;

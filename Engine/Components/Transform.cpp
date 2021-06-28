@@ -9,7 +9,7 @@ namespace Havana::Transform
 		Utils::vector<Math::Vec3> scales;
 	}
 
-	Component CreateTransform(const InitInfo& info, Entity::Entity entity)
+	Component Create(InitInfo info, Entity::Entity entity)
 	{
 		assert(entity.IsValid());
 		const Id::id_type entityIndex{ Id::Index(entity.GetID()) };
@@ -33,7 +33,7 @@ namespace Havana::Transform
 		return Component(transform_id{ (Id::id_type)positions.size() - 1 });
 	}
 
-	void RemoveTransform(Component component)
+	void Remove(Component component)
 	{
 		assert(component.IsValid());
 	}

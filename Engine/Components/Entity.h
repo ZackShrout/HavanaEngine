@@ -6,6 +6,7 @@ namespace Havana
 
 #define INIT_INFO(component) namespace component { struct InitInfo; }
 	INIT_INFO(Transform);
+	INIT_INFO(Script);
 #undef INIT_INFO
 
 	namespace Entity
@@ -13,10 +14,11 @@ namespace Havana
 		struct EntityInfo
 		{
 			Transform::InitInfo* transform{ nullptr };
+			Script::InitInfo* script{ nullptr };
 		};
 
-		Entity CreateEntity(const EntityInfo& info);
-		void RemoveEntity(Entity id);
-		bool IsAlive(Entity id);
+		Entity CreateEntity(EntityInfo info);
+		void RemoveEntity(entity_id id);
+		bool IsAlive(entity_id id);
 	}
 }

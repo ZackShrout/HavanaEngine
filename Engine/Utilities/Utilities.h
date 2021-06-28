@@ -11,10 +11,24 @@
 	{
 		template<typename T>
 		using vector = std::vector<T>;
+
+		template<typename T>
+		void EraseUnordered(std::vector<T>& v, size_t index)
+		{
+			if (v.size() > 1)
+			{
+				std::iter_swap(v.begin() + index, v.end() - 1);
+				v.pop_back();
+			}
+			else
+			{
+				v.clear();
+			}
+		}
 	}
 #endif
 
-#if USE_STL_VECTOR
+#if USE_STL_DEQUE
 	#include <deque>
 	namespace Havana::Utils
 	{

@@ -6,8 +6,8 @@
 #define EDITOR_INTERFACE extern"C" __declspec(dllexport)
 #endif // !EDITOR_INTERFACE
 
-#include "CommonHeaders.h"
-#include "Id.h"
+#include "..\Common\CommonHeaders.h"
+#include "..\Common\Id.h"
 #include "..\Components\Entity.h"
 #include "..\Components\Transform.h"
 
@@ -80,6 +80,6 @@ EDITOR_INTERFACE
 void RemoveGameEntity(Id::id_type id)
 {
 	assert(Id::IsValid(id));
-	Entity::RemoveEntity(EntityFromId(id));
+	Entity::RemoveEntity(Entity::entity_id{ id });
 }
 

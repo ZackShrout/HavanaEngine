@@ -1,16 +1,18 @@
 #include "Entity.h"
 #include "Transform.h"
+#include "Sript.h"
 
 namespace Havana::Entity
 {
 	namespace // anonymous namespace
 	{
 		Utils::vector <Transform::Component>	transforms;
+		Utils::vector <Script::Component>		scripts;
 		Utils::vector<Id::generation_type>		generations;
 		Utils::deque<entity_id>					freeIDs;
 	}
 	
-	Entity CreateEntity(const EntityInfo& info)
+	Entity CreateEntity(EntityInfo info)
 	{
 		assert(info.transform); // All entities must have a transform component
 		if (!info.transform) return Entity{};
@@ -20,7 +22,7 @@ namespace Havana::Entity
 		if (freeIDs.size() > Id::minDeletedElements)
 		{
 			id = freeIDs.front();
-			assert(!IsAlive(Entity{ id }));
+			assert(!IsAlive(id));
 			freeIDs.pop_front();
 			id = entity_id{ Id::NewGeneration(id) };
 			++generations[Id::Index(id)];
@@ -40,29 +42,32 @@ namespace Havana::Entity
 
 		// Create transform component
 		assert(!transforms[index].IsValid());
-		transforms[index] = Transform::CreateTransform(*info.transform, newEntity);
+		transforms[index] = Transform::Create(*info.transform, newEntity);
 		if (!transforms[index].IsValid()) return {};
+		
+		// Create script component
+		if (info.script && info.script->script_creator)
+		{
+			assert(!scripts[index].IsValid());
+			scripts[index] = Script::Create(*info.script, newEntity);
+			assert(scripts[index].IsValid());
+		}
 
 		return newEntity;
 	}
 
-	void RemoveEntity(Entity entity)
+	void RemoveEntity(entity_id id)
 	{
-		const entity_id id{ entity.GetID() };
 		const Id::id_type index{ Id::Index(id) };
-		assert(IsAlive(entity));
-		if (IsAlive(entity))
-		{
-			Transform::RemoveTransform(transforms[index]);
-			transforms[index] = {};
-			freeIDs.push_back(id);
-		}
+		assert(IsAlive(id));
+		Transform::Remove(transforms[index]);
+		transforms[index] = {};
+		freeIDs.push_back(id);
 	}
 
-	bool IsAlive(Entity entity)
+	bool IsAlive(entity_id id)
 	{
-		assert(entity.IsValid());
-		const entity_id id{ entity.GetID() };
+		assert(Id::IsValid(id));
 		const Id::id_type index{ Id::Index(id) };
 		assert(index < generations.size());
 		assert(generations[index] == Id::Generation(id));
@@ -72,8 +77,15 @@ namespace Havana::Entity
 	// Entity class method implementations
 	Transform::Component Entity::Transform() const
 	{
-		assert(IsAlive(*this));
+		assert(IsAlive(id));
 		const Id::id_type index{ Id::Index(id) };
 		return transforms[index];
+	}
+
+	Script::Component Entity::Script() const
+	{
+		assert(IsAlive(id));
+		const Id::id_type index{ Id::Index(id) };
+		return scripts[index];
 	}
 }
