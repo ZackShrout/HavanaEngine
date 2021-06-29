@@ -110,12 +110,12 @@ namespace HavanaEditor.GameProject
                 foreach (string file in templateFiles)
                 {
                     ProjectTemplate template = Serializer.FromFile<ProjectTemplate>(file);
-                    template.IconFilePath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file), "Icon.png"));
-                    template.Icon = File.ReadAllBytes(template.IconFilePath);
-                    template.ScreenShotFilePath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file), "ScreenShot.png"));
-                    template.ScreenShot = File.ReadAllBytes(template.ScreenShotFilePath);
-                    template.ProjectFilePath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file), template.ProjectFile));
                     template.TemplatePath = Path.GetDirectoryName(file);
+                    template.IconFilePath = Path.GetFullPath(Path.Combine(template.TemplatePath, "Icon.png"));
+                    template.Icon = File.ReadAllBytes(template.IconFilePath);
+                    template.ScreenShotFilePath = Path.GetFullPath(Path.Combine(template.TemplatePath, "ScreenShot.png"));
+                    template.ScreenShot = File.ReadAllBytes(template.ScreenShotFilePath);
+                    template.ProjectFilePath = Path.GetFullPath(Path.Combine(template.TemplatePath, template.ProjectFile));
                     projectTemplates.Add(template);
                 }
                 ValidateProjectPath();
@@ -163,7 +163,7 @@ namespace HavanaEditor.GameProject
                 File.Copy(template.ScreenShotFilePath, Path.GetFullPath(Path.Combine(directoryInfo.FullName, "ScreenShot.png")));
 
                 string projectXML = File.ReadAllText(template.ProjectFilePath);
-                projectXML = string.Format(projectXML, ProjectName, ProjectPath);
+                projectXML = string.Format(projectXML, ProjectName, path);
                 string projectPath = Path.GetFullPath(Path.Combine(path, $"{ProjectName}{Project.Extention}"));
                 File.WriteAllText(projectPath, projectXML);
 

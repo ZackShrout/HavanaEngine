@@ -1,4 +1,5 @@
-﻿using HavanaEditor.Utilities;
+﻿using HavanaEditor.GameDev;
+using HavanaEditor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -29,7 +30,8 @@ namespace HavanaEditor.GameProject
         public string Name { get; private set; } = "New Project";
         [DataMember]
         public string Path { get; private set; }
-        public string FullPath => $@"{Path}{Name}\{Name}{Extention}";
+        public string FullPath => $@"{Path}{Name}{Extention}";
+        public string Solution => $@"{Path}{Name}.sln";
         public static Project Current => Application.Current.MainWindow.DataContext as Project;
         public ReadOnlyObservableCollection<Scene> Scenes { get; private set;  }
         public Scene ActiveScene
@@ -50,7 +52,7 @@ namespace HavanaEditor.GameProject
         public ICommand RemoveSceneCommand { get; private set; }
         public ICommand SaveCommand { get; private set; }
         public static UndoRedo UndoRedo { get; } = new UndoRedo();
-
+        
         // PUBLIC
         public Project(string name, string path)
         {
@@ -95,6 +97,7 @@ namespace HavanaEditor.GameProject
 
         public void Unload()
         {
+            VisualStudio.CloseVisualStudio();
             UndoRedo.Reset();
         }
 

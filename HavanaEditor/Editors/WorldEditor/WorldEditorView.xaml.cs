@@ -1,4 +1,5 @@
-﻿using HavanaEditor.GameProject;
+﻿using HavanaEditor.GameDev;
+using HavanaEditor.GameProject;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -30,6 +31,11 @@ namespace HavanaEditor.Editors
         {
             Loaded -= OnWorldEditorLoaded;
             Focus();
+        }
+
+        private void OnNewScript_Button_Click(object sender, RoutedEventArgs e)
+        {
+            new NewScriptDialog().ShowDialog();
         }
     }
 }
