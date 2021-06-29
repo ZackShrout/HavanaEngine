@@ -29,6 +29,7 @@ namespace HavanaEditor.GameProject
         public string IconFilePath { get; set; }
         public string ScreenShotFilePath { get; set; }
         public string ProjectFilePath { get; set; }
+        public string TemplatePath { get; set; }
     }
     
     /// <summary>
@@ -114,6 +115,7 @@ namespace HavanaEditor.GameProject
                     template.ScreenShotFilePath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file), "ScreenShot.png"));
                     template.ScreenShot = File.ReadAllBytes(template.ScreenShotFilePath);
                     template.ProjectFilePath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file), template.ProjectFile));
+                    template.TemplatePath = Path.GetDirectoryName(file);
                     projectTemplates.Add(template);
                 }
                 ValidateProjectPath();
@@ -133,7 +135,7 @@ namespace HavanaEditor.GameProject
         /// <param name="template">Project template to create.</param>
         /// <returns>Path of project directory.</returns>
         public string CreateProject(ProjectTemplate template)
-        {
+        {   
             if (!ValidateProjectPath())
             {
                 return string.Empty;
@@ -164,6 +166,9 @@ namespace HavanaEditor.GameProject
                 projectXML = string.Format(projectXML, ProjectName, ProjectPath);
                 string projectPath = Path.GetFullPath(Path.Combine(path, $"{ProjectName}{Project.Extention}"));
                 File.WriteAllText(projectPath, projectXML);
+
+                CreateMSVCSolution(template, path);
+
                 return path;
             }
             catch (Exception e)
@@ -175,6 +180,28 @@ namespace HavanaEditor.GameProject
         }
 
         // PRIVATE
+        private void CreateMSVCSolution(ProjectTemplate template, string projectPath)
+        {
+            Debug.Assert(File.Exists(Path.Combine(template.TemplatePath, "MSVCSolution")));
+            Debug.Assert(File.Exists(Path.Combine(template.TemplatePath, "MSVCProject")));
+
+            string engineAPIPath = Path.Combine(MainWindow.HavanaPath, @"Engine\EngineAPI\");
+            Debug.Assert(Directory.Exists(engineAPIPath));
+
+            string projectName = ProjectName;
+            string projectGUID = "{" + Guid.NewGuid().ToString().ToUpper() + "}";
+
+            // Create the Visual Studio solution file
+            string solution = File.ReadAllText(Path.Combine(template.TemplatePath, "MSVCSolution"));
+            solution = string.Format(solution, projectName, projectGUID, "{" + Guid.NewGuid().ToString().ToUpper() + "}");
+            File.WriteAllText(Path.GetFullPath(Path.Combine(projectPath, $"{projectName}.sln")), solution);
+
+            // Create the Visual Studio project file
+            string project = File.ReadAllText(Path.Combine(template.TemplatePath, "MSVCProject"));
+            project = string.Format(project, projectName, projectGUID, engineAPIPath, MainWindow.HavanaPath);
+            File.WriteAllText(Path.GetFullPath(Path.Combine(projectPath, $@"Scripts\{projectName}.vcxproj")), project);
+        }
+
         private bool ValidateProjectPath()
         {
             string path = ProjectPath;

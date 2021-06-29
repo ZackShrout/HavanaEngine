@@ -35,6 +35,7 @@ namespace Havana::Entity
 			// Resize components vector to match the amount of entities
 			// Using emplace_back() over resize() reduces the amount of memory allocations
 			transforms.emplace_back();
+			scripts.emplace_back();
 		}
 
 		const Entity newEntity{ id };
@@ -60,6 +61,13 @@ namespace Havana::Entity
 	{
 		const Id::id_type index{ Id::Index(id) };
 		assert(IsAlive(id));
+
+		if (scripts[index].IsValid())
+		{
+			Script::Remove(scripts[index]);
+			scripts[index] = {};
+		}
+
 		Transform::Remove(transforms[index]);
 		transforms[index] = {};
 		freeIDs.push_back(id);

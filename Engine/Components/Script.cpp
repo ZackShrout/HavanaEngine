@@ -10,14 +10,14 @@ namespace Havana::Script
 		Utils::vector<Id::generation_type>		generations;
 		Utils::vector<script_id>				freeIDs;
 
-		using script_registery = std::unordered_map<size_t, Detail::script_creator>;
+		using script_registry = std::unordered_map<size_t, Detail::script_creator>;
 
-		script_registery& Registry()
+		script_registry& Registry()
 		{
 			// note: we put this static variable in a function because of the
 			// initialization order of static data. This way, we can be certain
 			// that the data will be initialized before accessing it.
-			static script_registery reg;
+			static script_registry reg;
 			return reg;
 		}
 		
@@ -37,7 +37,7 @@ namespace Havana::Script
 	{
 		u8 RegisterScript(size_t tag, script_creator func)
 		{
-			bool result{ Registry().insert(script_registery::value_type{tag, func}).second };
+			bool result{ Registry().insert(script_registry::value_type{tag, func}).second };
 			assert(result);
 			return result;
 		}
@@ -65,9 +65,9 @@ namespace Havana::Script
 		}
 
 		assert(Id::IsValid(id));
+		const Id::id_type index{ (Id::id_type)entityScripts.size() };
 		entityScripts.emplace_back(info.script_creator(entity));
 		assert(entityScripts.back()->GetID() == entity.GetID());
-		const Id::id_type index{ (Id::id_type)entityScripts.size() };
 		idMapping[Id::Index(id)] = index;
 		return Component{ id };
 	}

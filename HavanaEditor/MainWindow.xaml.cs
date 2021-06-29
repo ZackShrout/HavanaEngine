@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace HavanaEditor
 {
@@ -22,6 +22,9 @@ namespace HavanaEditor
     /// </summary>
     public partial class MainWindow : Window
     {
+        // PROPERTIES
+        public static string HavanaPath { get; private set; } = @"H:\dev\HavanaEngine\Havana";
+
         // PUBLIC
         public MainWindow()
         {
@@ -40,7 +43,30 @@ namespace HavanaEditor
         private void OnMainWindowLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= OnMainWindowLoaded;
+            GetEnginePath();
             OpenProjectBrowserDialogue();
+        }
+
+        private void GetEnginePath()
+        {
+            string havanaPath = Environment.GetEnvironmentVariable("HAVANA_ENGINE", EnvironmentVariableTarget.User);
+            if (havanaPath == null || !Directory.Exists(Path.Combine(havanaPath + @"Engine\EngineAPI")))
+            {
+                var dialog = new EnginePathDialog();
+                if (dialog.ShowDialog() == true)
+                {
+                    HavanaPath = dialog.HavanaPath;
+                    Environment.SetEnvironmentVariable("HAVANA_ENGINE", HavanaPath.ToUpper(), EnvironmentVariableTarget.User);
+                }
+                else
+                {
+                    Application.Current.Shutdown();
+                }
+            }
+            else
+            {
+                HavanaPath = havanaPath;
+            }
         }
 
         private void OpenProjectBrowserDialogue()

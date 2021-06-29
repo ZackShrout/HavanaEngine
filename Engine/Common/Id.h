@@ -7,7 +7,7 @@ namespace Havana::Id
 	using id_type = u32;
 
 	// constants for index and generation bits for ECS system
-	namespace internal
+	namespace Detail
 	{
 		constexpr u32 GENERATION_BITS{ 10 };
 		constexpr u32 INDEX_BITS{ sizeof(id_type) * 8 - GENERATION_BITS };
@@ -18,10 +18,10 @@ namespace Havana::Id
 	constexpr u32 minDeletedElements{ 1024 };
 
 	// Define generation type for ECS system
-	using generation_type = std::conditional_t<internal::GENERATION_BITS <= 16, std::conditional_t<internal::GENERATION_BITS <= 8, u8, u16>, u32>;
+	using generation_type = std::conditional_t<Detail::GENERATION_BITS <= 16, std::conditional_t<Detail::GENERATION_BITS <= 8, u8, u16>, u32>;
 
 	// ASSERTIONS
-	static_assert(sizeof(generation_type) * 8 >= internal::GENERATION_BITS); // generation_type can be no larger than u32
+	static_assert(sizeof(generation_type) * 8 >= Detail::GENERATION_BITS); // generation_type can be no larger than u32
 	static_assert(sizeof(id_type) - sizeof(generation_type) > 0); // Enforces id_type larger than generation_type
 
 	// METHODS
@@ -32,21 +32,21 @@ namespace Havana::Id
 
 	constexpr id_type Index(id_type id)
 	{
-		id_type index{ id & internal::INDEX_MASK };
-		assert(index != internal::INDEX_MASK);
+		id_type index{ id & Detail::INDEX_MASK };
+		assert(index != Detail::INDEX_MASK);
 		return index;
 	}
 
 	constexpr id_type Generation(id_type id)
 	{
-		return (id >> internal::INDEX_BITS) & internal::GENERATION_MASK;
+		return (id >> Detail::INDEX_BITS) & Detail::GENERATION_MASK;
 	}
 
 	constexpr id_type NewGeneration(id_type id)
 	{
 		const id_type generation{ Id::Generation(id) + 1 };
-		assert(generation < (((u64)1 << internal::GENERATION_BITS) - 1));
-		return Index(id) | (generation << internal::INDEX_BITS);
+		assert(generation < (((u64)1 << Detail::GENERATION_BITS) - 1));
+		return Index(id) | (generation << Detail::INDEX_BITS);
 	}
 
 #if _DEBUG
