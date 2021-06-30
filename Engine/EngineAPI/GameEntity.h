@@ -42,6 +42,7 @@ namespace Havana
 			using string_hash = std::hash<std::string>;
 
 			u8 RegisterScript(size_t, script_creator);
+			script_creator GetScriptCreator(size_t tag);
 
 			template<class ScriptClass>
 			script_ptr CreateScript(Entity::Entity entity)
@@ -49,17 +50,29 @@ namespace Havana
 				assert(entity.IsValid());
 				return std::make_unique<ScriptClass>(entity);
 			}
+			
+#ifdef USE_WITH_EDITOR
+			u8 AddScriptName(const char* name);
+#define REGISTER_SCRIPT(TYPE)											\												\
+			namespace													\
+			{															\
+				const u8 register##TYPE									\
+					{ Havana::Script::Detail::RegisterScript(			\
+					Havana::Script::Detail::string_hash()(#TYPE),		\
+					&Havana::Script::Detail::CreateScript<TYPE>) };		\
+				const u8 name##TYPE										\
+					{  Havana::Script::Detail::AddScriptName(#TYPE) };	\
+			}
+#else
+#define REGISTER_SCRIPT(TYPE)											\												\
+			namespace													\
+			{															\
+				const u8 register##TYPE									\
+					{ Havana::Script::Detail::RegisterScript(			\
+					Havana::Script::Detail::string_hash()(#TYPE),		\
+					&Havana::Script::Detail::CreateScript<TYPE>) };		\
+			}
+#endif // USE_WITH_EDITOR
 		} // namespace detail
-
-#define REGISTER_SCRIPT(TYPE)										\
-		class TYPE;													\
-		namespace													\
-		{															\
-			const u8 register##TYPE									\
-				{ Havana::Script::Detail::RegisterScript(			\
-				Havana::Script::Detail::string_hash()(#TYPE),		\
-				&Havana::Script::Detail::CreateScript<TYPE>) };	\
-		}
-
 	} // namespace script
 }

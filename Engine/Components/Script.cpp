@@ -20,6 +20,18 @@ namespace Havana::Script
 			static script_registry reg;
 			return reg;
 		}
+
+#ifdef USE_WITH_EDITOR
+		Utils::vector<std::string>& ScriptNames()
+		{
+			// note: we put this static variable in a function because of the
+			// initialization order of static data. This way, we can be certain
+			// that the data will be initialized before accessing it.
+			static Utils::vector<std::string> names;
+			return names;
+		}
+#endif // USE_WITH_EDITOR
+
 		
 		bool Exists(script_id id)
 		{
@@ -41,6 +53,21 @@ namespace Havana::Script
 			assert(result);
 			return result;
 		}
+
+		script_creator GetScriptCreator(size_t tag)
+		{
+			auto script = Havana::Script::Registry().find(tag);
+			assert(script != Havana::Script::Registry().end() && script->first == tag);
+			return script->second;
+		}
+
+#ifdef USE_WITH_EDITOR
+		u8 AddScriptName(const char* name)
+		{
+			ScriptNames().emplace_back(name);
+			return true;
+		}
+#endif // USE_WITH_EDITOR
 	} // detail namespace
 	
 	Component Create(InitInfo info, Entity::Entity entity)
@@ -83,4 +110,24 @@ namespace Havana::Script
 		idMapping[Id::Index(id)] = Id::INVALID_ID;
 	}
 }
+
+#ifdef USE_WITH_EDITOR
+#include <atlsafe.h>
+
+extern "C" __declspec(dllexport)
+LPSAFEARRAY GetScriptNames()
+{
+	const u32 size{ (u32)Havana::Script::ScriptNames().size() };
+	if (!size) return nullptr; // If there are no script, exit early
+	CComSafeArray<BSTR> names(size);
+	
+	for (u32 i{ 0 }; i < size; i++)
+	{
+		names.SetAt(i, A2BSTR_EX(Havana::Script::ScriptNames()[i].c_str()), false);
+	}
+
+	return names.Detach(); // Detach() will move the memory freeing task to the .NET side for Auto GC
+}
+#endif // USE_WITH_EDITOR
+
 
