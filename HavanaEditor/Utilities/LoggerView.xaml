@@ -47,7 +47,8 @@
 
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
-                      x:Name="scrollViewer" Background="{DynamicResource Editor.Window.GreyBrush2}">
+                      x:Name="scrollViewer" Background="{DynamicResource Editor.Window.GreyBrush2}"
+                      Margin="0,32,0,0">
             <ItemsControl ItemsSource="{Binding Source={x:Static local:Logger.FilteredMessages}}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

@@ -76,12 +76,12 @@ namespace HavanaEditor.Components
                     isActive = value;
                     if (isActive) // Add to engine if active
                     {
-                        EntityID = EngineAPI.CreateGameEntity(this);
+                        EntityID = EngineAPI.EntityAPI.CreateGameEntity(this);
                         Debug.Assert(ID.IsValid(entityID));
                     }
                     else if (ID.IsValid(EntityID)) // Remove from engine if not
                     {
-                        EngineAPI.RemoveGameEntity(this);
+                        EngineAPI.EntityAPI.RemoveGameEntity(this);
                         EntityID = ID.INVALID_ID;
                     }
 

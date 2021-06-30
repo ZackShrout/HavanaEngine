@@ -28,43 +28,57 @@ namespace HavanaEditor.DllWrapper
     static class EngineAPI
     {
         // CONST
-        private const string dllName = "EngineDLL.dll";
+        private const string engineDll = "EngineDLL.dll";
 
-        // PUBLIC
         /// <summary>
-        /// Create a game entity in the engine.
+        /// Class to handle the coordination of game entity creation and destruction
+        /// between the editor and the engine.
         /// </summary>
-        /// <param name="entity">- Entity to create.</param>
-        /// <returns>ID number.</returns>
-        public static int CreateGameEntity(GameEntity entity)
+        internal static class EntityAPI
         {
-            GameEntityDescriptor descriptor = new GameEntityDescriptor();
-
-            // Transform Component
+            // PUBLIC
+            /// <summary>
+            /// Create a game entity in the engine.
+            /// </summary>
+            /// <param name="entity">- Entity to create.</param>
+            /// <returns>ID number.</returns>
+            public static int CreateGameEntity(GameEntity entity)
             {
-                Transform component = entity.GetComponent<Transform>();
-                descriptor.transform.Position = component.Position;
-                descriptor.transform.Rotation = component.Rotation;
-                descriptor.transform.Scale = component.Scale;
+                GameEntityDescriptor descriptor = new GameEntityDescriptor();
+
+                // Transform Component
+                {
+                    Transform component = entity.GetComponent<Transform>();
+                    descriptor.transform.Position = component.Position;
+                    descriptor.transform.Rotation = component.Rotation;
+                    descriptor.transform.Scale = component.Scale;
+                }
+
+                return CreateGameEntity(descriptor);
             }
 
-            return CreateGameEntity(descriptor);
+            /// <summary>
+            /// Remove a game entity in the engine.
+            /// </summary>
+            /// <param name="entity">- Entity to remove.</param>
+            public static void RemoveGameEntity(GameEntity entity)
+            {
+                RemoveGameEntity(entity.EntityID);
+            }
+
+            // PRIVATE
+            [DllImport(engineDll)]
+            private static extern int CreateGameEntity(GameEntityDescriptor descriptor);
+
+            [DllImport(engineDll)]
+            private static extern void RemoveGameEntity(int id);
         }
 
-        /// <summary>
-        /// Remove a game entity in the engine.
-        /// </summary>
-        /// <param name="entity">- Entity to remove.</param>
-        public static void RemoveGameEntity(GameEntity entity)
-        {
-            RemoveGameEntity(entity.EntityID);
-        }
+        // PUBLIC
+        [DllImport(engineDll, CharSet = CharSet.Ansi)]
+        public static extern int LoadGameCodeDll(string dllPath);
 
-        // PRIVATE
-        [DllImport(dllName)]
-        private static extern int CreateGameEntity(GameEntityDescriptor descriptor);
-
-        [DllImport(dllName)]
-        private static extern void RemoveGameEntity(int id);
+        [DllImport(engineDll)]
+        public static extern int UnloadGameCodeDll();
     }
 }

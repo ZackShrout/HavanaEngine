@@ -23,7 +23,7 @@ namespace HavanaEditor
     public partial class MainWindow : Window
     {
         // PROPERTIES
-        public static string HavanaPath { get; private set; } = @"H:\dev\HavanaEngine\Havana";
+        public static string HavanaPath { get; private set; }
 
         // PUBLIC
         public MainWindow()

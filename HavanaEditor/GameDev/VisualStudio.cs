@@ -1,4 +1,5 @@
-﻿using HavanaEditor.Utilities;
+﻿using HavanaEditor.GameProject;
+using HavanaEditor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,6 +16,10 @@ namespace HavanaEditor.GameDev
         // STATE
         private static EnvDTE80.DTE2 vsInstance = null;
         private static readonly string progID = "VisualStudio.DTE.16.0";
+
+        // PROPERTIES
+        public static bool BuildSucceeded { get; private set; } = true;
+        public static bool BuildDone { get; private set; } = true;
 
         // PUBLIC
         /// <summary>
@@ -99,6 +104,13 @@ namespace HavanaEditor.GameDev
             vsInstance?.Quit();
         }
 
+        /// <summary>
+        /// Add files to a Visual Studio solution
+        /// </summary>
+        /// <param name="solution">Path of solution to add files to.</param>
+        /// <param name="projectName">Name of project in solutio to add files to.</param>
+        /// <param name="files">Files to add.</param>
+        /// <returns>True if succeeded, false if failed.</returns>
         public static bool AddFilesToSolution(string solution, string projectName, string[] files)
         {
             Debug.Assert(files?.Length > 0);
@@ -142,11 +154,97 @@ namespace HavanaEditor.GameDev
             return true;
         }
 
+        /// <summary>
+        /// Build Visual Studio solution
+        /// </summary>
+        /// <param name="project">Havana Project which contains the solution to build.</param>
+        /// <param name="v">Build Configuration mode.</param>
+        public static void BuildSolution(Project project, string buildConfig, bool showWindow = true)
+        {
+            if (IsDebugging())
+            {
+                Logger.Log(MessageTypes.Error, "Visual Studio is currently running a process.");
+                return;
+            }
+
+            OpenVisualStudio(project.Solution);
+            BuildDone = BuildSucceeded = false;
+
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    if (!vsInstance.Solution.IsOpen) vsInstance.Solution.Open(project.Solution);
+                    vsInstance.MainWindow.Visible = showWindow;
+
+                    vsInstance.Events.BuildEvents.OnBuildProjConfigBegin += OnBuildSolutionBegin;
+                    vsInstance.Events.BuildEvents.OnBuildProjConfigDone += OnBuildSolutionDone;
+
+                    try
+                    {
+                        foreach (var pdbFile in Directory.GetFiles(Path.Combine($"{project.Path}", $@"x64\{buildConfig}"), "*.pdb"))
+                        {
+                            File.Delete(pdbFile);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
+
+                    vsInstance.Solution.SolutionBuild.SolutionConfigurations.Item(buildConfig).Activate();
+                    vsInstance.ExecuteCommand("Build.BuildSolution");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    Logger.Log(MessageTypes.Error, $"Attempt {i}: failed to {project.Name}");
+                    System.Threading.Thread.Sleep(1000);
+                }
+            }
+        }
+
+        public static bool IsDebugging()
+        {
+            bool result = false;
+
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    result = vsInstance != null &&
+                        (vsInstance.Debugger.CurrentProgram != null || vsInstance.Debugger.CurrentMode == EnvDTE.dbgDebugMode.dbgRunMode);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    if (!result) System.Threading.Thread.Sleep(1000);
+                }
+            }
+            return result;
+        }
+
         // PRIVATE
         [DllImport("ole32.dll")]
         private static extern int GetRunningObjectTable(uint reserved, out IRunningObjectTable pprot);
 
         [DllImport("ole32.dll")]
         private static extern int CreateBindCtx(uint reserved, out IBindCtx ppbc);
+        
+        private static void OnBuildSolutionBegin(string project, string projectConfig, string platform, string solutionConfig)
+        {
+            Logger.Log(MessageTypes.Info, $"Building: {project}, {projectConfig}, {platform}, {solutionConfig}");
+        }
+
+        private static void OnBuildSolutionDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
+        {
+            if (BuildDone) return;
+
+            if (success) Logger.Log(MessageTypes.Info, $"Building {projectConfig} configuration succeeded.");
+            else Logger.Log(MessageTypes.Error, $"Building {projectConfig} configuration failed.");
+
+            BuildDone = true;
+            BuildSucceeded = success;
+        }
     }
 }
