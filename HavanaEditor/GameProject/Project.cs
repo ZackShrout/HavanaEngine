@@ -35,7 +35,8 @@ namespace HavanaEditor.GameProject
         private Scene activeScene;
         private static readonly string[] buildConfigurationNames = new string[] { "Debug", "DebugEditor", "Release", "ReleaseEditor" };
         private int buildConfig;
-        
+        private string[] availableScripts;
+
         // PROPERTIES
         public static string Extention { get; } = ".hvproj";
         [DataMember]
@@ -80,6 +81,18 @@ namespace HavanaEditor.GameProject
         public static UndoRedo UndoRedo { get; } = new UndoRedo();
         public BuildConfiguration StandAloneBuildConfig => BuildConfig == 0 ? BuildConfiguration.Debug : BuildConfiguration.Release;
         public BuildConfiguration DllBuildConfig => BuildConfig == 0 ? BuildConfiguration.DebugEditor : BuildConfiguration.ReleaseEditor;
+        public string[] AvailableScripts
+        {
+            get => availableScripts;
+            set
+            {
+                if (availableScripts != value)
+                {
+                    availableScripts = value;
+                    OnPropertyChanged(nameof(AvailableScripts));
+                }
+            }
+        }
         
         // PUBLIC
         public Project(string name, string path)
@@ -160,8 +173,10 @@ namespace HavanaEditor.GameProject
         {
             string configName = GetConfigurationName(DllBuildConfig);
             string dll = $@"{Path}x64\{configName}\{Name}.dll";
+            AvailableScripts = null;
             if (File.Exists(dll) && EngineAPI.LoadGameCodeDll(dll) != 0)
             {
+                AvailableScripts = EngineAPI.GetScriptNames();
                 Logger.Log(MessageTypes.Info, "Game code DLL loaded sucessfully.");
             }
             else
@@ -176,6 +191,7 @@ namespace HavanaEditor.GameProject
             if (EngineAPI.UnloadGameCodeDll() != 0)
             {
                 Logger.Log(MessageTypes.Info, "Game code DLL unloaded sucessfully.");
+                AvailableScripts = null;
             }
         }
 

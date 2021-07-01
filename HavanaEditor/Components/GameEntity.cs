@@ -14,6 +14,7 @@ namespace HavanaEditor.Components
 {
     [DataContract]
     [KnownType(typeof(Transform))]
+    [KnownType(typeof(Script))]
     class GameEntity : ViewModelBase
     {
         // STATE
@@ -112,6 +113,42 @@ namespace HavanaEditor.Components
         /// <typeparam name="T">- Type of component to get.</typeparam>
         /// <returns>Component object.</returns>
         public T GetComponent<T>() where T : Component => GetComponent(typeof(T)) as T;
+
+        /// <summary>
+        /// Add a component to an entity.
+        /// </summary>
+        /// <param name="component">The component to add.</param>
+        /// <returns>True if successful, false if unsuccessful.</returns>
+        public bool AddComponent(Component component)
+        {
+            Debug.Assert(component != null);
+            if (!Components.Any(x => x.GetType() == component.GetType()))
+            {
+                IsActive = false;
+                components.Add(component);
+                IsActive = true;
+                return true;
+            }
+            Logger.Log(MessageTypes.Warning, $"Entity {Name} already has a {component.GetType().Name} component.");
+            return false;
+        }
+
+        /// <summary>
+        /// Remove a component from an entity.
+        /// </summary>
+        /// <param name="component">The component to remove.</param>
+        public void RemoveComponent(Component component)
+        {
+            Debug.Assert(component != null);
+            if (component is Transform) return; // Transform components cannot be removed
+
+            if (components.Contains(component))
+            {
+                IsActive = false;
+                components.Remove(component);
+                IsActive = true;
+            }
+        }
 
         // PRIVATE
         [OnDeserialized]

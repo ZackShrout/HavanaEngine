@@ -1,6 +1,6 @@
 #include "Entity.h"
 #include "Transform.h"
-#include "Sript.h"
+#include "Script.h"
 
 namespace Havana::Entity
 {

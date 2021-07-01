@@ -12,7 +12,7 @@
     <ClInclude Include="EngineAPI\TransformComponent.h" />
     <ClInclude Include="Utilities\MathTypes.h" />
     <ClInclude Include="EngineAPI\ScriptComponent.h" />
-    <ClInclude Include="Components\Sript.h" />
+    <ClInclude Include="Components\Script.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\Entity.cpp" />

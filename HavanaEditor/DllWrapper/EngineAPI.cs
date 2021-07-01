@@ -17,9 +17,16 @@ namespace HavanaEditor.EngineAPIStructs
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    class ScriptComponent
+    {
+        public IntPtr ScriptCreator;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     class GameEntityDescriptor
     {
         public TransformComponent transform = new TransformComponent();
+        public ScriptComponent script = new ScriptComponent();
     }
 }
 
@@ -54,6 +61,11 @@ namespace HavanaEditor.DllWrapper
                     descriptor.transform.Scale = component.Scale;
                 }
 
+                // Script Component
+                {
+                    //Script component = entity.GetComponent<Script>();
+                }
+
                 return CreateGameEntity(descriptor);
             }
 
@@ -75,10 +87,35 @@ namespace HavanaEditor.DllWrapper
         }
 
         // PUBLIC
+        /// <summary>
+        /// Load the game code DLL into the Havana Editor.
+        /// </summary>
+        /// <param name="dllPath">Path to the DLL file.</param>
+        /// <returns>1 if successful, 0 if unsuccessful</returns>
         [DllImport(engineDll, CharSet = CharSet.Ansi)]
         public static extern int LoadGameCodeDll(string dllPath);
 
+        /// <summary>
+        /// Unload the game code DLL from the Havana Editor.
+        /// </summary>
+        /// <returns>1 if successful, 0 if unsuccessful</returns>
         [DllImport(engineDll)]
         public static extern int UnloadGameCodeDll();
+
+        /// <summary>
+        /// Gets an array of script names.
+        /// </summary>
+        /// <returns>Array of script names.</returns>
+        [DllImport(engineDll)]
+        [return: MarshalAs(UnmanagedType.SafeArray)]
+        public static extern string[] GetScriptNames();
+
+        /// <summary>
+        /// Return a pointer to the script creator function.
+        /// </summary>
+        /// <param name="name">Name of script.</param>
+        /// <returns>Pointer to script creator.</returns>
+        [DllImport(engineDll)]
+        public static extern IntPtr GetScriptCreator(string name);
     }
 }

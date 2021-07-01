@@ -1,4 +1,4 @@
-#include "Sript.h"
+#include "Script.h"
 #include "Entity.h"
 
 namespace Havana::Script
@@ -54,7 +54,8 @@ namespace Havana::Script
 			return result;
 		}
 
-		script_creator GetScriptCreator(size_t tag)
+
+		script_creator GetScriptCreatorDll(size_t tag)
 		{
 			auto script = Havana::Script::Registry().find(tag);
 			assert(script != Havana::Script::Registry().end() && script->first == tag);
@@ -112,10 +113,9 @@ namespace Havana::Script
 }
 
 #ifdef USE_WITH_EDITOR
-#include <atlsafe.h>
 
 extern "C" __declspec(dllexport)
-LPSAFEARRAY GetScriptNames()
+LPSAFEARRAY GetScriptNamesDll()
 {
 	const u32 size{ (u32)Havana::Script::ScriptNames().size() };
 	if (!size) return nullptr; // If there are no script, exit early

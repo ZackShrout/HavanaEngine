@@ -42,7 +42,10 @@ namespace Havana
 			using string_hash = std::hash<std::string>;
 
 			u8 RegisterScript(size_t, script_creator);
-			script_creator GetScriptCreator(size_t tag);
+#ifdef USE_WITH_EDITOR
+			extern "C" __declspec(dllexport) // GetScriptCreator needs to be exported to the dll if this is in use with the editor
+#endif // USE_WITH_EDITOR
+			script_creator GetScriptCreatorDll(size_t tag);
 
 			template<class ScriptClass>
 			script_ptr CreateScript(Entity::Entity entity)
@@ -53,7 +56,7 @@ namespace Havana
 			
 #ifdef USE_WITH_EDITOR
 			u8 AddScriptName(const char* name);
-#define REGISTER_SCRIPT(TYPE)											\												\
+#define REGISTER_SCRIPT(TYPE)											\
 			namespace													\
 			{															\
 				const u8 register##TYPE									\
@@ -64,7 +67,7 @@ namespace Havana
 					{  Havana::Script::Detail::AddScriptName(#TYPE) };	\
 			}
 #else
-#define REGISTER_SCRIPT(TYPE)											\												\
+#define REGISTER_SCRIPT(TYPE)											\
 			namespace													\
 			{															\
 				const u8 register##TYPE									\

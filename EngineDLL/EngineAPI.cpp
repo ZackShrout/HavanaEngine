@@ -7,12 +7,17 @@
 
 #include <Windows.h>
 #include "Common.h"
+#include "..\Engine\Components\Script.h"
 
 using namespace Havana;
 
 namespace
 {
 	HMODULE gameCodeDll{ nullptr };
+	using get_script_creator = Havana::Script::Detail::script_creator(*)(size_t);
+	get_script_creator GetScriptCreatorDll{ nullptr };
+	using get_script_names = LPSAFEARRAY(*)(void);
+	get_script_names GetScriptNamesDll{ nullptr };
 } // anonymous namespace
 
 /// <summary>
@@ -28,7 +33,10 @@ EDITOR_INTERFACE u32 LoadGameCodeDll(const char* dllPath)
 	gameCodeDll = LoadLibraryA(dllPath);
 	assert(gameCodeDll);
 
-	return gameCodeDll ? TRUE : FALSE;
+	GetScriptCreatorDll = (get_script_creator)GetProcAddress(gameCodeDll, "GetScriptCreatorDll");
+	GetScriptNamesDll = (get_script_names)GetProcAddress(gameCodeDll, "GetScriptNamesDll");
+
+	return (gameCodeDll && GetScriptCreatorDll && GetScriptNamesDll) ? TRUE : FALSE;
 }
 
 /// <summary>
@@ -46,4 +54,23 @@ EDITOR_INTERFACE u32 UnloadGameCodeDll()
 	gameCodeDll = nullptr;
 	
 	return TRUE;
+}
+
+/// <summary>
+/// Get a script creator function pointer for use in the Havana Editor
+/// </summary>
+/// <param name="name">Name of the script to get.</param>
+/// <returns>Function pointer to script.</returns>
+EDITOR_INTERFACE Script::Detail::script_creator GetScriptCreator(const char* name)
+{
+	return (gameCodeDll && GetScriptCreatorDll) ? GetScriptCreatorDll(Script::Detail::string_hash()(name)) : nullptr;
+}
+
+/// <summary>
+/// Get the array of script names for use in the Havana Editor
+/// </summary>
+/// <returns>Array of script names.</returns>
+EDITOR_INTERFACE LPSAFEARRAY GetScriptNames()
+{
+	return (gameCodeDll && GetScriptNamesDll) ? GetScriptNamesDll() : nullptr;
 }

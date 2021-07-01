@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -98,6 +99,22 @@ namespace HavanaEditor.Editors
                 selection.ForEach(item => item.entity.IsEnabled = item.IsEnabled);
                 (DataContext as MSEntity).Refresh();
             });
+        }
+
+        private void OnAddScriptComponent(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void OnAddComponent_Button_PreviewMouse_LBD(object sender, MouseButtonEventArgs e)
+        {
+            ContextMenu menu = FindResource("addComponentMenu") as ContextMenu;
+            ToggleButton button = sender as ToggleButton;
+            button.IsChecked = true;
+            menu.Placement = PlacementMode.Bottom;
+            menu.PlacementTarget = button;
+            menu.MinWidth = button.ActualWidth;
+            menu.IsOpen = true;
         }
     }
 }
