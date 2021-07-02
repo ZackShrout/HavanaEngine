@@ -3,6 +3,7 @@ using HavanaEditor.GameProject;
 using HavanaEditor.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -18,6 +19,25 @@ using System.Windows.Shapes;
 
 namespace HavanaEditor.Editors
 {
+    /// <summary>
+    /// Used to convert nullable boolean types to non-nullable
+    /// boolean types.
+    /// </summary>
+    public class NullableBoolToBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            // If value is null or false, return false.
+            // If value is true, return true.
+            return value is bool b && b == true;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is bool b && b == true;
+        }
+    }
+
     /// <summary>
     /// Interaction logic for GameEntityView.xaml
     /// </summary>
@@ -73,15 +93,26 @@ namespace HavanaEditor.Editors
                 viewModel.IsEnabled == true ? "Enabled Game Entity" : "Disabled Game Entity"));
         }
 
+        private void OnAddScriptComponent(object sender, RoutedEventArgs e)
+        {
+            AddComponent(ComponentType.Script, (sender as MenuItem).Header.ToString());
+        }
+        
+        private void OnAddComponent_Button_PreviewMouse_LBD(object sender, MouseButtonEventArgs e)
+        {
+            ContextMenu menu = FindResource("addComponentMenu") as ContextMenu;
+            ToggleButton button = sender as ToggleButton;
+            button.IsChecked = true;
+            menu.Placement = PlacementMode.Bottom;
+            menu.PlacementTarget = button;
+            menu.MinWidth = button.ActualWidth;
+            menu.IsOpen = true;
+        }
+
         private Action GetRenameAction()
         {
             MSEntity viewModel = DataContext as MSEntity;
             var selection = viewModel.SelectedEntities.Select(entity => (entity, entity.Name)).ToList();
-            
-            foreach (var entity in selection)
-            {
-                Logger.Log(MessageTypes.Info, $"{entity.Name}");
-            }
            
             return new Action(() =>
             {
@@ -89,7 +120,7 @@ namespace HavanaEditor.Editors
                 (DataContext as MSEntity).Refresh();
             });
         }
-
+        
         private Action GetIsEnabledAction()
         {
             MSEntity viewModel = DataContext as MSEntity;
@@ -101,20 +132,38 @@ namespace HavanaEditor.Editors
             });
         }
 
-        private void OnAddScriptComponent(object sender, RoutedEventArgs e)
+        private void AddComponent(ComponentType componentType, object data)
         {
+            var creationFunction = ComponentFactory.GetCreationFunction(componentType);
+            var changedEntities = new List<(GameEntity entity, Component component)>();
+            MSEntity viewModel = DataContext as MSEntity;
+            foreach (var entity in viewModel.SelectedEntities)
+            {
+                Component component = creationFunction(entity, data);
+                if (entity.AddComponent(component))
+                {
+                    changedEntities.Add((entity, component));
+                }
+            }
 
+            if (changedEntities.Any())
+            {
+                viewModel.Refresh();
+
+                Project.UndoRedo.Add(new UndoRedoAction(
+                () =>
+                {
+                    changedEntities.ForEach(x => x.entity.RemoveComponent(x.component));
+                    (DataContext as MSEntity).Refresh();
+                },
+                () =>
+                {
+                    changedEntities.ForEach(x => x.entity.AddComponent(x.component));
+                    (DataContext as MSEntity).Refresh();
+                },
+                $"Add {componentType} component."));
+            }
         }
 
-        private void OnAddComponent_Button_PreviewMouse_LBD(object sender, MouseButtonEventArgs e)
-        {
-            ContextMenu menu = FindResource("addComponentMenu") as ContextMenu;
-            ToggleButton button = sender as ToggleButton;
-            button.IsChecked = true;
-            menu.Placement = PlacementMode.Bottom;
-            menu.PlacementTarget = button;
-            menu.MinWidth = button.ActualWidth;
-            menu.IsOpen = true;
-        }
     }
 }

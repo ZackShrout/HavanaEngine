@@ -1,4 +1,5 @@
-﻿using HavanaEditor.DllWrapper;
+﻿using HavanaEditor.Components;
+using HavanaEditor.DllWrapper;
 using HavanaEditor.GameDev;
 using HavanaEditor.Utilities;
 using System;
@@ -129,6 +130,7 @@ namespace HavanaEditor.GameProject
         /// </summary>
         public void Unload()
         {
+            UnloadGameCodeDll();
             VisualStudio.CloseVisualStudio();
             UndoRedo.Reset();
         }
@@ -143,6 +145,7 @@ namespace HavanaEditor.GameProject
                 OnPropertyChanged(nameof(Scenes));
             }
             ActiveScene = Scenes.FirstOrDefault(x => x.IsActive);
+            Debug.Assert(ActiveScene != null);
 
             await BuildGameCodeDll(false); // build dll without showing the Visual Studio window.
 
@@ -177,6 +180,7 @@ namespace HavanaEditor.GameProject
             if (File.Exists(dll) && EngineAPI.LoadGameCodeDll(dll) != 0)
             {
                 AvailableScripts = EngineAPI.GetScriptNames();
+                ActiveScene.GameEntities.Where(x => x.GetComponent<Script>() != null).ToList().ForEach(x => x.IsActive = true);
                 Logger.Log(MessageTypes.Info, "Game code DLL loaded sucessfully.");
             }
             else
@@ -188,6 +192,8 @@ namespace HavanaEditor.GameProject
 
         private void UnloadGameCodeDll()
         {
+            // Deactive any entities that have script components on them before unload game DLL
+            ActiveScene.GameEntities.Where(x => x.GetComponent<Script>() != null).ToList().ForEach(x => x.IsActive = false);
             if (EngineAPI.UnloadGameCodeDll() != 0)
             {
                 Logger.Log(MessageTypes.Info, "Game code DLL unloaded sucessfully.");

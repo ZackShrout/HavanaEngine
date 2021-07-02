@@ -1,7 +1,10 @@
 ﻿using HavanaEditor.Components;
 using HavanaEditor.EngineAPIStructs;
+using HavanaEditor.GameProject;
+using HavanaEditor.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -63,7 +66,21 @@ namespace HavanaEditor.DllWrapper
 
                 // Script Component
                 {
-                    //Script component = entity.GetComponent<Script>();
+                    Script component = entity.GetComponent<Script>();
+                    
+                    // If current project is null, the DLL has not been created yet. We will defer
+                    // creating entities with script components until after DLL has been created.
+                    if (component != null && Project.Current != null)
+                    {
+                        if (Project.Current.AvailableScripts.Contains(component.Name))
+                        {
+                            descriptor.script.ScriptCreator = GetScriptCreator(component.Name);
+                        }
+                        else
+                        {
+                            Logger.Log(MessageTypes.Error, $"Unable for find {component.Name} script.");
+                        }
+                    }
                 }
 
                 return CreateGameEntity(descriptor);

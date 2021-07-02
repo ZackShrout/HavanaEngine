@@ -5,6 +5,7 @@
 #include "..\Common\Id.h"
 #include "..\Components\Entity.h"
 #include "..\Components\Transform.h"
+#include "..\Components\Script.h"
 #include "Common.h"
 
 using namespace Havana;
@@ -39,12 +40,29 @@ namespace // anonymous namespace
 	};
 
 	/// <summary>
+	/// Takes a Script component from the editor, and
+	/// converts it for use in the Engine.
+	/// </summary>
+	struct ScriptComponent
+	{
+		Script::Detail::script_creator scriptCreator;
+
+		Script::InitInfo ToInitInfo()
+		{
+			Script::InitInfo info{};
+			info.script_creator = scriptCreator;
+			return info;
+		}
+	};
+
+	/// <summary>
 	/// Takes a Game Entity from the editor, and
 	/// converts it for use in the Engine.
 	/// </summary>
 	struct GameEntityDescriptor
 	{
 		TransformComponent transform;
+		ScriptComponent script;
 	};
 
 	Entity::Entity EntityFromId(Id::id_type id)
@@ -64,7 +82,9 @@ Id::id_type CreateGameEntity(GameEntityDescriptor* e)
 	assert(e);
 	GameEntityDescriptor descriptor{ *e };
 	Transform::InitInfo transformInfo{ descriptor.transform.ToInitInfo() };
-	Entity::EntityInfo entityInfo{ &transformInfo };
+	Script::InitInfo scriptInfo{ descriptor.script.ToInitInfo() };
+	Entity::EntityInfo entityInfo{ &transformInfo, &scriptInfo };
+
 	return Entity::CreateEntity(entityInfo).GetID();
 }
 
