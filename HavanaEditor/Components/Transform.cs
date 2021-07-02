@@ -1,6 +1,7 @@
 ﻿using HavanaEditor.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Numerics;
 using System.Runtime.Serialization;
 using System.Text;
@@ -60,6 +61,13 @@ namespace HavanaEditor.Components
         public Transform(GameEntity owner) : base(owner) { }
 
         public override IMSComponent GetMSComponent(MSEntity msEntity) => new MSTransform(msEntity);
+
+        public override void WriteToBinary(BinaryWriter bw)
+        {
+            bw.Write(position.X); bw.Write(position.Y); bw.Write(position.Z);
+            bw.Write(rotation.X); bw.Write(rotation.Y); bw.Write(rotation.Z);
+            bw.Write(scale.X); bw.Write(scale.Y); bw.Write(scale.Z);
+        }
     }
 
     sealed class MSTransform : MSComponent<Transform>

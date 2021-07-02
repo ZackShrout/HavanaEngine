@@ -11,7 +11,7 @@ namespace HavanaEditor.Components
         Script
     }
 
-    class ComponentFactory
+    static class ComponentFactory
     {
         // STATE
         private static readonly Func<GameEntity, object, Component>[] function = new Func<GameEntity, object, Component>[]
@@ -25,6 +25,16 @@ namespace HavanaEditor.Components
         {
             Debug.Assert((int)componentType < function.Length);
             return function[(int)componentType];
+        }
+
+        public static ComponentType ToEnumType(this Component component)
+        {
+            return component switch
+            {
+                Transform _ => ComponentType.Transform,
+                Script _ => ComponentType.Script,
+                _ => throw new ArgumentException("Uknown component type")
+            };
         }
     }
 }

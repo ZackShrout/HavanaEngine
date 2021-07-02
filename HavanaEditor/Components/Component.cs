@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -30,6 +31,12 @@ namespace HavanaEditor.Components
         /// <param name="msEntity">Entity to whom the component belongs.</param>
         /// <returns>MultiSelect component object.</returns>
         public abstract IMSComponent GetMSComponent(MSEntity msEntity);
+
+        /// <summary>
+        /// Writes the component to a binary file.
+        /// </summary>
+        /// <param name="bw">The binary writer to use.</param>
+        public abstract void WriteToBinary(BinaryWriter bw);
     }
 
     abstract class MSComponent<T> : ViewModelBase, IMSComponent where T : Component

@@ -160,6 +160,21 @@ namespace HavanaEditor.GameProject
             string configName = GetConfigurationName(StandAloneBuildConfig);
             string bin = $@"{Path}x64\{configName}\game.bin";
 
+            using (BinaryWriter bw = new BinaryWriter(File.Open(bin, FileMode.Create, FileAccess.Write)))
+            {
+                bw.Write(ActiveScene.GameEntities.Count);
+                foreach (GameEntity entity in ActiveScene.GameEntities)
+                {
+                    bw.Write(0); // entity type (reserved for later)
+                    bw.Write(entity.Components.Count);
+                    foreach (Component component in entity.Components)
+                    {
+                        bw.Write((int)component.ToEnumType());
+                        component.WriteToBinary(bw);
+                    }
+                }
+            }
+
         }
 
         private async Task BuildGameCodeDll(bool showWindow = true)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -30,6 +31,13 @@ namespace HavanaEditor.Components
         public Script(GameEntity owner) : base(owner) {}
 
         public override IMSComponent GetMSComponent(MSEntity msEntity) => new MSScript(msEntity);
+
+        public override void WriteToBinary(BinaryWriter bw)
+        {
+            byte[] nameBytes = Encoding.UTF8.GetBytes(Name);
+            bw.Write(nameBytes.Length);
+            bw.Write(nameBytes);
+        }
     }
 
     sealed class MSScript : MSComponent<Script>
