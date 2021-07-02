@@ -79,6 +79,9 @@ namespace HavanaEditor.GameProject
         public ICommand RemoveSceneCommand { get; private set; }
         public ICommand SaveCommand { get; private set; }
         public ICommand BuildCommand { get; private set; }
+        public ICommand DebugStartCommand { get; private set; }
+        public ICommand DebugStartWithoutDebuggingCommand { get; private set; }
+        public ICommand DebugStopCommand { get; private set; }
         public static UndoRedo UndoRedo { get; } = new UndoRedo();
         public BuildConfiguration StandAloneBuildConfig => BuildConfig == 0 ? BuildConfiguration.Debug : BuildConfiguration.Release;
         public BuildConfiguration DllBuildConfig => BuildConfig == 0 ? BuildConfiguration.DebugEditor : BuildConfiguration.ReleaseEditor;
@@ -152,6 +155,13 @@ namespace HavanaEditor.GameProject
             SetCommands();
         }
 
+        private void SaveToBinary()
+        {
+            string configName = GetConfigurationName(StandAloneBuildConfig);
+            string bin = $@"{Path}x64\{configName}\game.bin";
+
+        }
+
         private async Task BuildGameCodeDll(bool showWindow = true)
         {
             try
@@ -169,8 +179,20 @@ namespace HavanaEditor.GameProject
                 Logger.Log(MessageTypes.Error, "Failed to build game.");
                 throw;
             }
-
         }
+
+        private async Task RunGame(bool debug)
+        {
+            string configName = GetConfigurationName(StandAloneBuildConfig);
+            await Task.Run(() => VisualStudio.BuildSolution(this, configName, debug));
+            if (VisualStudio.BuildSucceeded)
+            {
+                SaveToBinary();
+                await Task.Run(() => VisualStudio.Run(this, configName, debug));
+            }
+        }
+
+        private async Task StopGame() => await Task.Run(() => VisualStudio.Stop());
 
         private void LoadGameCodeDll()
         {
@@ -240,7 +262,10 @@ namespace HavanaEditor.GameProject
             UndoCommand = new RelayCommand<object>(x => UndoRedo.Undo(), x => UndoRedo.UndoList.Any());
             RedoCommand = new RelayCommand<object>(x => UndoRedo.Redo(), x => UndoRedo.RedoList.Any());
             SaveCommand = new RelayCommand<object>(x => Save(this));
-            BuildCommand = new RelayCommand<bool>(async x => await BuildGameCodeDll(), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
+            BuildCommand = new RelayCommand<bool>(async x => await BuildGameCodeDll(false), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
+            DebugStartCommand = new RelayCommand<object>(async x => await RunGame(true), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
+            DebugStartWithoutDebuggingCommand = new RelayCommand<object>(async x => await RunGame(false), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
+            DebugStopCommand = new RelayCommand<object>(async x => await StopGame(), x => VisualStudio.IsDebugging());
 
             OnPropertyChanged(nameof(AddSceneCommand));
             OnPropertyChanged(nameof(RemoveSceneCommand));
@@ -248,6 +273,9 @@ namespace HavanaEditor.GameProject
             OnPropertyChanged(nameof(RedoCommand));
             OnPropertyChanged(nameof(SaveCommand));
             OnPropertyChanged(nameof(BuildCommand));
+            OnPropertyChanged(nameof(DebugStartCommand));
+            OnPropertyChanged(nameof(DebugStartWithoutDebuggingCommand));
+            OnPropertyChanged(nameof(DebugStopCommand));
         }
     }
 }

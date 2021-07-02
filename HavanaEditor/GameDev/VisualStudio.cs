@@ -198,7 +198,7 @@ namespace HavanaEditor.GameDev
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
-                    Logger.Log(MessageTypes.Error, $"Attempt {i}: failed to {project.Name}");
+                    Debug.WriteLine($"Attempt {i}: failed to buil {project.Name}.");
                     System.Threading.Thread.Sleep(1000);
                 }
             }
@@ -224,6 +224,22 @@ namespace HavanaEditor.GameDev
                 }
             }
             return result;
+        }
+
+        public static void Run(Project project, string configName, bool debug)
+        {
+            if (vsInstance != null && !IsDebugging() && BuildDone && BuildSucceeded)
+            {
+                vsInstance.ExecuteCommand(debug ? "Debug.Start" : "Debug.StartWithoutDebugging");
+            }
+        }
+
+        public static void Stop()
+        {
+            if (vsInstance != null && IsDebugging())
+            {
+                vsInstance.ExecuteCommand("Debug.StopDebugging");
+            }
         }
 
         // PRIVATE
