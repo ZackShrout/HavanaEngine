@@ -14,4 +14,5 @@ namespace Havana::Script
 
 	Component Create(InitInfo info, Entity::Entity entity);
 	void Remove(Component component);
+	void Update(float dt);
 }

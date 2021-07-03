@@ -34,8 +34,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
                 isRunning &= (msg.message != WM_QUIT);
-                EngineUpdate();
             }
+            EngineUpdate();
         }
         EngineShutdown();
         return 0;

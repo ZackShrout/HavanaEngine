@@ -1,10 +1,13 @@
-#include <fstream>
 #include "ContentLoader.h"
 #include "..\Components\Entity.h"
 #include "..\Components\Transform.h"
 #include "..\Components\Script.h"
 
 #ifndef SHIPPING
+#include <fstream>
+#include <filesystem>
+#include <Windows.h>
+
 
 namespace Havana::Content
 {
@@ -73,6 +76,15 @@ namespace Havana::Content
 
 	bool LoadGame()
 	{
+		// set the working directory to the executable path
+		wchar_t path[MAX_PATH];
+		const u32 length{ GetModuleFileName(0, &path[0], MAX_PATH) };
+
+	    if (!length || GetLastError() == ERROR_INSUFFICIENT_BUFFER) return false;
+		
+		std::filesystem::path p{ path };
+		SetCurrentDirectory(p.parent_path().wstring().c_str());
+	
 		// read game.bin and create entities
 		std::ifstream game("game.bin", std::ios::in | std::ios::binary);
 		Utils::vector<u8> buffer(std::istreambuf_iterator<char>(game), {});

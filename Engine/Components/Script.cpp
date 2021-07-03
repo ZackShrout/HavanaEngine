@@ -32,7 +32,7 @@ namespace Havana::Script
 		}
 #endif // USE_WITH_EDITOR
 
-		
+
 		bool Exists(script_id id)
 		{
 			assert(Id::IsValid(id));
@@ -70,7 +70,7 @@ namespace Havana::Script
 		}
 #endif // USE_WITH_EDITOR
 	} // detail namespace
-	
+
 	Component Create(InitInfo info, Entity::Entity entity)
 	{
 		assert(entity.IsValid());
@@ -109,6 +109,14 @@ namespace Havana::Script
 		Utils::EraseUnordered(entityScripts, index);
 		idMapping[Id::Index(lastID)] = index;
 		idMapping[Id::Index(id)] = Id::INVALID_ID;
+	}
+
+	void Update(float dt)
+	{
+		for (auto& ptr : entityScripts)
+		{
+			ptr->Update(dt);
+		}
 	}
 }
 
