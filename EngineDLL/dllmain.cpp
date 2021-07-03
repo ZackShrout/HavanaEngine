@@ -16,6 +16,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         // Debug flags that help check for memory leaks
         _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+        [[fallthrough]];
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:
