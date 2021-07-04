@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HavanaEditor.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -44,6 +45,11 @@ namespace HavanaEditor.Editors
         public ComponentView()
         {
             InitializeComponent();
+        }
+
+        private void OnExpander_Mouse_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Logger.Log(MessageTypes.Info, $"You double clicked on {sender}");
         }
     }
 }

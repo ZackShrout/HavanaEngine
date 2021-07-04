@@ -8,7 +8,7 @@ namespace Havana::Script
 		Utils::vector<Detail::script_ptr>		entityScripts;
 		Utils::vector<Id::id_type>				idMapping;
 		Utils::vector<Id::generation_type>		generations;
-		Utils::vector<script_id>				freeIDs;
+		Utils::deque<script_id>				freeIDs;
 
 		using script_registry = std::unordered_map<size_t, Detail::script_creator>;
 
@@ -81,7 +81,7 @@ namespace Havana::Script
 		{
 			id = freeIDs.front();
 			assert(!Exists(id));
-			freeIDs.pop_back();
+			freeIDs.pop_front();
 			id = script_id{ Id::NewGeneration(id) };
 			++generations[Id::Index(id)];
 		}

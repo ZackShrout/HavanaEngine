@@ -78,7 +78,6 @@ namespace Havana::Entity
 		assert(Id::IsValid(id));
 		const Id::id_type index{ Id::Index(id) };
 		assert(index < generations.size());
-		assert(generations[index] == Id::Generation(id));
 		return (generations[index] == Id::Generation(id) && transforms[index].IsValid());
 	}
 

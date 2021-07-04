@@ -150,7 +150,7 @@ namespace HavanaEditor.GameProject
             ActiveScene = Scenes.FirstOrDefault(x => x.IsActive);
             Debug.Assert(ActiveScene != null);
 
-            await BuildGameCodeDll(false); // build dll without showing the Visual Studio window.
+            await BuildGameCodeDll();
 
             SetCommands();
         }

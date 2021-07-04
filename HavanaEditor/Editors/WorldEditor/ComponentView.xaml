@@ -22,6 +22,7 @@
                 <Setter Property="Foreground" Value="{DynamicResource Editor.FontBrush}"/>
             </Style>
         </Expander.Style>
+
         <Expander.Header>
             <TextBlock Text ="{Binding Header, ElementName=componentView}" FontWeight="Bold"/>
         </Expander.Header>
