@@ -63,18 +63,42 @@ namespace Havana::Platform
 			return GetFromId(id);
 		}
 		
-		// "Extra" bytes for handling windows messages via callback
+		// Callback method for message handling
 		LRESULT CALLBACK internal_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		{
 			WindowInfo* info{ nullptr };
+
 			switch (msg)
 			{
 			case WM_DESTROY:
 				GetFromHandle(hwnd).isClosed = true;
 				break;
+			case WM_EXITSIZEMOVE:
+				info = &GetFromHandle(hwnd);
+				break;
+			case WM_SIZE:
+				if (wparam == SIZE_MAXIMIZED)
+				{
+					info = &GetFromHandle(hwnd);
+				}
+				break;
+			case WM_SYSCOMMAND:
+				if (wparam == SC_RESTORE)
+				{
+					info = &GetFromHandle(hwnd);
+				}
+				break;
+			default:
+				break;
+			}
 
+			if (info) // if not null, something changed that needs handling
+			{
+				assert(info->hwnd);
+				GetClientRect(info->hwnd, info->isFullscreen ? &info->fullScreenArea : &info->clientArea);
 			}
 			
+			// "Extra" bytes for handling windows messages via callback
 			LONG_PTR longPtr{ GetWindowLongPtr(hwnd, 0) };
 			return longPtr
 				? ((window_proc)longPtr)(hwnd, msg, wparam, lparam)
@@ -170,7 +194,7 @@ namespace Havana::Platform
 	/// </summary>
 	/// <param name="initInfo"> - Initialization information for the new window.</param>
 	/// <returns>A Havana::Platform::Window object.</returns>
-	Window MakeWindow(const WindowInitInfo* const initInfo /*= nullptr*/)
+	Window MakeWindow(const WindowInitInfo* const initInfo /*= nullptr*/) // NOTEL CreateWindow collides with Windows.h
 	{
 		window_proc callback{ initInfo ? initInfo->callback : nullptr };
 		window_handle parent{ initInfo ? initInfo->parent : nullptr };
@@ -225,6 +249,7 @@ namespace Havana::Platform
 
 		if (info.hwnd)
 		{
+			SetLastError(0);
 			const window_id id{ AddToWindows(info) };
 			// Include the window ID in the window class data structure
 			SetWindowLongPtr(info.hwnd, GWLP_USERDATA, (LONG_PTR)id);
