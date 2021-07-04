@@ -220,17 +220,19 @@ namespace Havana::Platform
 
 		// Create an instance of WindowInfo
 		WindowInfo info{};
-		RECT rc{ info.clientArea };
+		info.clientArea.right = (initInfo && initInfo->width) ? info.clientArea.left + initInfo->width : info.clientArea.right;
+		info.clientArea.bottom = (initInfo && initInfo->height) ? info.clientArea.top + initInfo->height : info.clientArea.bottom;
+		RECT rect{ info.clientArea };
 		
 		// Adjust the window size for correct device size
-		AdjustWindowRect(&rc, info.style, FALSE);
+		AdjustWindowRect(&rect, info.style, FALSE);
 
 		// check for initial info, use defaults if none given
 		const wchar_t* caption{ (initInfo && initInfo->caption) ? initInfo->caption : L"Havana Game" };
-		const s32 left{ (initInfo && initInfo->left) ? initInfo->left : info.clientArea.left };
-		const s32 top{ (initInfo && initInfo->top) ? initInfo->top : info.clientArea.top };
-		const s32 width{ (initInfo && initInfo->width) ? initInfo->width : rc.right - rc.left};
-		const s32 height{ (initInfo && initInfo->height) ? initInfo->height : rc.bottom - rc.top};
+		const s32 left{ initInfo ? initInfo->left : info.topLeft.x };
+		const s32 top{ initInfo ? initInfo->top : info.topLeft.y };
+		const s32 width{ rect.right - rect.left };
+		const s32 height{ rect.bottom - rect.top };
 		
 		info.style |= parent ? WS_CHILD : WS_OVERLAPPEDWINDOW;
 
@@ -249,7 +251,7 @@ namespace Havana::Platform
 
 		if (info.hwnd)
 		{
-			SetLastError(0);
+			DEBUG_OP(SetLastError(0));
 			const window_id id{ AddToWindows(info) };
 			// Include the window ID in the window class data structure
 			SetWindowLongPtr(info.hwnd, GWLP_USERDATA, (LONG_PTR)id);
@@ -277,9 +279,9 @@ namespace Havana::Platform
 		DestroyWindow(info.hwnd);
 		RemoveFromWindows(id);
 	}
-#elif define(__APPLE__)
+#elif __APPLE__
 	// OSX stuff here... open window for Metal context
-#elif define(__linux__)
+#elif __linux__
 	// Linux stuff here... open window for OpenGL or Vulkan context
 #elif
 #error Must implement at least one platform.
@@ -313,7 +315,7 @@ namespace Havana::Platform
 		SetWindowCaption(id, caption);
 	}
 
-	const Math::Vec4u32 Window::Size() const
+	Math::Vec4u32 Window::Size() const
 	{
 		assert(IsValid());
 		return GetWindowSize(id);
@@ -325,13 +327,13 @@ namespace Havana::Platform
 		ResizeWindow(id, width, height);
 	}
 
-	const u32 Window::Width() const
+	u32 Window::Width() const
 	{
 		Math::Vec4u32 size{ Size() };
 		return size.z - size.x;
 	}
 
-	const u32 Window::Height() const
+	u32 Window::Height() const
 	{
 		Math::Vec4u32 size{ Size() };
 		return size.w - size.y;

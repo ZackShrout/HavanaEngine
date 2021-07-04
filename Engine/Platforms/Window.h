@@ -18,10 +18,10 @@ namespace Havana::Platform
 		bool IsFullscreen() const;
 		void* Handle() const;
 		void SetCaption(const wchar_t* caption) const;
-		const Math::Vec4u32 Size() const;
+		Math::Vec4u32 Size() const;
 		void Resize(u32 width, u32 height) const;
-		const u32 Width() const;
-		const u32 Height() const;
+		u32 Width() const;
+		u32 Height() const;
 		bool IsClosed() const;
 
 	private:
