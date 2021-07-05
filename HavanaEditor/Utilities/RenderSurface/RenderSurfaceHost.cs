@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Input;
 using System.Windows.Interop;
 
 namespace HavanaEditor.Utilities
@@ -14,6 +15,7 @@ namespace HavanaEditor.Utilities
         private readonly int width = 800;
         private readonly int height = 600;
         private IntPtr renderWindowHandle = IntPtr.Zero;
+        private DelayEventTimer resizeTimer;
 
         // PROPERTIES
         public int SurfaceId { get; private set; } = ID.INVALID_ID;
@@ -23,6 +25,16 @@ namespace HavanaEditor.Utilities
         {
             this.width = (int)width;
             this.height = (int)height;
+            resizeTimer = new DelayEventTimer(TimeSpan.FromMilliseconds(250));
+            resizeTimer.Triggered += Resize;
+        }
+
+        /// <summary>
+        /// Resize the render surfaces in the host.
+        /// </summary>
+        public void Resize()
+        {
+            resizeTimer.Trigger();
         }
 
         // PROTECTED
@@ -43,6 +55,16 @@ namespace HavanaEditor.Utilities
             EngineAPI.RemoveRenderSurface(SurfaceId);
             SurfaceId = ID.INVALID_ID;
             renderWindowHandle = IntPtr.Zero;
+        }
+
+        // PRIVATE
+        private void Resize(object sender, DelayEventTimerArgs e)
+        {
+            e.RepeatEvent = Mouse.LeftButton == MouseButtonState.Pressed;
+            if (!e.RepeatEvent)
+            {
+                Logger.Log(MessageTypes.Info, "Resized");
+            }
         }
     }
 }

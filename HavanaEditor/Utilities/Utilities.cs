@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows.Threading;
 
 namespace HavanaEditor.Utilities
 {
@@ -39,6 +40,64 @@ namespace HavanaEditor.Utilities
         {
             if (!value.HasValue || !other.HasValue) return false;
             return Math.Abs(value.Value - other.Value) < Epsilon;
+        }
+    }
+
+    class DelayEventTimerArgs : EventArgs
+    {
+        // PROPERTIES
+        public bool RepeatEvent { get; set; }
+        public object Data { get; set; }
+
+        // PUBLIC
+        public DelayEventTimerArgs(object data)
+        {
+            Data = data;
+        }
+    }
+
+    class DelayEventTimer
+    {
+        // STATE
+        private readonly DispatcherTimer timer;
+        private readonly TimeSpan delay;
+        private DateTime lastEventTime = DateTime.Now;
+        private object data;
+
+        // EVENT HANDLERS
+        public event EventHandler<DelayEventTimerArgs> Triggered;
+
+        // PUBLIC
+        public DelayEventTimer(TimeSpan delay, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            this.delay = delay;
+            timer = new DispatcherTimer(priority)
+            {
+                Interval = TimeSpan.FromMilliseconds(delay.TotalMilliseconds * 0.5)
+            };
+            timer.Tick += OnTimerTick;
+        }
+
+        public void Trigger (object data = null)
+        {
+            this.data = data;
+            lastEventTime = DateTime.Now;
+            timer.IsEnabled = true;
+        }
+
+        public void Disable()
+        {
+            timer.IsEnabled = false;
+        }
+
+        // PRIVATE
+        private void OnTimerTick(object sender, EventArgs e)
+        {
+            if ((DateTime.Now - lastEventTime) < delay) return;
+
+            var eventArgs = new DelayEventTimerArgs(data);
+            Triggered?.Invoke(this, eventArgs);
+            timer.IsEnabled = eventArgs.RepeatEvent;
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -21,6 +22,14 @@ namespace HavanaEditor.Utilities
         // STATE
         private RenderSurfaceHost host = null;
 
+        private enum Win32Msg
+        {
+            WM_SIZE = 0x0005,
+            WM_ENTERSIZEMOVE = 0x0231,
+            WM_EXITSIZEMOVE = 0x0232,
+            WM_SIZING =0x0214
+        }
+
         // PUBLIC
         public RenderSurfaceView()
         {
@@ -34,7 +43,28 @@ namespace HavanaEditor.Utilities
             Loaded -= OnRenderSurfaceViewLoaded;
 
             host = new RenderSurfaceHost(ActualWidth, ActualHeight);
+            host.MessageHook += new HwndSourceHook(HostMsgFilter);
             Content = host;
+        }
+
+        private IntPtr HostMsgFilter(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            switch ((Win32Msg)msg)
+            {
+                case Win32Msg.WM_SIZE:
+                    host.Resize();
+                    break;
+                case Win32Msg.WM_ENTERSIZEMOVE:
+                    break;
+                case Win32Msg.WM_EXITSIZEMOVE:
+                    break;
+                case Win32Msg.WM_SIZING:
+                    break;
+                default:
+                    break;
+            }
+
+            return IntPtr.Zero;
         }
 
         #region IDisposable Support
