@@ -134,5 +134,14 @@ namespace HavanaEditor.DllWrapper
         /// <returns>Pointer to script creator.</returns>
         [DllImport(engineDll)]
         public static extern IntPtr GetScriptCreator(string name);
+
+        [DllImport(engineDll)]
+        public static extern int CreateRenderSurface(IntPtr host, int width, int height);
+
+        [DllImport(engineDll)]
+        public static extern void RemoveRenderSurface(int surfaceId);
+
+        [DllImport(engineDll)]
+        public static extern IntPtr GetWindowHandle(int surfaceId);
     }
 }

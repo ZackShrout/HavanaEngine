@@ -8,6 +8,9 @@
 #include <Windows.h>
 #include "Common.h"
 #include "..\Engine\Components\Script.h"
+#include "..\Graphics\Renderer.h"
+#include "..\Platforms\PlatformTypes.h"
+#include "..\Platforms\Platform.h"
 
 using namespace Havana;
 
@@ -18,6 +21,7 @@ namespace
 	get_script_creator GetScriptCreatorDll{ nullptr };
 	using get_script_names = LPSAFEARRAY(*)(void);
 	get_script_names GetScriptNamesDll{ nullptr };
+	Utils::vector<Graphics::RenderSurface> surfaces;
 } // anonymous namespace
 
 /// <summary>
@@ -73,4 +77,37 @@ EDITOR_INTERFACE Script::Detail::script_creator GetScriptCreator(const char* nam
 EDITOR_INTERFACE LPSAFEARRAY GetScriptNames()
 {
 	return (gameCodeDll && GetScriptNamesDll) ? GetScriptNamesDll() : nullptr;
+}
+
+/// <summary>
+/// Create a window to render graphics to in the editor.
+/// </summary>
+/// <param name="host"> - Host for the window.</param>
+/// <param name="width"> - Width of the window.</param>
+/// <param name="height"> - Height of the window.</param>
+/// <returns>ID of the window.</returns>
+EDITOR_INTERFACE u32 CreateRenderSurface(HWND host, s32 width, s32 height)
+{
+	assert(host);
+	Platform::WindowInitInfo info{ nullptr, host, nullptr, 0, 0, width, height };
+	Graphics::RenderSurface surface{ Platform::MakeWindow(&info), {} };
+	assert(surface.window.IsValid());
+	surfaces.emplace_back(surface);
+	return (u32)(surfaces.size() - 1);
+}
+
+/// <summary>
+/// Remove a graphics rendering window from the editor.
+/// </summary>
+/// <param name="id"> - ID of the window to remove.</param>
+EDITOR_INTERFACE void RemoveRenderSurface(u32 id)
+{
+	assert(id < surfaces.size());
+	Platform::RemoveWindow(surfaces[id].window.GetID());
+}
+
+EDITOR_INTERFACE HWND GetWindowHandle(u32 id)
+{
+	assert(id < surfaces.size());
+	return (HWND)(surfaces[id].window.Handle());
 }
