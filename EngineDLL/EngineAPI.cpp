@@ -111,3 +111,9 @@ EDITOR_INTERFACE HWND GetWindowHandle(u32 id)
 	assert(id < surfaces.size());
 	return (HWND)(surfaces[id].window.Handle());
 }
+
+EDITOR_INTERFACE void ResizeRenderSurface(u32 id)
+{
+	assert(id < surfaces.size());
+	surfaces[id].window.Resize(0, 0);
+}

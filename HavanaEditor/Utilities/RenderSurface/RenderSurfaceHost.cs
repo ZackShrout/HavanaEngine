@@ -63,7 +63,7 @@ namespace HavanaEditor.Utilities
             e.RepeatEvent = Mouse.LeftButton == MouseButtonState.Pressed;
             if (!e.RepeatEvent)
             {
-                Logger.Log(MessageTypes.Info, "Resized");
+                EngineAPI.ResizeRenderSurface(SurfaceId);
             }
         }
     }

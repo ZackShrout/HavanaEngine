@@ -53,7 +53,29 @@
                     <RowDefinition/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
-                <utl:RenderSurfaceView/>
+                
+                <!-- Render Windows -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                                  Background="Transparent" VerticalAlignment="Stretch"
+                                  HorizontalAlignment="Right" Width="5"/>
+                    <GridSplitter Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0"
+                                  Background="Transparent" VerticalAlignment="Top"
+                                  HorizontalAlignment="Stretch" Height="5"/>
+                    <utl:RenderSurfaceView Grid.Row="0" Grid.Column="0" Margin="0,0,5,0"/>
+                    <utl:RenderSurfaceView Grid.Row="0" Grid.Column="1" Margin="0,0,0,0"/>
+                    <utl:RenderSurfaceView Grid.Row="1" Grid.Column="0" Margin="0,5,5,0"/>
+                    <utl:RenderSurfaceView Grid.Row="1" Grid.Column="1" Margin="0,5,0,0"/>
+                </Grid>
+
                 <!--<Border Background="DarkBlue" Grid.ColumnSpan="2">
                     
                 </Border>-->

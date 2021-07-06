@@ -121,13 +121,23 @@ namespace Havana::Platform
 		void ResizeWindow(window_id id, u32 width, u32 height)
 		{
 			WindowInfo& info{ GetFromId(id) };
-			// NOTE: resize in fullscreen mode as well to support the case when 
-			// the user changes screen resolution
-			RECT& area{ info.isFullscreen ? info.fullScreenArea : info.clientArea };
-			area.bottom = area.top + height;
-			area.right = area.left + width;
 
-			ResizeWindow(info, area);
+			// NOTE: when we host a window in the level editor we just update
+			// the internal data (i.e. the client area dimensions).
+			if (info.style & WS_CHILD)
+			{
+				GetClientRect(info.hwnd, &info.clientArea);
+			}
+			else
+			{
+				// NOTE: resize in fullscreen mode as well to support the case when 
+				// the user changes screen resolution
+				RECT& area{ info.isFullscreen ? info.fullScreenArea : info.clientArea };
+				area.bottom = area.top + height;
+				area.right = area.left + width;
+
+				ResizeWindow(info, area);
+			}
 		}
 
 		void SetWindowFullscreen(window_id id, bool isFullscreen)

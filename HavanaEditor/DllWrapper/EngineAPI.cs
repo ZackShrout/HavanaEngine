@@ -143,5 +143,8 @@ namespace HavanaEditor.DllWrapper
 
         [DllImport(engineDll)]
         public static extern IntPtr GetWindowHandle(int surfaceId);
+
+        [DllImport(engineDll)]
+        public static extern void ResizeRenderSurface(int surfaceId);
     }
 }
