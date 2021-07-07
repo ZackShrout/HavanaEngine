@@ -14,6 +14,7 @@
 
 // COMMON HEADERS
 #include "PrimitiveTypes.h"
+#include "..\Utilities\Math.h"
 #include "..\Utilities\Utilities.h"
 #include "Id.h"
 #include "..\Utilities\MathTypes.h"

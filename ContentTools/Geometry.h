@@ -10,7 +10,7 @@ namespace Havana::Tools
 		Utils::vector<Math::Vec3>					normals;
 		Utils::vector<Math::Vec4>					tangents;
 		Utils::vector<Utils::vector<Math::Vec2>>	uvSets;
-		Utils::vector<u32>							rawInduces;
+		Utils::vector<u32>							rawIndices;
 
 		// Intermediate data
 
