@@ -6,6 +6,7 @@
 #endif // !WIN32_LEAN_AND_MEAN
 
 #include <Windows.h>
+#include <atlsafe.h>
 #include "Common.h"
 #include "..\Engine\Components\Script.h"
 #include "..\Graphics\Renderer.h"

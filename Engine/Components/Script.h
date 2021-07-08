@@ -2,9 +2,6 @@
 #include "ComponentsCommon.h"
 #include <atlsafe.h>
 
-
-
-
 namespace Havana::Script
 {
 	struct InitInfo

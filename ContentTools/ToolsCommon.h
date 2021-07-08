@@ -1,4 +1,6 @@
 #pragma once
+
+#include <combaseapi.h>
 #include "..\Common\CommonHeaders.h"
 
 #ifndef EDITOR_INTERFACE

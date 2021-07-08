@@ -34,7 +34,7 @@ namespace Havana::Tools
 
 		void ProcessNormals(Mesh& m, f32 smoothingAngle)
 		{
-			const f32 cosAngle{ XMScalarCos(pi - smoothingAngle * pi / 180.0f) };
+			const f32 cosAlpha{ XMScalarCos(pi - smoothingAngle * pi / 180.0f) };
 			const bool isHardEdge{ XMScalarNearEqual(smoothingAngle, 180.0f, epsilon) };
 			const bool isSoftEdge{ XMScalarNearEqual(smoothingAngle, 0.0f, epsilon) };
 			const u32 numIndices{ (u32)m.rawIndices.size() };
@@ -68,17 +68,17 @@ namespace Havana::Tools
 						for (u32 k{ j + 1 }; k < numRefs; k++)
 						{
 							// This value represents the cosine of the angle between the normals
-							f32 n{ 0.0f };
+							f32 cosTheta{ 0.0f };
 							XMVECTOR n2{ XMLoadFloat3(&m.normals[refs[k]]) };
 							if (!isSoftEdge)
 							{
 								// NOTE: n2 is already normalized, so it's lenth is 1, so we don't divide
 								// by it's length to get the cosine
 								// cos(angle) = dot(n1, n2) / (||n1|| * ||n2||)
-								XMStoreFloat(&n, XMVector3Dot(n1, n2) * XMVector3ReciprocalLength(n1));
+								XMStoreFloat(&cosTheta, XMVector3Dot(n1, n2) * XMVector3ReciprocalLength(n1));
 							}
 
-							if (isSoftEdge || n >= cosAngle)
+							if (isSoftEdge || cosTheta >= cosAlpha)
 							{
 								n1 += n2;
 								m.indices[refs[k]] = m.indices[refs[j]];
@@ -181,6 +181,110 @@ namespace Havana::Tools
 
 			PackVerticesStatic(m);
 		}
+
+		void PackMeshData(const Mesh& m, u8* const buffer, u64& at)
+		{
+			constexpr u32 su32{ sizeof(u32) };
+			u32 s{ 0 };
+
+			// Mesh name
+			s = (u32)m.name.size();
+			memcpy(&buffer[at], &s, su32); at += su32;
+			memcpy(&buffer[at], m.name.c_str(), s); at += s;
+			// LoD ID
+			s = m.lodID;
+			memcpy(&buffer[at], &s, su32); at += su32;
+			// Vertex size
+			constexpr u32 vertexSize{ sizeof(PackedVertex::VertexStatic) };
+			s = vertexSize;
+			memcpy(&buffer[at], &s, su32); at += su32;
+			// Number of vertices
+			const u32 numVertices{ (u32)m.vertices.size() };
+			s = numVertices;
+			memcpy(&buffer[at], &s, su32); at += su32;
+			// Index size (16 bit or 32 bit)
+			const u32 indexSize{ (numVertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
+			s = indexSize;
+			memcpy(&buffer[at], &s, su32); at += su32;
+			// Number of indices
+			const u32 numIndices{ (u32)m.indices.size() };
+			s = numIndices;
+			memcpy(&buffer[at], &s, su32); at += su32;
+			// LoD threshold
+			memcpy(&buffer[at], &m.lodThreshold, sizeof(f32)); at += sizeof(f32);
+			// Vertex data
+			s = vertexSize * numVertices;
+			memcpy(&buffer[at], m.packedVerticesStatic.data(), s); at += s;
+			// Index data
+			s = indexSize * numIndices;
+			void* data{ (void*)m.indices.data() };
+			Utils::vector<u16> indices;
+
+			if (indexSize == sizeof(u16))
+			{
+				indices.resize(numIndices);
+				for (u32 i{ 0 }; i < numIndices; i++)
+				{
+					indices[i] = (u16)m.indices[i];
+					data = (void*)indices.data();
+				}
+			}
+
+			memcpy(&buffer[at], data, s); at += s;
+		}
+
+		u64 GetMeshSize(const Mesh& m)
+		{
+			const u64 numVertices{ m.vertices.size() };
+			const u64 vertexBufferSize{ sizeof(PackedVertex::VertexStatic) * numVertices };
+			const u64 indexSize{ (numVertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
+			const u64 indexBufferSize{ indexSize * m.indices.size() };
+			constexpr u64 su32{ sizeof(u32) };
+			const u64 size
+			{
+				su32 +				// name length (number of characters)
+				m.name.size() +		// room for mesh name string
+				su32 +				// LoD id
+				su32 +				// vertex size
+				su32 +				// number of vertices
+				su32 +				// index size (16 bit or 32 bit)
+				su32 +				// number of indices
+				sizeof(f32) +		// LoD threshold
+				vertexBufferSize +	// room for the vertices
+				indexBufferSize		// room for the indices
+			};
+
+			return size;
+		}
+
+		u64 GetSceneSize(const Scene& scene)
+		{
+			constexpr u64 su32{ sizeof(u32) };
+			u64 size
+			{
+				su32 +				// name length (number of characters)
+				scene.name.size() +	// room for scene name string
+				su32				// number of LoDs
+			};
+
+			for (auto& lod : scene.lodGroups)
+			{
+				u64 lodSize
+				{
+					su32 + lod.name.size() +	// LoD name length (number of characters) and room for LoD name string
+					su32						// number of meshes in this LoD
+				};
+
+				for (auto& m : lod.meshes)
+				{
+					lodSize += GetMeshSize(m);
+				}
+
+				size += lodSize;
+			}
+
+			return size;
+		}
 	} // anonymous namespace
 
 	void ProcessScene(Scene& scene, GeometryImportSettings& settings)
@@ -196,6 +300,39 @@ namespace Havana::Tools
 
 	void PackData(const Scene& scene, SceneData& data)
 	{
+		constexpr u64 su32(sizeof(u32));
+		const u64 sceneSize{ GetSceneSize(scene) };
+		data.bufferSize = (u32)sceneSize;
+		data.buffer = (u8*)CoTaskMemAlloc(sceneSize);
+		assert(data.buffer);
+
+		u8* const buffer{ data.buffer };
+		u64 at{ 0 };
+		u32 s{ 0 };
+
+		// Scene name
+		s = (u32)scene.name.size();
+		memcpy(&buffer[at], &s, su32); at += su32;
+		memcpy(&buffer[at], scene.name.c_str(), s); at += s;
+		// Number of LoDs
+		s = (u32)scene.lodGroups.size();
+		memcpy(&buffer[at], &s, su32); at += su32;
+
+		for (auto& lod : scene.lodGroups)
+		{
+			// LoD name
+			s = (u32)lod.name.size();
+			memcpy(&buffer[at], &s, su32); at += su32;
+			memcpy(&buffer[at], lod.name.c_str(), s); at += s;
+			// Number of meshes in this LoD
+			s = (u32)lod.meshes.size();
+			memcpy(&buffer[at], &s, su32); at += su32;
+
+			for (auto& m : lod.meshes)
+			{
+				PackMeshData(m, buffer, at);
+			}
+		}
 
 	}
 }

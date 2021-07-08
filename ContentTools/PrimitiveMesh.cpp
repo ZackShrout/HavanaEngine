@@ -104,6 +104,8 @@ namespace Havana::Tools
 			const u32 numIndices{ 3 * 2 * horizontalCount * verticalCount };
 			assert(m.rawIndices.size() == numIndices);
 
+			m.uvSets.resize(1);
+
 			for (u32 i{ 0 }; i < numIndices; i++)
 			{
 				m.uvSets[0].emplace_back(uvs[m.rawIndices[i]]);
