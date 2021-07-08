@@ -78,7 +78,7 @@ namespace HavanaEditor.DllWrapper
                         }
                         else
                         {
-                            Logger.Log(MessageTypes.Error, $"Unable for find {component.Name} script.");
+                            Logger.Log(MessageType.Error, $"Unable for find {component.Name} script.");
                         }
                     }
                 }

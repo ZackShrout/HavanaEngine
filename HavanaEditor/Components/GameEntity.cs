@@ -129,7 +129,7 @@ namespace HavanaEditor.Components
                 IsActive = true;
                 return true;
             }
-            Logger.Log(MessageTypes.Warning, $"Entity {Name} already has a {component.GetType().Name} component.");
+            Logger.Log(MessageType.Warning, $"Entity {Name} already has a {component.GetType().Name} component.");
             return false;
         }
 

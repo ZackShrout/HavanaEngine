@@ -123,7 +123,7 @@ namespace HavanaEditor.GameProject
             catch(Exception e)
             {
                 Debug.WriteLine(e.Message);
-                Logger.Log(MessageTypes.Error, "Failed to read project templates.");
+                Logger.Log(MessageType.Error, "Failed to read project templates.");
                 throw;
             }
 
@@ -174,7 +174,7 @@ namespace HavanaEditor.GameProject
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
-                Logger.Log(MessageTypes.Error, $"Failed to create {ProjectName}");
+                Logger.Log(MessageType.Error, $"Failed to create {ProjectName}");
                 throw;
             }
         }

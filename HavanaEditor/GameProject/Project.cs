@@ -114,7 +114,7 @@ namespace HavanaEditor.GameProject
         public static void Save(Project project)
         {
             Serializer.ToFile<Project>(project, project.FullPath);
-            Logger.Log(MessageTypes.Info, $"Project saved to {project.FullPath}");
+            Logger.Log(MessageType.Info, $"Project saved to {project.FullPath}");
         }
 
         /// <summary>
@@ -191,7 +191,7 @@ namespace HavanaEditor.GameProject
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-                Logger.Log(MessageTypes.Error, "Failed to build game.");
+                Logger.Log(MessageType.Error, "Failed to build game.");
                 throw;
             }
         }
@@ -218,11 +218,11 @@ namespace HavanaEditor.GameProject
             {
                 AvailableScripts = EngineAPI.GetScriptNames();
                 ActiveScene.GameEntities.Where(x => x.GetComponent<Script>() != null).ToList().ForEach(x => x.IsActive = true);
-                Logger.Log(MessageTypes.Info, "Game code DLL loaded sucessfully.");
+                Logger.Log(MessageType.Info, "Game code DLL loaded sucessfully.");
             }
             else
             {
-                Logger.Log(MessageTypes.Warning, "Game code DLL did not load sucessfully. Did you build the project?");
+                Logger.Log(MessageType.Warning, "Game code DLL did not load sucessfully. Did you build the project?");
             }
 
         }
@@ -233,7 +233,7 @@ namespace HavanaEditor.GameProject
             ActiveScene.GameEntities.Where(x => x.GetComponent<Script>() != null).ToList().ForEach(x => x.IsActive = false);
             if (EngineAPI.UnloadGameCodeDll() != 0)
             {
-                Logger.Log(MessageTypes.Info, "Game code DLL unloaded sucessfully.");
+                Logger.Log(MessageType.Info, "Game code DLL unloaded sucessfully.");
                 AvailableScripts = null;
             }
         }

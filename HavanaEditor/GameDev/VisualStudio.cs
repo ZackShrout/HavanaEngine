@@ -80,7 +80,7 @@ namespace HavanaEditor.GameDev
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
-                Logger.Log(MessageTypes.Error, "Failed to open Visual Studio.");
+                Logger.Log(MessageType.Error, "Failed to open Visual Studio.");
             }
             finally
             {
@@ -147,7 +147,7 @@ namespace HavanaEditor.GameDev
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
-                Logger.Log(MessageTypes.Error, "Could not add files to solution.");
+                Logger.Log(MessageType.Error, "Could not add files to solution.");
                 return false;
             }
             
@@ -163,7 +163,7 @@ namespace HavanaEditor.GameDev
         {
             if (IsDebugging())
             {
-                Logger.Log(MessageTypes.Error, "Visual Studio is currently running a process.");
+                Logger.Log(MessageType.Error, "Visual Studio is currently running a process.");
                 return;
             }
 
@@ -251,15 +251,15 @@ namespace HavanaEditor.GameDev
         
         private static void OnBuildSolutionBegin(string project, string projectConfig, string platform, string solutionConfig)
         {
-            Logger.Log(MessageTypes.Info, $"Building: {project}, {projectConfig}, {platform}, {solutionConfig}");
+            Logger.Log(MessageType.Info, $"Building: {project}, {projectConfig}, {platform}, {solutionConfig}");
         }
 
         private static void OnBuildSolutionDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
         {
             if (BuildDone) return;
 
-            if (success) Logger.Log(MessageTypes.Info, $"Building {projectConfig} configuration succeeded.");
-            else Logger.Log(MessageTypes.Error, $"Building {projectConfig} configuration failed.");
+            if (success) Logger.Log(MessageType.Info, $"Building {projectConfig} configuration succeeded.");
+            else Logger.Log(MessageType.Error, $"Building {projectConfig} configuration failed.");
 
             BuildDone = true;
             BuildSucceeded = success;

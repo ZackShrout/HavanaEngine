@@ -78,10 +78,10 @@
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Foreground" Value="LightGreen"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding MessageType}" Value="{x:Static local:MessageTypes.Warning}">
+                                            <DataTrigger Binding="{Binding MessageType}" Value="{x:Static local:MessageType.Warning}">
                                                 <Setter Property="Foreground" Value="#ffffbb22"/>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding MessageType}" Value="{x:Static local:MessageTypes.Error}">
+                                            <DataTrigger Binding="{Binding MessageType}" Value="{x:Static local:MessageType.Error}">
                                                 <Setter Property="Foreground" Value="#ffff4455"/>
                                             </DataTrigger>
                                         </Style.Triggers>

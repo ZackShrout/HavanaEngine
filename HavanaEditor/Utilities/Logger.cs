@@ -12,7 +12,7 @@ namespace HavanaEditor.Utilities
     /// <summary>
     /// Message types.
     /// </summary>
-    enum MessageTypes
+    enum MessageType
     {
         Info = 0x01,
         Warning = 0x02,
@@ -26,7 +26,7 @@ namespace HavanaEditor.Utilities
     {
         // PROPERTIES
         public DateTime Time { get; }
-        public MessageTypes MessageType { get; }
+        public MessageType MessageType { get; }
         public string Message { get; }
         public string File { get; }
         public string Caller { get; }
@@ -34,7 +34,7 @@ namespace HavanaEditor.Utilities
         public string MetaData => $"{File}: {Caller} ({Line})";
 
         // PUBLIC
-        public LogMessage(MessageTypes type, string message, string file, string caller, int line)
+        public LogMessage(MessageType type, string message, string file, string caller, int line)
         {
             Time = DateTime.Now;
             MessageType = type;
@@ -51,7 +51,7 @@ namespace HavanaEditor.Utilities
     static class Logger
     {
         // STATE
-        private static int messageFilter = (int)(MessageTypes.Info | MessageTypes.Warning | MessageTypes.Error);
+        private static int messageFilter = (int)(MessageType.Info | MessageType.Warning | MessageType.Error);
         private static readonly ObservableCollection<LogMessage> messages = new ObservableCollection<LogMessage>();
 
         // PROPERTIES
@@ -76,7 +76,7 @@ namespace HavanaEditor.Utilities
         /// <param name="file">Path of the file the log is called from.</param>
         /// <param name="caller">Name of the caller the log is being called from.</param>
         /// <param name="line">Line of code the log is being called from.</param>
-        public static async void Log(MessageTypes type, string message, [CallerFilePath]string file = "", [CallerMemberName]string caller = "",
+        public static async void Log(MessageType type, string message, [CallerFilePath]string file = "", [CallerMemberName]string caller = "",
             [CallerLineNumber]int line = 0)
         {
             await Application.Current.Dispatcher.BeginInvoke(new Action(() =>

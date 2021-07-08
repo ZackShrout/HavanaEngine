@@ -71,7 +71,7 @@ namespace HavanaEditor.GameProject
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
-                Logger.Log(MessageTypes.Error, $"Failed to open read project data.");
+                Logger.Log(MessageType.Error, $"Failed to open read project data.");
                 throw;
             }
         }

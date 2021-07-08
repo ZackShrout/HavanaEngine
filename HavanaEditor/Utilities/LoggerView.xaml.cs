@@ -33,15 +33,15 @@ namespace HavanaEditor.Utilities
             int filter = 0x0;
             if (toggleInfo.IsChecked == true)
             {
-                filter |= (int)MessageTypes.Info;
+                filter |= (int)MessageType.Info;
             }
             if (toggleWarning.IsChecked == true)
             {
-                filter |= (int)MessageTypes.Warning;
+                filter |= (int)MessageType.Warning;
             }
             if (toggleError.IsChecked == true)
             {
-                filter |= (int)MessageTypes.Error;
+                filter |= (int)MessageType.Error;
             }
             Logger.SetFilter(filter);
         }

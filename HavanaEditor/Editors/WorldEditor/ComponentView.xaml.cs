@@ -49,7 +49,7 @@ namespace HavanaEditor.Editors
 
         private void OnExpander_Mouse_DoubleClick(object sender, MouseButtonEventArgs e)
         {
-            Logger.Log(MessageTypes.Info, $"You double clicked on {sender}");
+            Logger.Log(MessageType.Info, $"You double clicked on {sender}");
         }
     }
 }

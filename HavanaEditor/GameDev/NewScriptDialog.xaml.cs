@@ -151,7 +151,7 @@ namespace {1}
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-                Logger.Log(MessageTypes.Error, $"Failed to create sript {scriptName.Text}");
+                Logger.Log(MessageType.Error, $"Failed to create sript {scriptName.Text}");
             }
             finally
             {
