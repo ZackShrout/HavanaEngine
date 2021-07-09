@@ -334,5 +334,6 @@ namespace Havana::Tools
 			}
 		}
 
+		assert(sceneSize == at);
 	}
 }

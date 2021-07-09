@@ -23,8 +23,6 @@ namespace HavanaEditor.Utilities
     {
         // STATE
         private RenderSurfaceHost host = null;
-        private bool canResize = true;
-        private bool moved = false;
 
         private enum Win32Msg
         {
@@ -49,40 +47,6 @@ namespace HavanaEditor.Utilities
             host = new RenderSurfaceHost(ActualWidth, ActualHeight);
             host.MessageHook += new HwndSourceHook(HostMsgFilter);
             Content = host;
-
-            Window window = this.FindVisualParent<Window>();
-            Debug.Assert(window != null);
-            WindowInteropHelper helper = new WindowInteropHelper(window);
-
-            if (helper.Handle != null)
-            {
-                HwndSource.FromHwnd(helper.Handle)?.AddHook(HwndMessageHook);
-            }
-        }
-
-        private IntPtr HwndMessageHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            switch ((Win32Msg)msg)
-            {
-                case Win32Msg.WM_ENTERSIZEMOVE:
-                    moved = false;
-                    break;
-                case Win32Msg.WM_EXITSIZEMOVE:
-                    canResize = true;
-                    if (!moved)
-                    {
-                        host.Resize();
-                    }
-                    break;
-                case Win32Msg.WM_SIZING:
-                    canResize = false;
-                    moved = false;
-                    break;
-                default:
-                    break;
-            }
-
-            return IntPtr.Zero;
         }
 
         private IntPtr HostMsgFilter(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -90,10 +54,6 @@ namespace HavanaEditor.Utilities
             switch ((Win32Msg)msg)
             {
                 case Win32Msg.WM_SIZE:
-                    if (canResize)
-                    {
-                        host.Resize();
-                    }
                     break;
                 case Win32Msg.WM_ENTERSIZEMOVE:
                     break;

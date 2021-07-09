@@ -33,7 +33,7 @@ namespace // anonymous namespace
 			XMVECTOR quat{ XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3A(&rot)) };
 			XMFLOAT4A rotQuat{};
 			XMStoreFloat4A(&rotQuat, quat);
-			memcpy(&info.rotation[0], &rotQuat.x, sizeof(rotation));
+			memcpy(&info.rotation[0], &rotQuat.x, sizeof(info.rotation));
 
 			return info;
 		}

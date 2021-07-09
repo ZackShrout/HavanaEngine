@@ -1,4 +1,5 @@
-﻿using HavanaEditor.GameDev;
+﻿using HavanaEditor.Content;
+using HavanaEditor.GameDev;
 using HavanaEditor.GameProject;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,12 @@ namespace HavanaEditor.Editors
         private void OnNewScript_Button_Click(object sender, RoutedEventArgs e)
         {
             new NewScriptDialog().ShowDialog();
+        }
+
+        private void OnCreatePrimitiveMesh_Button_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new PrimitiveMeshDialog();
+            dlg.ShowDialog();
         }
     }
 }

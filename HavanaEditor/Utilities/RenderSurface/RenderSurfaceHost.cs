@@ -12,6 +12,7 @@ namespace HavanaEditor.Utilities
     class RenderSurfaceHost : HwndHost
     {
         // STATE
+        private readonly int VK_LBUTTON = 0x01;
         private readonly int width = 800;
         private readonly int height = 600;
         private IntPtr renderWindowHandle = IntPtr.Zero;
@@ -27,14 +28,7 @@ namespace HavanaEditor.Utilities
             this.height = (int)height;
             resizeTimer = new DelayEventTimer(TimeSpan.FromMilliseconds(250));
             resizeTimer.Triggered += Resize;
-        }
-
-        /// <summary>
-        /// Resize the render surfaces in the host.
-        /// </summary>
-        public void Resize()
-        {
-            resizeTimer.Trigger();
+            SizeChanged += (s, e) => resizeTimer.Trigger();
         }
 
         // PROTECTED
@@ -60,11 +54,14 @@ namespace HavanaEditor.Utilities
         // PRIVATE
         private void Resize(object sender, DelayEventTimerArgs e)
         {
-            e.RepeatEvent = Mouse.LeftButton == MouseButtonState.Pressed;
+            e.RepeatEvent = GetAsyncKeyState(VK_LBUTTON) < 0;
             if (!e.RepeatEvent)
             {
                 EngineAPI.ResizeRenderSurface(SurfaceId);
             }
         }
+
+        [DllImport("user32.dll")]
+        private static extern short GetAsyncKeyState(int vKey);
     }
 }
