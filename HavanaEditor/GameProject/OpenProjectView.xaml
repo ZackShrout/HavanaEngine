@@ -11,7 +11,7 @@
         <local:OpenProject/>
     </UserControl.DataContext>
     <Border CornerRadius="3" 
-            Background="{DynamicResource Editor.Window.GreyBrush3}"
+            Background="{StaticResource Editor.Window.GreyBrush3}"
             Width="700" HorizontalAlignment="Center" Margin="0,30">
         <StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"

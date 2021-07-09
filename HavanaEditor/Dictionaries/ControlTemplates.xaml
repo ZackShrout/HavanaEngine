@@ -4,18 +4,16 @@
                     xmlns:local="clr-namespace:HavanaEditor.Dictionaries"
                     xmlns:utl="clr-namespace:HavanaEditor.Utilities.Controls">
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style TargetType="{x:Type TextBlock}" x:Key="LightTextBlockStyle">
-        <Setter Property="Foreground" Value="{DynamicResource Editor.FontBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource Editor.FontBrush}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
     </Style>
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style TargetType="{x:Type TextBox}" x:Key="TextBoxStyle">
-        <Setter Property="Foreground" Value="{DynamicResource Editor.FontBrush}"/>
-        <Setter Property="Background" Value="{DynamicResource Editor.Window.GreyBrush2}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource Editor.Window.GreyBrush4}"/>
+        <Setter Property="Foreground" Value="{StaticResource Editor.FontBrush}"/>
+        <Setter Property="Background" Value="{StaticResource Editor.Window.GreyBrush2}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource Editor.Window.GreyBrush4}"/>
         <Setter Property="SelectionBrush" Value="White"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
@@ -31,19 +29,17 @@
         <EventSetter Event="LostFocus" Handler="OnTextBoxRename_LostFocus"/>
     </Style>
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style x:Key="FocusVisual">
         <Setter Property="Control.Template">
             <Setter.Value>
                 <ControlTemplate>
                     <Rectangle Margin="2" StrokeDashArray="1 2" SnapsToDevicePixels="true" StrokeThickness="1" 
-                                   Stroke="{DynamicResource Editor.FontBrush}"/>
+                                   Stroke="{StaticResource Editor.FontBrush}"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style TargetType="{x:Type ListBoxItem}" x:Key="ListBoxItemStyle">
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Padding" Value="4,2,0,2" />
@@ -75,7 +71,7 @@
                                 <Condition Property="IsSelected" Value="True" />
                             </MultiTrigger.Conditions>
                             <Setter TargetName="Bd" Property="Background" 
-                                        Value="{DynamicResource Editor.Window.GreyBrush4}" />
+                                        Value="{StaticResource Editor.Window.GreyBrush4}" />
                         </MultiTrigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -83,7 +79,7 @@
                                 <Condition Property="IsSelected" Value="True" />
                             </MultiTrigger.Conditions>
                             <Setter TargetName="Bd" Property="Background" 
-                                        Value="{DynamicResource Editor.Selected.BackgroundBrush}" />
+                                        Value="{StaticResource Editor.Selected.BackgroundBrush}" />
                         </MultiTrigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -93,7 +89,7 @@
                             </MultiTrigger.Conditions>
                             <Setter TargetName="Bd" Property="Background">
                                 <Setter.Value>
-                                    <SolidColorBrush Color="{DynamicResource Editor.Selected.BackgroundColor}"
+                                    <SolidColorBrush Color="{StaticResource Editor.Selected.BackgroundColor}"
                                                          Opacity="0.5"/>
                                 </Setter.Value>
                             </Setter>
@@ -105,11 +101,11 @@
                                 <Condition Property="IsSelected" Value="False" />
                             </MultiTrigger.Conditions>
                             <Setter TargetName="Bd" Property="Background" 
-                                        Value="{DynamicResource Editor.Window.GreyBrush4}" />
+                                        Value="{StaticResource Editor.Window.GreyBrush4}" />
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Bd" Property="TextElement.Foreground" 
-                                        Value="{DynamicResource Editor.Disabled.FontBrush}"/>
+                                        Value="{StaticResource Editor.Disabled.FontBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -117,13 +113,12 @@
         </Setter>
     </Style>
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style TargetType="{x:Type ListBox}">
         <Setter Property="ItemContainerStyle" Value="{StaticResource ListBoxItemStyle}"/>
-        <Setter Property="Background" Value="{DynamicResource Editor.Window.GreyBrush2}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource Editor.Window.GreyBrush4}"/>
+        <Setter Property="Background" Value="{StaticResource Editor.Window.GreyBrush2}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource Editor.Window.GreyBrush4}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Foreground" Value="{DynamicResource Editor.FontBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource Editor.FontBrush}"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
@@ -144,13 +139,13 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="Selector.IsSelectionActive" Value="True">
                             <Setter Property="BorderBrush" TargetName="Bd" 
-                                        Value="{DynamicResource Editor.Selected.BackgroundBrush}"/>
+                                        Value="{StaticResource Editor.Selected.BackgroundBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Background" TargetName="Bd" 
-                                        Value="{DynamicResource Editor.Window.GreyBrush2}"/>
+                                        Value="{StaticResource Editor.Window.GreyBrush2}"/>
                             <Setter Property="BorderBrush" TargetName="Bd" 
-                                        Value="{DynamicResource Editor.Window.GreyBrush4}"/>
+                                        Value="{StaticResource Editor.Window.GreyBrush4}"/>
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -158,7 +153,7 @@
                                 <Condition Property="IsMouseOver" Value="True"/>
                             </MultiTrigger.Conditions>
                             <Setter Property="BorderBrush" TargetName="Bd" 
-                                        Value="{DynamicResource Editor.Selected.BackgroundBrush}"/>
+                                        Value="{StaticResource Editor.Selected.BackgroundBrush}"/>
                         </MultiTrigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -174,26 +169,25 @@
         </Setter>
     </Style>
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style TargetType="{x:Type Button}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="{DynamicResource Editor.Window.GreyColor5}" Offset="0"/>
-                    <GradientStop Color="{DynamicResource Editor.Window.GreyColor4}" Offset="1"/>
+                    <GradientStop Color="{StaticResource Editor.Window.GreyColor5}" Offset="0"/>
+                    <GradientStop Color="{StaticResource Editor.Window.GreyColor4}" Offset="1"/>
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
         <Setter Property="BorderBrush">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="{DynamicResource Editor.Window.GreyColor6}" Offset="0"/>
-                    <GradientStop Color="{DynamicResource Editor.Window.GreyColor2}" Offset="1"/>
+                    <GradientStop Color="{StaticResource Editor.Window.GreyColor6}" Offset="0"/>
+                    <GradientStop Color="{StaticResource Editor.Window.GreyColor2}" Offset="1"/>
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
-        <Setter Property="Foreground" Value="{DynamicResource Editor.FontBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource Editor.FontBrush}"/>
         <Setter Property="BorderThickness" Value="0,1"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -213,12 +207,12 @@
                             <GradientStop Color="#88ffffff" Offset="0"/>
                         </LinearGradientBrush>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1"  x:Key="Button.Disabled.BackgroundBrush">
-                            <GradientStop Color="{DynamicResource Editor.Window.GreyColor4}" Offset="0"/>
-                            <GradientStop Color="{DynamicResource Editor.Window.GreyColor3}" Offset="1"/>
+                            <GradientStop Color="{StaticResource Editor.Window.GreyColor4}" Offset="0"/>
+                            <GradientStop Color="{StaticResource Editor.Window.GreyColor3}" Offset="1"/>
                         </LinearGradientBrush>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1"  x:Key="Button.Disabled.BorderBrush">
-                            <GradientStop Color="{DynamicResource Editor.Window.GreyColor5}" Offset="0"/>
-                            <GradientStop Color="{DynamicResource Editor.Window.GreyColor1}" Offset="1"/>
+                            <GradientStop Color="{StaticResource Editor.Window.GreyColor5}" Offset="0"/>
+                            <GradientStop Color="{StaticResource Editor.Window.GreyColor1}" Offset="1"/>
                         </LinearGradientBrush>
                     </ControlTemplate.Resources>
                     <Grid>
@@ -236,23 +230,23 @@
 
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsDefaulted" Value="true">
-                            <Setter Property="Background" TargetName="borderSelected" Value="{DynamicResource Editor.Selected.BackgroundBrush}"/>
-                            <Setter Property="OpacityMask" TargetName="borderSelected" Value="{DynamicResource Button.Selected.OpacityBrush}"/>
+                            <Setter Property="Background" TargetName="borderSelected" Value="{StaticResource Editor.Selected.BackgroundBrush}"/>
+                            <Setter Property="OpacityMask" TargetName="borderSelected" Value="{StaticResource Button.Selected.OpacityBrush}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
                             <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="White"/>
-                            <Setter Property="Background" TargetName="borderSelected" Value="{DynamicResource Editor.Selected.BackgroundBrush}"/>
-                            <Setter Property="OpacityMask" TargetName="borderSelected" Value="{DynamicResource Button.Selected.OpacityBrush}"/>
+                            <Setter Property="Background" TargetName="borderSelected" Value="{StaticResource Editor.Selected.BackgroundBrush}"/>
+                            <Setter Property="OpacityMask" TargetName="borderSelected" Value="{StaticResource Button.Selected.OpacityBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
                             <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="White"/>
-                            <Setter Property="Background" TargetName="borderSelected" Value="{DynamicResource Editor.Selected.BackgroundBrush}"/>
-                            <Setter Property="OpacityMask" TargetName="borderSelected" Value="{DynamicResource Button.Pressed.OpacityBrush}"/>
+                            <Setter Property="Background" TargetName="borderSelected" Value="{StaticResource Editor.Selected.BackgroundBrush}"/>
+                            <Setter Property="OpacityMask" TargetName="borderSelected" Value="{StaticResource Button.Pressed.OpacityBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
-                            <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{DynamicResource Editor.Disabled.FontBrush}"/>
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Button.Disabled.BackgroundBrush}"/>
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource Button.Disabled.BorderBrush}"/>
+                            <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource Editor.Disabled.FontBrush}"/>
+                            <Setter Property="Background" TargetName="border" Value="{StaticResource Button.Disabled.BackgroundBrush}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.Disabled.BorderBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -260,11 +254,10 @@
         </Setter>
     </Style>
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style TargetType="Button" x:Key="SimpleButton">
-        <Setter Property="Background" Value="{DynamicResource Editor.Window.GreyBrush3}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource Editor.Window.GreyBrush5}"/>
-        <Setter Property="Foreground" Value="{DynamicResource Editor.FontBrush}"/>
+        <Setter Property="Background" Value="{StaticResource Editor.Window.GreyBrush3}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource Editor.Window.GreyBrush5}"/>
+        <Setter Property="Foreground" Value="{StaticResource Editor.FontBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -283,7 +276,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource Editor.Window.GreyBrush5}"/>
+                            <Setter Property="Background" TargetName="border" Value="{StaticResource Editor.Window.GreyBrush5}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -291,10 +284,9 @@
         </Setter>
     </Style>
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style TargetType="{x:Type Window}" x:Key="HavanaWindowStyle">
-        <Setter Property="BorderBrush" Value="{DynamicResource Editor.Selected.BackgroundBrush}"/>
-        <Setter Property="Background" Value="{DynamicResource Editor.Window.GreyBrush1}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource Editor.Selected.BackgroundBrush}"/>
+        <Setter Property="Background" Value="{StaticResource Editor.Window.GreyBrush1}"/>
         <Setter Property="WindowChrome.WindowChrome">
             <Setter.Value>
                 <WindowChrome CornerRadius="0"
@@ -343,7 +335,7 @@
                                 </DockPanel.Resources>
                                 <TextBlock Margin="5,2,0,0" VerticalAlignment="Center"
                                            DockPanel.Dock="Left" FontWeight="Bold"
-                                           Foreground="{DynamicResource Editor.FontBrush}"
+                                           Foreground="{StaticResource Editor.FontBrush}"
                                            Text="{TemplateBinding Title}"/>
                                 <Button x:Name="closeButton" Click="OnClose_Button_Click">
                                     <Button.Content>
@@ -355,13 +347,13 @@
                                 </Button>
                                 <Button x:Name="restoreButton" Click="OnMaximizeRestore_Button_Click">
                                     <Button.Content>
-                                        <Rectangle Stroke="{DynamicResource Editor.FontBrush}" StrokeThickness="1"
+                                        <Rectangle Stroke="{StaticResource Editor.FontBrush}" StrokeThickness="1"
                                                        Width="10" Height="8"/>
                                     </Button.Content>
                                 </Button>
                                 <Button x:Name="minimizeButton" Click="OnMinimize_Button_Click">
                                     <Button.Content>
-                                        <Rectangle Stroke="{DynamicResource Editor.FontBrush}" StrokeThickness="1"
+                                        <Rectangle Stroke="{StaticResource Editor.FontBrush}" StrokeThickness="1"
                                                        Width="10" Height="1" Margin="0,4,0,0"/>
                                     </Button.Content>
                                 </Button>
@@ -373,10 +365,9 @@
         </Setter>
     </Style>
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style TargetType="{x:Type Window}" x:Key="HavanaDialogStyle">
-        <Setter Property="BorderBrush" Value="{DynamicResource Editor.Selected.BackgroundBrush}"/>
-        <Setter Property="Background" Value="{DynamicResource Editor.Window.GreyBrush1}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource Editor.Selected.BackgroundBrush}"/>
+        <Setter Property="Background" Value="{StaticResource Editor.Window.GreyBrush1}"/>
         <Setter Property="WindowChrome.WindowChrome">
             <Setter.Value>
                 <WindowChrome CornerRadius="0"
@@ -425,7 +416,7 @@
                                 </DockPanel.Resources>
                                 <TextBlock Margin="5,2,0,0" VerticalAlignment="Center"
                                            DockPanel.Dock="Left" FontWeight="Bold"
-                                           Foreground="{DynamicResource Editor.FontBrush}"
+                                           Foreground="{StaticResource Editor.FontBrush}"
                                            Text="{TemplateBinding Title}"/>
                                 <Button x:Name="closeButton" Click="OnClose_Button_Click">
                                     <Button.Content>
@@ -443,7 +434,6 @@
         </Setter>
     </Style>
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style TargetType="{x:Type utl:NumberBox}" x:Key="{x:Type utl:NumberBox}">
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
@@ -466,14 +456,14 @@
                         <TextBox x:Name="PART_textBox" BorderThickness="0" Padding="0"
                                  Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, UpdateSourceTrigger=Explicit}"
                                  Foreground="{TemplateBinding Foreground}" Visibility="Collapsed"
-                                 Style="{DynamicResource TextBoxStyle_WithRename}" HorizontalContentAlignment="Center" HorizontalAlignment="Center"/>
+                                 Style="{StaticResource TextBoxStyle_WithRename}" HorizontalContentAlignment="Center" HorizontalAlignment="Center"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <DataTrigger Binding="{Binding Visibility, ElementName=PART_textBox}" Value="Visible">
                             <Setter Property="Visibility" TargetName="PART_textBlock" Value="Collapsed"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
-                            <Setter Property="Background" TargetName="PART_textBlock" Value="{DynamicResource Editor.Disabled.FontBrush}"/>
+                            <Setter Property="Background" TargetName="PART_textBlock" Value="{StaticResource Editor.Disabled.FontBrush}"/>
                             <Setter Property="ToolTip" TargetName="PART_textBlock" Value="Mixed values"/>
                             <Setter Property="MinWidth" TargetName="PART_textBlock" Value="20"/>
                         </DataTrigger>
@@ -483,11 +473,10 @@
         </Setter>
     </Style>
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style TargetType="{x:Type utl:VectorBox}" x:Key="{x:Type utl:VectorBox}">
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-        <Setter Property="Background" Value="{DynamicResource Editor.Window.GreyBrush2}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource Editor.Window.GreyBrush5}"/>
+        <Setter Property="Background" Value="{StaticResource Editor.Window.GreyBrush2}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource Editor.Window.GreyBrush5}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -517,13 +506,13 @@
                                 <RowDefinition x:Name="rowDefinition2"/>
                                 <RowDefinition x:Name="rowDefinition3"/>
                             </Grid.RowDefinitions>
-                            <utl:NumberBox x:Name="nBX" Foreground="{DynamicResource Editor.RedBrush}" Value="{Binding X, RelativeSource={RelativeSource TemplatedParent}}"
+                            <utl:NumberBox x:Name="nBX" Foreground="{StaticResource Editor.RedBrush}" Value="{Binding X, RelativeSource={RelativeSource TemplatedParent}}"
                                            ToolTip="X value"/>
-                            <utl:NumberBox x:Name="nBY" Foreground="{DynamicResource Editor.GreenBrush}" Value="{Binding Y, RelativeSource={RelativeSource TemplatedParent}}"
+                            <utl:NumberBox x:Name="nBY" Foreground="{StaticResource Editor.GreenBrush}" Value="{Binding Y, RelativeSource={RelativeSource TemplatedParent}}"
                                            ToolTip="Y value"/>
-                            <utl:NumberBox x:Name="nBZ" Foreground="{DynamicResource Editor.BlueBrush}" Value="{Binding Z, RelativeSource={RelativeSource TemplatedParent}}"
+                            <utl:NumberBox x:Name="nBZ" Foreground="{StaticResource Editor.BlueBrush}" Value="{Binding Z, RelativeSource={RelativeSource TemplatedParent}}"
                                            ToolTip="Z value"/>
-                            <utl:NumberBox x:Name="nBW" Foreground="{DynamicResource Editor.FontBrush}" Value="{Binding W, RelativeSource={RelativeSource TemplatedParent}}"
+                            <utl:NumberBox x:Name="nBW" Foreground="{StaticResource Editor.FontBrush}" Value="{Binding W, RelativeSource={RelativeSource TemplatedParent}}"
                                            ToolTip="W value" Visibility="Collapsed"/>
                         </Grid>
                     </Border>
@@ -561,7 +550,7 @@
                             <Setter Property="Visibility" TargetName="nBW" Value="Visible"/>
                         </DataTrigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource Editor.Window.GreyBrush6}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Editor.Window.GreyBrush6}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" TargetName="grid" Value="0.5"/>
@@ -572,12 +561,11 @@
         </Setter>
     </Style>
 
-    <!-- TODO: change this back to a static resource once Visual Studio fixes the bug -->
     <Style TargetType="{x:Type utl:ScalarBox}" x:Key="{x:Type utl:ScalarBox}">
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-        <Setter Property="Foreground" Value="{DynamicResource Editor.FontBrush}"/>
-        <Setter Property="Background" Value="{DynamicResource Editor.Window.GreyBrush2}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource Editor.Window.GreyBrush5}"/>
+        <Setter Property="Foreground" Value="{StaticResource Editor.FontBrush}"/>
+        <Setter Property="Background" Value="{StaticResource Editor.Window.GreyBrush2}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource Editor.Window.GreyBrush5}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="ToolTipService.InitialShowDelay" Value="3000"/>
         <Setter Property="ToolTipService.BetweenShowDelay" Value="1000"/>
@@ -604,12 +592,12 @@
                             <TextBox x:Name="PART_textBox" BorderThickness="0" Padding="0"
                                  Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, UpdateSourceTrigger=Explicit}"
                                  Foreground="{TemplateBinding Foreground}" Visibility="Collapsed"
-                                 Style="{DynamicResource TextBoxStyle_WithRename}" HorizontalContentAlignment="Center" HorizontalAlignment="Center"/>
+                                 Style="{StaticResource TextBoxStyle_WithRename}" HorizontalContentAlignment="Center" HorizontalAlignment="Center"/>
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource Editor.Window.GreyBrush6}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Editor.Window.GreyBrush6}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" TargetName="grid" Value="0.5"/>
@@ -618,7 +606,7 @@
                             <Setter Property="Visibility" TargetName="PART_textBlock" Value="Collapsed"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
-                            <Setter Property="Background" TargetName="PART_textBlock" Value="{DynamicResource Editor.Disabled.FontBrush}"/>
+                            <Setter Property="Background" TargetName="PART_textBlock" Value="{StaticResource Editor.Disabled.FontBrush}"/>
                             <Setter Property="ToolTip" TargetName="PART_textBlock" Value="Mixed values"/>
                             <Setter Property="MinWidth" TargetName="PART_textBlock" Value="20"/>
                         </DataTrigger>

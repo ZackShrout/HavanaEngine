@@ -8,10 +8,10 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Style>
         <Style TargetType="{x:Type UserControl}">
-            <Setter Property="Background" Value="{DynamicResource Editor.Window.GreyBrush3}"/>
+            <Setter Property="Background" Value="{StaticResource Editor.Window.GreyBrush3}"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource Editor.Window.GreyBrush4}"/>
+                    <Setter Property="Background" Value="{StaticResource Editor.Window.GreyBrush4}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -19,7 +19,7 @@
     <Expander IsExpanded="True">
         <Expander.Style>
             <Style TargetType="{x:Type Expander}">
-                <Setter Property="Foreground" Value="{DynamicResource Editor.FontBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource Editor.FontBrush}"/>
             </Style>
         </Expander.Style>
 
