@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace HavanaEditor.Content
@@ -135,16 +137,31 @@ namespace HavanaEditor.Content
     
     class Geometry : Asset
     {
+        // STATE
+        private readonly List<LoDGroup> lodGroups = new List<LoDGroup>();
+        
         // PUBLIC
         public Geometry() : base(AssetType.Mesh)
         {
         }
-
-        // INTERNAL
-        internal void FromRawData(byte[] data)
+        
+        public void FromRawData(byte[] data)
         {
             Debug.Assert(data?.Length > 0);
 
+            lodGroups.Clear();
+
+            using BinaryReader reader = new BinaryReader(new MemoryStream(data));
+            // Skip scene name string
+            var s = reader.ReadInt32();
+            reader.BaseStream.Position += s;
+        }
+
+        public LoDGroup GetLoDGroup(int lodGroup = 0)
+        {
+            Debug.Assert(lodGroup >= 0 && lodGroup < lodGroups.Count);
+
+            return lodGroups.Any() ? lodGroups[lodGroup] : null;
         }
     }
 }
