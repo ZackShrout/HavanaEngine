@@ -33,7 +33,9 @@ namespace HavanaEditor.Utilities.Controls
 
         // CONFIG DATA
         public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(nameof(Value), typeof(string), typeof(NumberBox),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+            new PropertyChangedCallback(OnValueChanged)));
+
         public static readonly DependencyProperty MultiplierProperty = DependencyProperty.Register(nameof(Multiplier), typeof(double), typeof(NumberBox),
             new FrameworkPropertyMetadata(1.0));
 
@@ -112,6 +114,11 @@ namespace HavanaEditor.Utilities.Controls
             multiplier = 0.01;
             mouseXStart = e.GetPosition(this).X;
             Focus();
+        }
+        
+        private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            (d as NumberBox).RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
         }
     }
 }
