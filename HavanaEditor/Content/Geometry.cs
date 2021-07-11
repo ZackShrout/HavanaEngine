@@ -229,7 +229,7 @@ namespace HavanaEditor.Content
             mesh.VertexSize = reader.ReadInt32();
             mesh.VertexCount = reader.ReadInt32();
             mesh.IndexSize = reader.ReadInt32();
-            mesh.VertexCount = reader.ReadInt32();
+            mesh.IndexCount = reader.ReadInt32();
             float lodThreshold = reader.ReadSingle();
 
             int vertexBufferSize = mesh.VertexSize * mesh.VertexCount;

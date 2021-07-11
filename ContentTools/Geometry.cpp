@@ -10,7 +10,7 @@ namespace Havana::Tools
 		void RecalculateNormals(Mesh& m)
 		{
 			const u32 numIndices{ (u32)m.rawIndices.size() };
-			m.normals.reserve(numIndices);
+			m.normals.resize(numIndices);
 
 			for (u32 i{ 0 }; i < numIndices; i++)
 			{
@@ -83,8 +83,8 @@ namespace Havana::Tools
 								n1 += n2;
 								m.indices[refs[k]] = m.indices[refs[j]];
 								refs.erase(refs.begin() + k);
-								--numRefs;
-								--k;
+								numRefs--;
+								k--;
 							}
 						}
 					}
@@ -97,7 +97,7 @@ namespace Havana::Tools
 		{
 			Utils::vector<Vertex> oldVertices;
 			oldVertices.swap(m.vertices);
-			Utils::vector<u32> oldIndices;
+			Utils::vector<u32> oldIndices(m.indices.size());
 			oldIndices.swap(m.indices);
 			const u32 numIndices{ (u32)oldIndices.size() };
 			const u32 numVertices{ (u32)oldVertices.size() };
@@ -111,7 +111,7 @@ namespace Havana::Tools
 				idxRef[oldIndices[i]].emplace_back(i);
 			}
 
-			for (u32 i{ 0 }; i < numIndices; i++)
+			for (u32 i{ 0 }; i < numVertices; i++)
 			{
 				auto& refs{ idxRef[i] };
 				u32 numRefs{ (u32)refs.size() };
@@ -132,8 +132,8 @@ namespace Havana::Tools
 						{
 							m.indices[refs[k]] = m.indices[refs[j]];
 							refs.erase(refs.begin() + k);
-							--numRefs;
-							--k;
+							numRefs--;
+							k--;
 						}
 					}
 				}
@@ -184,7 +184,7 @@ namespace Havana::Tools
 
 		void PackMeshData(const Mesh& m, u8* const buffer, u64& at)
 		{
-			constexpr u32 su32{ sizeof(u32) };
+			constexpr u64 su32{ sizeof(u32) };
 			u32 s{ 0 };
 
 			// Mesh name
@@ -287,7 +287,7 @@ namespace Havana::Tools
 		}
 	} // anonymous namespace
 
-	void ProcessScene(Scene& scene, GeometryImportSettings& settings)
+	void ProcessScene(Scene& scene, const GeometryImportSettings& settings)
 	{
 		for (auto& lod : scene.lodGroups)
 		{

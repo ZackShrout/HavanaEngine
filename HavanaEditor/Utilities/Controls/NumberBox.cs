@@ -81,7 +81,7 @@ namespace HavanaEditor.Utilities.Controls
                     else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) multiplier = 0.1;
                     else multiplier = 0.01;
                     double newValue = originalValue + (difference * multiplier * Multiplier);
-                    Value = newValue.ToString("0.#####");
+                    Value = newValue.ToString("G5");
                     valueChanged = true;
                 }
             }

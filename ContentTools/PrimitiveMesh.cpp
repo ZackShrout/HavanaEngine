@@ -98,7 +98,7 @@ namespace Havana::Tools
 					m.rawIndices.emplace_back(index[flipWinding ? 3 : 1]);
 					m.rawIndices.emplace_back(index[flipWinding ? 1 : 3]);
 				}
-				k++;
+				++k;
 			}
 
 			const u32 numIndices{ 3 * 2 * horizontalCount * verticalCount };

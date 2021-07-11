@@ -60,16 +60,16 @@ namespace HavanaEditor.Editors
     {
         public ObservableCollection<MeshRendererVertexData> Meshes { get; } = new ObservableCollection<MeshRendererVertexData>();
 
-        private Vector3D cameraDirections = new Vector3D(0, 0, -10);
-        public Vector3D CameraDirections
+        private Vector3D cameraDirection = new Vector3D(0, 0, -10);
+        public Vector3D CameraDirection
         {
-            get => cameraDirections;
+            get => cameraDirection;
             set
             {
-                if (cameraDirections != value)
+                if (cameraDirection != value)
                 {
-                    cameraDirections = value;
-                    OnPropertyChanged(nameof(CameraDirections));
+                    cameraDirection = value;
+                    OnPropertyChanged(nameof(CameraDirection));
                 }
             }
         }
@@ -83,6 +83,7 @@ namespace HavanaEditor.Editors
                 if (cameraPosition != value)
                 {
                     cameraPosition = value;
+                    CameraDirection = new Vector3D(-value.X, -value.Y, -value.Z);
                     OnPropertyChanged(nameof(CameraPosition));
                     OnPropertyChanged(nameof(OffsetCameraPosition));
                 }
@@ -211,15 +212,11 @@ namespace HavanaEditor.Editors
                     }
                 }
                 // Unpack all indices
-                using(var reader = new BinaryReader(new MemoryStream(mesh.Indices)))
-                {
+                using (var reader = new BinaryReader(new MemoryStream(mesh.Indices)))
                     if (mesh.IndexSize == sizeof(short))
-                        for (int i = 0; i < mesh.IndexCount; i++)
-                            vertexData.Indices.Add(reader.ReadUInt16());
+                        for (int i = 0; i < mesh.IndexCount; i++) vertexData.Indices.Add(reader.ReadUInt16());
                     else
-                        for (int i = 0; i < mesh.IndexCount; i++)
-                            vertexData.Indices.Add(reader.ReadInt32());
-                }
+                        for (int i = 0; i < mesh.IndexCount; i++) vertexData.Indices.Add(reader.ReadInt32());
 
                 vertexData.Positions.Freeze();
                 vertexData.Normals.Freeze();

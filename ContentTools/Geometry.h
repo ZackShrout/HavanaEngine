@@ -73,6 +73,6 @@ namespace Havana::Tools
 		GeometryImportSettings	settings;
 	};
 
-	void ProcessScene(Scene& scene, GeometryImportSettings& settings);
+	void ProcessScene(Scene& scene, const GeometryImportSettings& settings);
 	void PackData(const Scene& scene, SceneData& data);
 }
