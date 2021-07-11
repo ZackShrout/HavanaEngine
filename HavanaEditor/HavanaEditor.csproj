@@ -20,6 +20,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\PrimitiveMeshView\UVTest1.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <COMReference Include="EnvDTE80">
       <WrapperTool>tlbimp</WrapperTool>
       <VersionMinor>0</VersionMinor>
@@ -45,6 +49,10 @@
     <Folder Include="ProjectTemplates\FirstPersonProject\" />
     <Folder Include="ProjectTemplates\TopDownProject\" />
     <Folder Include="ProjectTemplates\ThirdPersonProject\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\PrimitiveMeshView\UVTest1.png" />
   </ItemGroup>
 
 </Project>

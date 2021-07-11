@@ -4,6 +4,7 @@ using HavanaEditor.Editors;
 using HavanaEditor.Utilities.Controls;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,10 +22,44 @@ namespace HavanaEditor.Content
     /// </summary>
     public partial class PrimitiveMeshDialog : Window
     {
+        // STATE
+        private static readonly List<ImageBrush> textures = new List<ImageBrush>();
+        
+        // PUBLIC
         public PrimitiveMeshDialog()
         {
             InitializeComponent();
             Loaded += (s, e) => UpdatePrimitive();
+        }
+        
+        static PrimitiveMeshDialog()
+        {
+            LoadTextures();
+        }
+
+        // PRIVATE
+        private static void LoadTextures()
+        {
+            List<Uri> uris = new List<Uri>
+            {
+                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/UVTest1.png")
+            };
+
+            textures.Clear();
+
+            foreach (var uri in uris)
+            {
+                var resource = Application.GetResourceStream(uri);
+                using BinaryReader reader = new BinaryReader(resource.Stream);
+                byte[] data = reader.ReadBytes((int)resource.Stream.Length);
+                BitmapSource imageSource = (BitmapSource)new ImageSourceConverter().ConvertFrom(data);
+                imageSource.Freeze();
+                ImageBrush brush = new ImageBrush(imageSource);
+                brush.Transform = new ScaleTransform(1, -1, 0.5, 0.5);
+                brush.ViewportUnits = BrushMappingMode.Absolute;
+                brush.Freeze();
+                textures.Add(brush);
+            }
         }
 
         private void OnPrimitiveType_Combobox_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdatePrimitive();
@@ -49,14 +84,19 @@ namespace HavanaEditor.Content
                     info.Size.Z = Value(lengthScalarBoxPlane, 0.001f);
                     break;
                 case PrimitiveMeshType.Cube:
+                    return;
                     break;
                 case PrimitiveMeshType.UVSphere:
+                    return;
                     break;
                 case PrimitiveMeshType.ICOSphere:
+                    return;
                     break;
                 case PrimitiveMeshType.Cylinder:
+                    return;
                     break;
                 case PrimitiveMeshType.Capsule:
+                    return;
                     break;
                 default:
                     break;
@@ -65,12 +105,29 @@ namespace HavanaEditor.Content
             Geometry geometry = new Geometry();
             ContentToolsAPI.CreatePrimitiveMesh(geometry, info);
             (DataContext as GeometryEditor).SetAsset(geometry);
+            OnTexture_Checkbox_Click(textureCheckBox, null);
         }
 
         private float Value(ScalarBox scalarBox, float min)
         {
             float.TryParse(scalarBox.Value, out float result);
             return Math.Max(result, min);
+        }
+
+        private void OnTexture_Checkbox_Click(object sender, RoutedEventArgs e)
+        {
+            Brush brush = Brushes.White;
+
+            if ((sender as CheckBox).IsChecked == true)
+            {
+                brush = textures[(int)primTypeComboBox.SelectedItem];
+            }
+
+            GeometryEditor viewModel = DataContext as GeometryEditor;
+            foreach (var mesh in viewModel.MeshRenderer.Meshes)
+            {
+                mesh.Diffuse = brush;
+            }
         }
     }
 }

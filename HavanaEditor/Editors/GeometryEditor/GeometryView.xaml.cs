@@ -108,6 +108,8 @@ namespace HavanaEditor.Editors
                 double yOffset = difference.Y * 0.001 * Math.Sqrt((cameraPosition.X * cameraPosition.X) + (cameraPosition.Z * cameraPosition.Z));
                 viewModel.CameraTarget = new Point3D(viewModel.CameraTarget.X, viewModel.CameraTarget.Y + yOffset, viewModel.CameraTarget.Z);
             }
+
+            clickedPosition = position;
         }
 
         private void OnGrid_Mouse_LBU(object sender, MouseButtonEventArgs e)
@@ -119,22 +121,42 @@ namespace HavanaEditor.Editors
 
         private void OnGrid_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-
+            MoveCamera(0, 0, Math.Sign(e.Delta));
         }
 
         private void OnGrid_Mouse_RBD(object sender, MouseButtonEventArgs e)
         {
-
+            clickedPosition = e.GetPosition(this);
+            capturedRight = true;
+            Mouse.Capture(sender as UIElement);
         }
 
         private void OnGrid_Mouse_RBU(object sender, MouseButtonEventArgs e)
         {
+            capturedRight = false;
 
+            if (!capturedLeft) Mouse.Capture(null);
         }
         
-        private void MoveCamera(double x, double y, int v)
+        private void MoveCamera(double dx, double dy, int dz)
         {
-            // TODO: implement
+            MeshRenderer viewModel = DataContext as MeshRenderer;
+            Vector3D vector = new Vector3D(viewModel.CameraPosition.X, viewModel.CameraPosition.Y, viewModel.CameraPosition.Z);
+
+            double r = vector.Length;
+            double theta = Math.Acos(vector.Y / r);
+            double phi = Math.Atan2(-vector.Z, vector.X);
+
+            theta -= dy * 0.01;
+            phi -= dx * 0.01;
+            r *= 1.0 - 0.1 * dz; // dz is either +1 or -1
+            theta = Math.Clamp(theta, 0.0001, Math.PI - 0.0001);
+
+            vector.X = r * Math.Sin(theta) * Math.Cos(phi);
+            vector.Y = r * Math.Cos(theta);
+            vector.Z = -r * Math.Sin(theta) * Math.Sin(phi);
+
+            viewModel.CameraPosition = new Point3D(vector.X, vector.Y, vector.Z);
         }
     }
 }

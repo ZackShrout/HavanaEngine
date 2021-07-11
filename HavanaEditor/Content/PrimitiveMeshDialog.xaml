@@ -36,6 +36,9 @@
                           ItemsSource="{Binding Source={StaticResource dataFromEnum}}"
                           x:Name="primTypeComboBox"
                           SelectionChanged="OnPrimitiveType_Combobox_SelectionChanged"/>
+                <CheckBox x:Name="textureCheckBox" Content="Show Textured" VerticalAlignment="Center"
+                          Margin="5,0" IsChecked="true" Foreground="{StaticResource Editor.FontBrush}"
+                          Click="OnTexture_Checkbox_Click"/>
             </StackPanel>
         </Border>
 
