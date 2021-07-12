@@ -136,12 +136,111 @@ namespace HavanaEditor.Content
         }
         public ObservableCollection<MeshLoD> LoDs { get; } = new ObservableCollection<MeshLoD>();
     }
+
+    class GeometryImportSettings : ViewModelBase
+    {
+        // STATE
+        private float smoothingAngle;
+        private bool calculateNormals;
+        private bool calculateTangents;
+        private bool reverseHandedness;
+        private bool importEmbededTextures;
+        private bool importAnimations;
+        
+        // PROPERTIES
+        public float SmoothingAngle
+        {
+            get => smoothingAngle;
+            set
+            {
+                if (smoothingAngle != value)
+                {
+                    smoothingAngle = value;
+                    OnPropertyChanged(nameof(SmoothingAngle));
+                }
+            }
+        }
+        public bool CalculateNormals
+        {
+            get => calculateNormals;
+            set
+            {
+                if (calculateNormals != value)
+                {
+                    calculateNormals = value;
+                    OnPropertyChanged(nameof(CalculateNormals));
+                }
+            }
+        }
+        public bool CalculateTangents
+        {
+            get => calculateTangents;
+            set
+            {
+                if (calculateTangents != value)
+                {
+                    calculateTangents = value;
+                    OnPropertyChanged(nameof(CalculateTangents));
+                }
+            }
+        }
+        public bool ReverseHandedness
+        {
+            get => reverseHandedness;
+            set
+            {
+                if (reverseHandedness != value)
+                {
+                    reverseHandedness = value;
+                    OnPropertyChanged(nameof(ReverseHandedness));
+                }
+            }
+        }
+        public bool ImportEmbededTextures
+        {
+            get => importEmbededTextures;
+            set
+            {
+                if (importEmbededTextures != value)
+                {
+                    importEmbededTextures = value;
+                    OnPropertyChanged(nameof(ImportEmbededTextures));
+                }
+            }
+        }
+        public bool ImportAnimations
+        {
+            get => importAnimations;
+            set
+            {
+                if (importAnimations != value)
+                {
+                    importAnimations = value;
+                    OnPropertyChanged(nameof(ImportAnimations));
+                }
+            }
+        }
+
+        // PUBLIC
+        public GeometryImportSettings()
+        {
+            SmoothingAngle = 178.0f;
+            CalculateNormals = false;
+            CalculateTangents = false;
+            ReverseHandedness = false;
+            ImportEmbededTextures = true;
+            ImportAnimations = true;
+        }
+    }
     
     class Geometry : Asset
     {
         // STATE
         private readonly List<LoDGroup> lodGroups = new List<LoDGroup>();
-        
+
+        // PROPERTIES
+        public GeometryImportSettings ImportSettings { get; } = new GeometryImportSettings();
+
         // PUBLIC
         public Geometry() : base(AssetType.Mesh)
         {

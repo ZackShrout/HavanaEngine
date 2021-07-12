@@ -4,6 +4,7 @@
 namespace Havana::Math
 {
 	constexpr float pi = 3.1415926535897932384626433832795f;
+	constexpr float twoPi = 2.0f * pi;
 	constexpr float epsilon = 1e-5f;
 
 #if defined (_WIN64)

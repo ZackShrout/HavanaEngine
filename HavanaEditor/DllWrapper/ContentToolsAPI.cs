@@ -18,6 +18,21 @@ namespace HavanaEditor.ContentToolsAPIStructs
 		public byte ReverseHandedness = 0;
 		public byte ImportEmbededTextures = 1;
 		public byte ImportAnimations = 1;
+
+        // PUBLIC
+        public void FromContentSettings(Content.Geometry geometry)
+        {
+            var settings = geometry.ImportSettings;
+            SmoothingAngle = settings.SmoothingAngle;
+            CalculateNormals = ToByte(settings.CalculateNormals);
+            CalculateTangents = ToByte(settings.CalculateTangents);
+            ReverseHandedness = ToByte(settings.ReverseHandedness);
+            ImportEmbededTextures = ToByte(settings.ImportEmbededTextures);
+            ImportAnimations = ToByte(settings.ImportAnimations);
+        }
+
+        // PRIVATE
+        private byte ToByte(bool value) => (byte)(value ? 1 : 0);
     }
 
 
@@ -26,7 +41,7 @@ namespace HavanaEditor.ContentToolsAPIStructs
     {
         public IntPtr Data;
         public int DataSize;
-        public GeometryImportSettings Settings = new GeometryImportSettings();
+        public GeometryImportSettings ImportSettings = new GeometryImportSettings();
 
         ~SceneData()
         {
@@ -72,6 +87,8 @@ namespace HavanaEditor.DllWrapper
             using SceneData sceneData = new SceneData();
             try
             {
+                sceneData.ImportSettings.FromContentSettings(geometry);
+                
                 CreatePrimitiveMesh(sceneData, info);
                 
                 Debug.Assert(sceneData.Data != IntPtr.Zero && sceneData.DataSize > 0);

@@ -42,7 +42,9 @@ namespace HavanaEditor.Content
         {
             List<Uri> uris = new List<Uri>
             {
-                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/UVTest1.png")
+                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/PlaneTexture.png"),
+                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/UVTest1.png"),
+                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/Checkermap.png"),
             };
 
             textures.Clear();
@@ -74,6 +76,7 @@ namespace HavanaEditor.Content
 
             PrimitiveMeshType primitiveType = (PrimitiveMeshType)primTypeComboBox.SelectedItem;
             PrimitiveInitInfo info = new PrimitiveInitInfo() { Type = primitiveType };
+            int smoothingAngle = 0;
 
             switch (primitiveType)
             {
@@ -85,24 +88,26 @@ namespace HavanaEditor.Content
                     break;
                 case PrimitiveMeshType.Cube:
                     return;
-                    break;
                 case PrimitiveMeshType.UVSphere:
-                    return;
+                    info.SegmentX = (int)xSliderUVSphere.Value;
+                    info.SegmentY = (int)ySliderUVSphere.Value;
+                    info.Size.X = Value(xScalarBoxUVSphere, 0.001f);
+                    info.Size.Y = Value(yScalarBoxUVSphere, 0.001f);
+                    info.Size.Z = Value(zScalarBoxUVSphere, 0.001f);
+                    smoothingAngle = (int)angleSliderUVSphere.Value;
                     break;
                 case PrimitiveMeshType.ICOSphere:
                     return;
-                    break;
                 case PrimitiveMeshType.Cylinder:
                     return;
-                    break;
                 case PrimitiveMeshType.Capsule:
                     return;
-                    break;
                 default:
                     break;
             }
 
             Geometry geometry = new Geometry();
+            geometry.ImportSettings.SmoothingAngle = smoothingAngle;
             ContentToolsAPI.CreatePrimitiveMesh(geometry, info);
             (DataContext as GeometryEditor).SetAsset(geometry);
             OnTexture_Checkbox_Click(textureCheckBox, null);

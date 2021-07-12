@@ -6,7 +6,9 @@
              xmlns:local="clr-namespace:HavanaEditor.Editors"
              xmlns:utl="clr-namespace:HavanaEditor.Utilities"
              xmlns:ctrl="clr-namespace:HavanaEditor.Utilities.Controls"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib" 
+             xmlns:gameproject="clr-namespace:HavanaEditor.GameProject" 
+             d:DataContext="{d:DesignInstance Type=gameproject:Project}"
              mc:Ignorable="d" Focusable="True"
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>

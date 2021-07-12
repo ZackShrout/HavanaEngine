@@ -6,6 +6,7 @@ namespace Havana::Tools
 	namespace
 	{
 		using namespace Math;
+		using namespace DirectX;
 		using primitive_mesh_creator = void(*)(Scene&, const PrimitiveInitInfo& info);
 
 		void CreatePlane(Scene& scene, const PrimitiveInitInfo& info);
@@ -114,6 +115,152 @@ namespace Havana::Tools
 			return m;
 		}
 
+		Mesh CreateUVSphere(const PrimitiveInitInfo& info)
+		{
+			const u32 phiCount{ clamp(info.segments[Axis::x], 3u, 64u) };
+			const u32 thetaCount{ clamp(info.segments[Axis::y], 2u, 64u) };
+			const f32 thetaStep{ pi / thetaCount };
+			const f32 phiStep{ twoPi / phiCount };
+			const u32 numVertices{ 2 + phiCount * (thetaCount - 1) };
+			const u32 numIndices{ 2 * 3 * phiCount + 2 * 3 * phiCount * (thetaCount - 2) };
+
+			Mesh m{};
+			m.name = "uvSphere";
+			m.positions.resize(numVertices);
+
+			// Add top vertex
+			u32 c{ 0 };
+			m.positions[c++] = { 0.0f, info.size.y, 0.0f };
+
+			// Add the body of the vertices
+			for (u32 j{ 1 }; j < thetaCount; j++)
+			{
+				const f32 theta{ j * thetaStep };
+				for (u32 i{ 0 }; i < phiCount; i++)
+				{
+					const f32 phi{ i * phiStep };
+					m.positions[c++] =
+					{
+						info.size.x * XMScalarSin(theta) * XMScalarCos(phi),
+						info.size.y * XMScalarCos(theta),
+						-info.size.z * XMScalarSin(theta) * XMScalarSin(phi)
+					};
+				}
+			}
+
+			// Add bottom vertex
+			m.positions[c++] = { 0.0f, -info.size.y, 0.0f };
+			
+			assert(numVertices == c);
+
+			c = 0;
+			m.rawIndices.resize(numIndices);
+			Utils::vector<Vec2> uvs(numIndices);
+			const f32 inverseThetaCount{ 1.0f / thetaCount };
+			const f32 inversePhiCount{ 1.0f / phiCount };
+
+			// Indices for top cap, connecting the north pole to the first ring
+			// UV Coords at the same time
+			for (u32 i{ 0 }; i < (phiCount - 1); i++)
+			{
+				uvs[c] = { (2 * i + 1) * 0.5f * inversePhiCount, 1.0f };
+				m.rawIndices[c++] = 0;
+				uvs[c] = { i * inversePhiCount, 1.0f - inverseThetaCount };
+				m.rawIndices[c++] = i + 1;
+				uvs[c] = { (i + 1) * inversePhiCount, 1.0f - inverseThetaCount };
+				m.rawIndices[c++] = i + 2;
+			}
+			
+			uvs[c] = { 1.0f - 0.5f * inversePhiCount, 1.0f };
+			m.rawIndices[c++] = 0;
+			uvs[c] = { 1.0f - inversePhiCount, 1.0f - inverseThetaCount };
+			m.rawIndices[c++] = phiCount;
+			uvs[c] = { 1.0f, 1.0f - inverseThetaCount };
+			m.rawIndices[c++] = 1;
+
+			// Indices for the section between the top and bottom rings
+			// UV Coords at the same time
+			for (u32 j{ 0 }; j < (thetaCount - 2); j++)
+			{
+				for (u32 i{ 0 }; i < (phiCount - 1); i++)
+				{
+					const u32 index[4]
+					{
+						1 + i + j * phiCount,
+						1 + i + (j + 1) * phiCount,
+						1 + (i + 1) + (j + 1) * phiCount,
+						1 + (i + 1) + j * phiCount
+					};
+
+					// Triangle 1
+					uvs[c] = { i * inversePhiCount, 1.0f - (j + 1) * inverseThetaCount };
+					m.rawIndices[c++] = index[0];
+					uvs[c] = { i * inversePhiCount, 1.0f - (j + 2) * inverseThetaCount };
+					m.rawIndices[c++] = index[1];
+					uvs[c] = { (i + 1) * inversePhiCount, 1.0f - (j + 2) * inverseThetaCount };
+					m.rawIndices[c++] = index[2];
+
+					// Triangle 2
+					uvs[c] = { i * inversePhiCount, 1.0f - (j + 1) * inverseThetaCount };
+					m.rawIndices[c++] = index[0];
+					uvs[c] = { (i + 1) * inversePhiCount, 1.0f - (j + 2) * inverseThetaCount };
+					m.rawIndices[c++] = index[2];
+					uvs[c] = { (i + 1) * inversePhiCount, 1.0f - (j + 1) * inverseThetaCount };
+					m.rawIndices[c++] = index[3];
+				}
+				
+				const u32 index[4]
+				{
+					phiCount + j * phiCount,
+					phiCount + (j + 1) * phiCount,
+					1 + (j + 1) * phiCount,
+					1 + j * phiCount
+				};
+				
+				// Triangle 1
+				uvs[c] = { 1.0f - inversePhiCount, 1.0f - (j + 1) * inverseThetaCount };
+				m.rawIndices[c++] = index[0];
+				uvs[c] = { 1.0f - inversePhiCount, 1.0f - (j + 2) * inverseThetaCount };
+				m.rawIndices[c++] = index[1];
+				uvs[c] = { 1.0f, 1.0f - (j + 2) * inverseThetaCount };
+				m.rawIndices[c++] = index[2];
+
+				// Triangle 2
+				uvs[c] = { 1.0f - inversePhiCount, 1.0f - (j + 1) * inverseThetaCount };
+				m.rawIndices[c++] = index[0];
+				uvs[c] = { 1.0f, 1.0f - (j + 2) * inverseThetaCount };
+				m.rawIndices[c++] = index[2];
+				uvs[c] = { 1.0f, 1.0f - (j + 1) * inverseThetaCount };
+				m.rawIndices[c++] = index[3];
+			}
+
+			// Indices for bottom cap, connecting the south pole to the last ring
+			// UV Coords at the same time
+			const u32 southPoleIndex{ (u32)m.positions.size() - 1 };
+			for (u32 i{ 0 }; i < (phiCount - 1); i++)
+			{
+				uvs[c] = { (2 * i + 1) * 0.5f * inversePhiCount, 0.0f };
+				m.rawIndices[c++] = southPoleIndex;
+				uvs[c] = { (i + 1) * inversePhiCount, inverseThetaCount };
+				m.rawIndices[c++] = southPoleIndex - phiCount + i + 1;
+				uvs[c] = { i * inversePhiCount, inverseThetaCount };
+				m.rawIndices[c++] = southPoleIndex - phiCount + i;
+			}
+
+			uvs[c] = { 1.0f - 0.5f * inversePhiCount, 0.0f };
+			m.rawIndices[c++] = southPoleIndex;
+			uvs[c] = { 1.0f, inverseThetaCount };
+			m.rawIndices[c++] = southPoleIndex - phiCount;
+			uvs[c] = { 1.0f - inversePhiCount, inverseThetaCount };
+			m.rawIndices[c++] = southPoleIndex - 1;
+
+			assert(c == numIndices);
+
+			m.uvSets.emplace_back(uvs);
+
+			return m;
+		}
+
 		void CreatePlane(Scene& scene, const PrimitiveInitInfo& info)
 		{
 			LoDGroup lod{};
@@ -126,7 +273,12 @@ namespace Havana::Tools
 		{}
 
 		void CreateUVSphere(Scene& scene, const PrimitiveInitInfo& info)
-		{}
+		{
+			LoDGroup lod{};
+			lod.name = "uvSphere";
+			lod.meshes.emplace_back(CreateUVSphere(info));
+			scene.lodGroups.emplace_back(lod);
+		}
 
 		void CreateICOSphere(Scene& scene, const PrimitiveInitInfo& info)
 		{}

@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
+    <XamlDebuggingInformation>True</XamlDebuggingInformation>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Configurations>DebugEditor;ReleaseEditor</Configurations>
     <Platforms>x64</Platforms>
@@ -20,6 +21,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\PrimitiveMeshView\Checkermap.png" />
+    <None Remove="Resources\PrimitiveMeshView\PlaneTexture.png" />
     <None Remove="Resources\PrimitiveMeshView\UVTest1.png" />
   </ItemGroup>
 
@@ -52,6 +55,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Resources\PrimitiveMeshView\Checkermap.png" />
+    <Resource Include="Resources\PrimitiveMeshView\PlaneTexture.png" />
     <Resource Include="Resources\PrimitiveMeshView\UVTest1.png" />
   </ItemGroup>
 
