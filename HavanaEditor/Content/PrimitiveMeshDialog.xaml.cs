@@ -1,9 +1,12 @@
 ﻿using HavanaEditor.ContentToolsAPIStructs;
 using HavanaEditor.DllWrapper;
 using HavanaEditor.Editors;
+using HavanaEditor.GameProject;
 using HavanaEditor.Utilities.Controls;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -132,6 +135,26 @@ namespace HavanaEditor.Content
             foreach (var mesh in viewModel.MeshRenderer.Meshes)
             {
                 mesh.Diffuse = brush;
+            }
+        }
+
+        private void OnSave_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (!Directory.Exists(Project.Current.ContentPath))
+                Directory.CreateDirectory(Project.Current.ContentPath);
+
+            SaveFileDialog dlg = new SaveFileDialog()
+            {
+                InitialDirectory = Project.Current.ContentPath,
+                Filter = "Asset Files (*.asset)|*.aset"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                Debug.Assert(!string.IsNullOrEmpty(dlg.FileName));
+                Asset asset = (DataContext as IAssetEditor).Asset;
+                Debug.Assert(asset != null);
+                asset.Save(dlg.FileName);
             }
         }
     }

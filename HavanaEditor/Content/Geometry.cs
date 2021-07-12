@@ -294,7 +294,88 @@ namespace HavanaEditor.Content
             return lodGroups.Any() ? lodGroups[lodGroup] : null;
         }
 
+        public override IEnumerable<string> Save(string file)
+        {
+            Debug.Assert(lodGroups.Any());
+            
+            List<string> savedFiles = new List<string>();
+            
+            if (!lodGroups.Any()) return savedFiles;
+
+            string path = Path.GetDirectoryName(file) + Path.DirectorySeparatorChar;
+            string fileName = Path.GetFileNameWithoutExtension(file);
+            
+            try
+            {
+                foreach (var lodGroup in lodGroups)
+                {
+                    Debug.Assert(lodGroup.LoDs.Any());
+                    
+                    // Use name of most detailed LoD for file name
+                    string meshFileName = ContentHelper.SanitizeFileName(path + fileName + "_" + lodGroup.LoDs[0].Name + AssetFileExtension);
+                    // Different id for each asset file
+                    Guid = Guid.NewGuid();
+                    byte[] data = null;
+                    using(BinaryWriter writer = new BinaryWriter(new MemoryStream()))
+                    {
+                        writer.Write(lodGroup.Name);
+                        writer.Write(lodGroup.LoDs.Count);
+                        List<byte> hashes = new List<byte>();
+                        
+                        foreach (var lod in lodGroup.LoDs)
+                        {
+                            LoDToBinary(lod, writer, out byte[] hash);
+                            hashes.AddRange(hash);
+                        }
+
+                        Hash = ContentHelper.ComputeHash(hashes.ToArray());
+                        data = (writer.BaseStream as MemoryStream).ToArray();
+                        Icon = GenerateIcon(lodGroup.LoDs[0]);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.Message);
+                Logger.Log(MessageType.Error, $"There was an error saving geometry to {file}");
+            }
+
+            return savedFiles;
+        }
+
+        private byte[] GenerateIcon(MeshLoD meshLoD)
+        {
+            throw new NotImplementedException();
+        }
+
+
         // PRIVATE
+        private void LoDToBinary(MeshLoD lod, BinaryWriter writer, out byte[] hash)
+        {
+            writer.Write(lod.Name);
+            writer.Write(lod.LoDThreshold);
+            writer.Write(lod.Meshes.Count);
+
+            long meshDataBegin = writer.BaseStream.Position;
+
+            foreach (var mesh in lod.Meshes)
+            {
+                writer.Write(mesh.VertexSize);
+                writer.Write(mesh.VertexCount);
+                writer.Write(mesh.IndexSize);
+                writer.Write(mesh.IndexCount);
+                writer.Write(mesh.Vertices);
+                writer.Write(mesh.Indices);
+            }
+
+            long meshDataSize = writer.BaseStream.Position - meshDataBegin;
+
+            Debug.Assert(meshDataSize > 0);
+
+            byte[] buffer = (writer.BaseStream as MemoryStream).ToArray();
+            hash = ContentHelper.ComputeHash(buffer, (int)meshDataBegin, (int)meshDataSize);
+        }
+
         private static List<MeshLoD> ReadMeshLoDs(int numMeshes, BinaryReader reader)
         {
             List<int> lodIDs = new List<int>();

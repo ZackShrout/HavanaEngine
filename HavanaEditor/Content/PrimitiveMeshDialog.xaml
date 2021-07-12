@@ -119,10 +119,12 @@
                     <Label Content="Size" VerticalAlignment="Top" HorizontalAlignment="Left"
                            Padding="5,0" Foreground="{StaticResource Editor.FontBrush}"/>
                 </Grid>
-                
-                <Button Content="Save" Width="96" Margin="5,0"/>
+
+                <Button Content="Save" Width="96" Margin="5,0" Click="OnSave_Button_Click"/>
             </StackPanel>
+            
             <!-- CUBE SETTINGS -->
+            
             <!-- UVSPHERE SETTINGS -->
             <StackPanel Background="{StaticResource Editor.Window.GreyBrush3}">
                 <StackPanel.Style>
@@ -204,7 +206,7 @@
                             BorderBrush="{StaticResource Editor.Window.GreyBrush6}"
                             Background="{StaticResource Editor.Window.GreyBrush4}">
                         <StackPanel Margin="5,15,5,5">
-                            <DockPanel Margin="5">
+                            <DockPanel Margin="5,15,5,5">
                                 <TextBlock Text="Angle" Width="40" DockPanel.Dock="Left" 
                                            VerticalAlignment="Center"/>
                                 <TextBox Text="{Binding Path=Value, ElementName=angleSliderUVSphere}" Width="30"
@@ -220,10 +222,13 @@
                            Padding="5,0" Foreground="{StaticResource Editor.FontBrush}"/>
                 </Grid>
 
-                <Button Content="Save" Width="96" Margin="5,0"/>
+                <Button Content="Save" Width="96" Margin="5,0" Click="OnSave_Button_Click"/>
             </StackPanel>
+            
             <!-- ICOSPHERE SETTINGS -->
+            
             <!-- CYLINDER SETTINGS -->
+            
             <!-- CAPSULE SETTINGS -->
 
             <ed:GeometryView DataContext="{Binding MeshRenderer}" Grid.Column="1"/>

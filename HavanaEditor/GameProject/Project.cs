@@ -46,6 +46,7 @@ namespace HavanaEditor.GameProject
         public string Path { get; private set; }
         public string FullPath => $@"{Path}{Name}{Extention}";
         public string Solution => $@"{Path}{Name}.sln";
+        public string ContentPath => $@"{Path}Assets\";
         public static Project Current => Application.Current.MainWindow.DataContext as Project;
         public ReadOnlyObservableCollection<Scene> Scenes { get; private set;  }
         public Scene ActiveScene
@@ -97,7 +98,7 @@ namespace HavanaEditor.GameProject
                 }
             }
         }
-        
+
         // PUBLIC
         public Project(string name, string path)
         {
