@@ -3,12 +3,15 @@
 
 // What test are we performing?
 #define TEST_ENTITY_COMPONENTS 0
-#define TEST_WINDOW 1
+#define TEST_WINDOW 0
+#define TEST_RENDERER 1
 
 #if TEST_ENTITY_COMPONENTS
 #include "TestEntityComponents.h"
 #elif TEST_WINDOW
 #include "TestWindow.h"
+#elif TEST_RENDERER
+#include "TestRenderer.h"
 #else
 #error One of the tests must be enabled
 #endif

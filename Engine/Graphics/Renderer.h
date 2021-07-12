@@ -14,4 +14,12 @@ namespace Havana::Graphics
 		Platform::Window window{};
 		Surface surface{};
 	};
+
+	enum GraphicsPlatform : u32
+	{
+		Direct3D12 = 0
+	};
+	
+	bool Initialize(GraphicsPlatform platform);
+	void Shutdown();
 }
