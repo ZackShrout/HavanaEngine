@@ -7,6 +7,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace HavanaEditor.Content
 {
@@ -231,6 +234,16 @@ namespace HavanaEditor.Content
             ImportEmbededTextures = true;
             ImportAnimations = true;
         }
+
+        public void ToBinary(BinaryWriter writer)
+        {
+            writer.Write(SmoothingAngle);
+            writer.Write(CalculateNormals);
+            writer.Write(CalculateTangents);
+            writer.Write(ReverseHandedness);
+            writer.Write(ImportEmbededTextures);
+            writer.Write(ImportAnimations);
+        }
     }
     
     class Geometry : Asset
@@ -332,6 +345,18 @@ namespace HavanaEditor.Content
                         data = (writer.BaseStream as MemoryStream).ToArray();
                         Icon = GenerateIcon(lodGroup.LoDs[0]);
                     }
+
+                    Debug.Assert(data?.Length > 0);
+
+                    using (BinaryWriter writer = new BinaryWriter(File.Open(meshFileName, FileMode.Create, FileAccess.Write)))
+                    {
+                        WriteAssetFileHeader(writer);
+                        ImportSettings.ToBinary(writer);
+                        writer.Write(data.Length);
+                        writer.Write(data);
+                    };
+
+                    savedFiles.Add(meshFileName);
                 }
             }
             catch (Exception ex)
@@ -343,13 +368,30 @@ namespace HavanaEditor.Content
             return savedFiles;
         }
 
-        private byte[] GenerateIcon(MeshLoD meshLoD)
+        // PRIVATE
+        private byte[] GenerateIcon(MeshLoD lod)
         {
-            throw new NotImplementedException();
+            int width = 90 * 4;
+            BitmapSource bmp = null;
+
+            // NOTE: it's not good practice to use a WPF control (view) in the ViewModel.
+            //       But an exception must be made in this case until we have a graphics
+            //       renderer to handle screenshots
+            Application.Current.Dispatcher.Invoke(() => // Run on UI thread
+            {
+                bmp = Editors.GeometryView.RenderToBitmap(new Editors.MeshRenderer(lod, null), width, width);
+                bmp = new TransformedBitmap(bmp, new ScaleTransform(0.25, 0.25, 0.5, 0.5));
+            });
+
+            using MemoryStream memStream = new MemoryStream();
+            memStream.SetLength(0);
+            PngBitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bmp));
+            encoder.Save(memStream);
+
+            return memStream.ToArray();
         }
 
-
-        // PRIVATE
         private void LoDToBinary(MeshLoD lod, BinaryWriter writer, out byte[] hash)
         {
             writer.Write(lod.Name);

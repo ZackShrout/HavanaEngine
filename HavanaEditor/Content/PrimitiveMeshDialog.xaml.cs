@@ -59,9 +59,11 @@ namespace HavanaEditor.Content
                 byte[] data = reader.ReadBytes((int)resource.Stream.Length);
                 BitmapSource imageSource = (BitmapSource)new ImageSourceConverter().ConvertFrom(data);
                 imageSource.Freeze();
-                ImageBrush brush = new ImageBrush(imageSource);
-                brush.Transform = new ScaleTransform(1, -1, 0.5, 0.5);
-                brush.ViewportUnits = BrushMappingMode.Absolute;
+                ImageBrush brush = new ImageBrush(imageSource)
+                {
+                    Transform = new ScaleTransform(1, -1, 0.5, 0.5),
+                    ViewportUnits = BrushMappingMode.Absolute
+                };
                 brush.Freeze();
                 textures.Add(brush);
             }
@@ -146,7 +148,7 @@ namespace HavanaEditor.Content
             SaveFileDialog dlg = new SaveFileDialog()
             {
                 InitialDirectory = Project.Current.ContentPath,
-                Filter = "Asset Files (*.asset)|*.aset"
+                Filter = "Asset Files (*.asset)|*.asset"
             };
 
             if (dlg.ShowDialog() == true)

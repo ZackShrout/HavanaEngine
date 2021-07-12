@@ -24,6 +24,8 @@ namespace HavanaEditor.Editors
         private Point clickedPosition;
         private bool capturedLeft;
         private bool capturedRight;
+        // NOTE: used for capturing the mesh as an icon for it's asset file
+        private static readonly GeometryView geometryView = new GeometryView() { Background = (Brush)Application.Current.FindResource("Editor.Window.GreyBrush4") };
 
         // PUBLIC
         public GeometryView()
@@ -80,6 +82,21 @@ namespace HavanaEditor.Editors
 
             ModelVisual3D visual = new ModelVisual3D() { Content = modelGroup };
             viewport.Children.Add(visual);
+        }
+        
+        // INTERNAL
+        internal static BitmapSource RenderToBitmap(MeshRenderer mesh, int width, int height)
+        {
+            RenderTargetBitmap bmp = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Default);
+            geometryView.DataContext = mesh;
+            geometryView.Width = width;
+            geometryView.Height = height;
+            geometryView.Measure(new Size(width, height));
+            geometryView.Arrange(new Rect(0, 0, width, height));
+            geometryView.UpdateLayout();
+            bmp.Render(geometryView);
+
+            return bmp;
         }
 
         // PRIVATE
