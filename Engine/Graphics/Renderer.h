@@ -22,4 +22,5 @@ namespace Havana::Graphics
 	
 	bool Initialize(GraphicsPlatform platform);
 	void Shutdown();
+	void Render();
 }

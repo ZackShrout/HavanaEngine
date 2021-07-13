@@ -32,4 +32,9 @@ namespace Havana::Graphics
 	{
 		gfx.Shutdown();
 	}
+
+	void Render()
+	{
+		gfx.Render();
+	}
 }

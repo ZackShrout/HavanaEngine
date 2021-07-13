@@ -6,6 +6,105 @@ namespace Havana::Graphics::D3D12::Core
 {
 	namespace
 	{
+		class D3D12Command
+		{
+		public:
+			explicit D3D12Command(ID3D12Device8* const device, D3D12_COMMAND_LIST_TYPE type)
+			{
+				HRESULT hr{ S_OK };
+				D3D12_COMMAND_QUEUE_DESC description{};
+				description.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+				description.NodeMask = 0;
+				description.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+				description.Type = type;
+				
+				DXCall(hr = device->CreateCommandQueue(&description, IID_PPV_ARGS(&commandQueue)));
+				//if (FAILED(hr)) goto _error; // I don't like GOTO... change this later
+				if (FAILED(hr))
+				{
+					Release();
+					return;
+				}
+				NAME_D3D12_OBJECT(commandQueue, type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+												L"Graphics Command Queue" :
+												type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+												L"Compute Command Queue" : L"Command Queue");
+
+				for (u32 i{ 0 }; i < frameBufferCount; i++)
+				{
+					CommandFrame& frame{ commandFrames[i] };
+					DXCall(hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&frame.commandAllocator)));
+					//if (FAILED(hr)) goto _error; // I don't like GOTO... change this later
+					if (FAILED(hr))
+					{
+						Release();
+						return;
+					}
+					NAME_D3D12_OBJECT_INDEXED(frame.commandAllocator, i, 
+											  type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+											  L"GFX Command Allocator" :
+											  type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+											  L"Compute Command Allocator" : L"Command Allocator");
+				}
+
+				DXCall(hr = device->CreateCommandList(0, type, commandFrames[0].commandAllocator , nullptr, IID_PPV_ARGS(&commandList)));
+				//if (FAILED(hr)) goto _error; // I don't like GOTO... change this later
+				if (FAILED(hr))
+				{
+					Release();
+					return;
+				}
+				DXCall(commandList->Close());
+				NAME_D3D12_OBJECT(commandList, type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+											   L"Graphics Command List" :
+											   type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+											   L"Compute Command List" : L"Command List");
+			_error:
+				Release();
+			}
+
+			void BeginFrame()
+			{
+				CommandFrame& frame{ commandFrames[frameIndex] };
+				frame.Wait();
+				DXCall(frame.commandAllocator->Reset());
+				DXCall(commandList->Reset(frame.commandAllocator, nullptr));
+			}
+
+			void EndFrame()
+			{
+				DXCall(commandList->Close());
+				ID3D12CommandList* const commandLists[]{ commandList };
+				commandQueue->ExecuteCommandLists(_countof(commandLists), &commandLists[0]);
+				frameIndex = (frameIndex + 1) % frameBufferCount;
+			}
+
+			void Release()
+			{
+
+			}
+		private:
+			struct CommandFrame
+			{
+				ID3D12CommandAllocator* commandAllocator{ nullptr };
+
+				void Wait()
+				{
+
+				}
+
+				void Release()
+				{
+					Core::Release(commandAllocator);
+				}
+			};
+
+			ID3D12CommandQueue*			commandQueue{ nullptr };
+			ID3D12GraphicsCommandList6* commandList{ nullptr };
+			CommandFrame				commandFrames[frameBufferCount]{};
+			u32							frameIndex{ 0 };
+		};
+
 		ID3D12Device8* mainDevice{ nullptr };
 		IDXGIFactory7* dxgiFactory{ nullptr };
 		constexpr D3D_FEATURE_LEVEL minimumFeatureLevel{ D3D_FEATURE_LEVEL_11_0 };
@@ -141,5 +240,12 @@ namespace Havana::Graphics::D3D12::Core
 #endif // _DEBUG
 		
 		Release(mainDevice);
+	}
+
+	void Render()
+	{
+		BeginFrame();
+
+		EndFrame();
 	}
 }

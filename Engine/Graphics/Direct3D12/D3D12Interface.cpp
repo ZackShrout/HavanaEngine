@@ -11,6 +11,7 @@ namespace Havana::Graphics
 		{
 			platformInterface.Initialize = Core::Initialize;
 			platformInterface.Shutdown = Core::Shutdown;
+			platformInterface.Render = Core::Render;
 		}
 	} // D3D12 namespace
 }

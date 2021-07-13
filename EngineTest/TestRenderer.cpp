@@ -1,7 +1,9 @@
 #include "TestRenderer.h"
+#if TEST_RENDERER
 #include "..\Platforms\PlatformTypes.h"
 #include "..\Platforms\Platform.h"
 #include "..\Graphics\Renderer.h"
+
 
 using namespace Havana;
 
@@ -87,3 +89,4 @@ void EngineTest::Shutdown()
 
 	Graphics::Shutdown();
 }
+#endif //TEST_RENDERER
