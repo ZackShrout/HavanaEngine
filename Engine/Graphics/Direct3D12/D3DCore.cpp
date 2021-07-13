@@ -9,6 +9,8 @@ namespace Havana::Graphics::D3D12::Core
 		class D3D12Command
 		{
 		public:
+			D3D12Command() = default;
+			DISABLE_COPY_AND_MOVE(D3D12Command)
 			explicit D3D12Command(ID3D12Device8* const device, D3D12_COMMAND_LIST_TYPE type)
 			{
 				HRESULT hr{ S_OK };
@@ -18,8 +20,8 @@ namespace Havana::Graphics::D3D12::Core
 				description.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
 				description.Type = type;
 				
+				// Command Queue
 				DXCall(hr = device->CreateCommandQueue(&description, IID_PPV_ARGS(&commandQueue)));
-				//if (FAILED(hr)) goto _error; // I don't like GOTO... change this later
 				if (FAILED(hr))
 				{
 					Release();
@@ -30,11 +32,11 @@ namespace Havana::Graphics::D3D12::Core
 												type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
 												L"Compute Command Queue" : L"Command Queue");
 
+				// Command allocators
 				for (u32 i{ 0 }; i < frameBufferCount; i++)
 				{
 					CommandFrame& frame{ commandFrames[i] };
 					DXCall(hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&frame.commandAllocator)));
-					//if (FAILED(hr)) goto _error; // I don't like GOTO... change this later
 					if (FAILED(hr))
 					{
 						Release();
@@ -47,8 +49,8 @@ namespace Havana::Graphics::D3D12::Core
 											  L"Compute Command Allocator" : L"Command Allocator");
 				}
 
+				// Command list
 				DXCall(hr = device->CreateCommandList(0, type, commandFrames[0].commandAllocator , nullptr, IID_PPV_ARGS(&commandList)));
-				//if (FAILED(hr)) goto _error; // I don't like GOTO... change this later
 				if (FAILED(hr))
 				{
 					Release();
@@ -59,38 +61,101 @@ namespace Havana::Graphics::D3D12::Core
 											   L"Graphics Command List" :
 											   type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
 											   L"Compute Command List" : L"Command List");
-			_error:
-				Release();
+
+				// Fence
+				DXCall(hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+				if (FAILED(hr))
+				{
+					Release();
+					return;
+				}
+				NAME_D3D12_OBJECT(fence, L"D3D12 Fence");
+
+				fenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+				assert(fenceEvent);
 			}
 
+			~D3D12Command()
+			{
+				assert(!commandQueue && !commandList && !fence);
+			}
+
+			// Wait for the current frame to be signaled and reset the command list/allocator
 			void BeginFrame()
 			{
 				CommandFrame& frame{ commandFrames[frameIndex] };
-				frame.Wait();
+				frame.Wait(fenceEvent, fence);
 				DXCall(frame.commandAllocator->Reset());
 				DXCall(commandList->Reset(frame.commandAllocator, nullptr));
 			}
 
+			// Singal the fence with the new fence value
 			void EndFrame()
 			{
 				DXCall(commandList->Close());
 				ID3D12CommandList* const commandLists[]{ commandList };
 				commandQueue->ExecuteCommandLists(_countof(commandLists), &commandLists[0]);
+
+				u64& newFenceValue{ fenceValue };
+				newFenceValue++;
+				CommandFrame& frame{ commandFrames[frameIndex] };
+				frame.fenceValue = newFenceValue;
+				commandQueue->Signal(fence, newFenceValue);
+
 				frameIndex = (frameIndex + 1) % frameBufferCount;
 			}
 
+			// Complete all work on GPU for all frames
+			void Flush()
+			{
+				for (u32 i{ 0 }; i < frameBufferCount; i++)
+				{
+					commandFrames[i].Wait(fenceEvent, fence);
+				}
+				frameIndex = 0;
+			}
+			
 			void Release()
 			{
+				Flush();
+				Core::Release(fence);
+				fenceValue = 0;
 
+				CloseHandle(fenceEvent);
+				fenceEvent = nullptr;
+
+				Core::Release(commandQueue);
+				Core::Release(commandList);
+
+				for (u32 i{ 0 }; i < frameBufferCount; i++)
+				{
+					commandFrames[i].Release();
+				}
 			}
+
+			constexpr ID3D12CommandQueue* const CommandQueue() const { return commandQueue; }
+			constexpr ID3D12GraphicsCommandList6* const CommandList() const { return commandList; }
+			constexpr u32 FrameIndex() const { return frameIndex; }
+
 		private:
 			struct CommandFrame
 			{
 				ID3D12CommandAllocator* commandAllocator{ nullptr };
+				u64						fenceValue{ 0 };
 
-				void Wait()
+				void Wait(HANDLE fenceEvent, ID3D12Fence1* fence)
 				{
-
+					assert(fence && fenceEvent);
+					// If the current fence value is still less than "fenceValue"
+					// then we know the GPU hasn't finished executing the command list
+					// since it has not reached the commandQueue->Signel() command.
+					if (fence->GetCompletedValue() < fenceValue)
+					{
+						// We have the fence create an event which is signaled once the fence's current value equals "fenceValue"
+						DXCall(fence->SetEventOnCompletion(fenceValue, fenceEvent));
+						// Wait until the fence creates the above event, signaling that the command queue has finished executing
+						WaitForSingleObject(fenceEvent, INFINITE);
+					}
 				}
 
 				void Release()
@@ -101,12 +166,17 @@ namespace Havana::Graphics::D3D12::Core
 
 			ID3D12CommandQueue*			commandQueue{ nullptr };
 			ID3D12GraphicsCommandList6* commandList{ nullptr };
+			ID3D12Fence1*				fence{ nullptr };
+			HANDLE						fenceEvent{ nullptr };
+			u64							fenceValue{ 0 };
 			CommandFrame				commandFrames[frameBufferCount]{};
 			u32							frameIndex{ 0 };
 		};
 
-		ID3D12Device8* mainDevice{ nullptr };
-		IDXGIFactory7* dxgiFactory{ nullptr };
+		ID3D12Device8*	mainDevice{ nullptr };
+		IDXGIFactory7*	dxgiFactory{ nullptr };
+		D3D12Command	gfxCommand;
+
 		constexpr D3D_FEATURE_LEVEL minimumFeatureLevel{ D3D_FEATURE_LEVEL_11_0 };
 
 		bool FailedInit()
@@ -199,6 +269,9 @@ namespace Havana::Graphics::D3D12::Core
 		DXCall(hr = D3D12CreateDevice(mainAdapter.Get(), maxFeatureLevel, IID_PPV_ARGS(&mainDevice)));
 		if (FAILED(hr)) return FailedInit();
 
+		new (&gfxCommand) D3D12Command(mainDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
+		if (!gfxCommand.CommandQueue()) return FailedInit();
+
 		NAME_D3D12_OBJECT(mainDevice, L"Main D3D Device");
 
 #ifdef _DEBUG
@@ -216,6 +289,7 @@ namespace Havana::Graphics::D3D12::Core
 
 	void Shutdown()
 	{
+		gfxCommand.Release();
 		Release(dxgiFactory);
 
 #ifdef _DEBUG
@@ -244,8 +318,17 @@ namespace Havana::Graphics::D3D12::Core
 
 	void Render()
 	{
-		BeginFrame();
+		// Wait for the GPU to finish with the command allocator and
+		// reset the allocator once the GPU is done with it.
+		// This frees the memory that was used to store commands.
+		gfxCommand.BeginFrame();
+		ID3D12GraphicsCommandList6* commandList{ gfxCommand.CommandList() };
 
-		EndFrame();
+		// Record commands
+		// ......
+		//
+		// Done recording commands, now execute them,
+		// signal and incriment fence value for next frame.
+		gfxCommand.EndFrame();
 	}
 }
