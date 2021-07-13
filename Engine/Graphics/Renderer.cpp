@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "GraphicsPlatformInterface.h"
+#include "..\Graphics\Direct3D12\D3D12Interface.h"
 
 namespace Havana::Graphics
 {
@@ -15,15 +16,16 @@ namespace Havana::Graphics
 				D3D12::GetPlatformInterface(gfx);
 				break;
 			default:
-				break;
+				return false;
 			}
+			return true;
 		}
 
 	} // anonymous namespace
 
 	bool Initialize(GraphicsPlatform platform)
 	{
-		return SetGraphicsPlatform(platform);
+		return SetGraphicsPlatform(platform) && gfx.Initialize();
 	}
 
 	void Shutdown()
