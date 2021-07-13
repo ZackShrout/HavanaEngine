@@ -1,9 +1,9 @@
 #include "TestRenderer.h"
-#if TEST_RENDERER
 #include "..\Platforms\PlatformTypes.h"
 #include "..\Platforms\Platform.h"
 #include "..\Graphics\Renderer.h"
 
+#if TEST_RENDERER
 
 using namespace Havana;
 
@@ -63,10 +63,10 @@ bool EngineTest::Initialize()
 
 	Platform::WindowInitInfo info[]
 	{
-		{ &WinProc, nullptr, L"Test Window 1", 100, 100, 400, 800 },
-		{ &WinProc, nullptr, L"Test Window 2", 150, 150, 800, 400 },
-		{ &WinProc, nullptr, L"Test Window 3", 200, 200, 400, 400 },
-		{ &WinProc, nullptr, L"Test Window 4", 250, 250, 800, 600 },
+		{ &WinProc, nullptr, L"Render Window 1", 100, 100, 400, 800 },
+		{ &WinProc, nullptr, L"Render Window 2", 150, 150, 800, 400 },
+		{ &WinProc, nullptr, L"Render Window 3", 200, 200, 400, 400 },
+		{ &WinProc, nullptr, L"Render Window 4", 250, 250, 800, 600 },
 	};
 
 	static_assert(_countof(info) == _countof(surfaces));

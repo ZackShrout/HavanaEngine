@@ -7,6 +7,7 @@
 #include <typeinfo>
 #include <memory>
 #include <unordered_map>
+#include <mutex>
 
 #if defined (_WIN64)
 	#include <DirectXMath.h>
@@ -27,8 +28,6 @@
 #ifndef DISABLE_COPY_AND_MOVE
 #define DISABLE_COPY_AND_MOVE(T) DISABLE_COPY(T) DISABLE_MOVE(T)
 #endif // !DISABLE_COPY_AND_MOVE
-
-
 
 // COMMON HEADERS
 #include "PrimitiveTypes.h"

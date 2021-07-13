@@ -269,6 +269,8 @@ namespace Havana::Graphics::D3D12::Core
 		DXCall(hr = D3D12CreateDevice(mainAdapter.Get(), maxFeatureLevel, IID_PPV_ARGS(&mainDevice)));
 		if (FAILED(hr)) return FailedInit();
 
+		// There is nothing in D3D12Command that would cause a memory leak by calling 
+		// new here, but care must be taken.
 		new (&gfxCommand) D3D12Command(mainDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		if (!gfxCommand.CommandQueue()) return FailedInit();
 
@@ -330,5 +332,10 @@ namespace Havana::Graphics::D3D12::Core
 		// Done recording commands, now execute them,
 		// signal and incriment fence value for next frame.
 		gfxCommand.EndFrame();
+	}
+
+	ID3D12Device* const Device()
+	{
+		return mainDevice;
 	}
 }

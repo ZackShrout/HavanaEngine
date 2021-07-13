@@ -16,4 +16,6 @@ namespace Havana::Graphics::D3D12::Core
 			resource = nullptr;
 		}
 	}
+
+	ID3D12Device* const Device();
 }
