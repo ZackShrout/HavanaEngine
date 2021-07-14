@@ -39,6 +39,8 @@ namespace Havana::Graphics::D3D12
 		for (u32 i{ 0 }; i < capacity; i++)
 			m_freeHandles[i] = i;
 
+		DEBUG_OP(for (u32 i{ 0 }; i < frameBufferCount; i++) assert(m_deferredFreeIndices[i].empty()));
+
 		m_descriptorSize = device->GetDescriptorHandleIncrementSize(m_type);
 		m_cpuStart = m_heap->GetCPUDescriptorHandleForHeapStart();
 		m_gpuStart = isShaderVisible ? m_heap->GetGPUDescriptorHandleForHeapStart() : D3D12_GPU_DESCRIPTOR_HANDLE{ 0 };
@@ -46,9 +48,28 @@ namespace Havana::Graphics::D3D12
 		return true;
 	}
 	
+	void DescriptorHeap::ProcessDeferredFree(u32 frameIdx)
+	{
+		std::lock_guard lock{ m_mutex };
+		assert(frameIdx < frameBufferCount);
+
+		Utils::vector<u32>& indices{ m_deferredFreeIndices[frameIdx] };
+		if (!indices.empty())
+		{
+			for (auto index : indices)
+			{
+				m_size--;
+				m_freeHandles[m_size] = index;
+			}
+			indices.clear();
+		}
+	}
+
+	
 	void DescriptorHeap::Release()
 	{
-
+		assert(!m_size);
+		Core::DeferredRelease(m_heap);
 	}
 
 	DescriptorHandle DescriptorHeap::Allocate()
@@ -87,5 +108,9 @@ namespace Havana::Graphics::D3D12
 		const u32 index{ (u32)(handle.cpu.ptr - m_cpuStart.ptr) / m_descriptorSize };
 		assert(handle.index == index);
 
+		const u32 frameIdx{ Core::CurrentFrameIndex() };
+		m_deferredFreeIndices[frameIdx].push_back(index);
+		Core::SetDeferredReleasesFlag();
+		handle = {};
 	}
 }

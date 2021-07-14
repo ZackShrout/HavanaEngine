@@ -17,5 +17,22 @@ namespace Havana::Graphics::D3D12::Core
 		}
 	}
 
+	namespace Detail
+	{
+		void DeferredRelease(IUnknown* resource);
+	}
+
+	template<typename T>
+	constexpr void DeferredRelease(T*& resource)
+	{
+		if (resource)
+		{
+			Detail::DeferredRelease(resource);
+			resource = nullptr;
+		}
+	}
+
 	ID3D12Device* const Device();
+	u32 CurrentFrameIndex();
+	void SetDeferredReleasesFlag();
 }

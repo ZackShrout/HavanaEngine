@@ -30,6 +30,7 @@ namespace Havana::Graphics::D3D12
 
 		// Implemented in the translation unit for this header
 		bool Initialize(u32 capacity, bool isShaderVisible);
+		void ProcessDeferredFree(u32 frameIdx);
 		void Release();
 		[[nodiscard]] DescriptorHandle Allocate();
 		void Free(DescriptorHandle& handle);
@@ -48,6 +49,7 @@ namespace Havana::Graphics::D3D12
 		D3D12_CPU_DESCRIPTOR_HANDLE			m_cpuStart{};
 		D3D12_GPU_DESCRIPTOR_HANDLE			m_gpuStart{};
 		std::unique_ptr<u32[]>				m_freeHandles{};
+		Utils::vector<u32>					m_deferredFreeIndices[frameBufferCount]{};
 		std::mutex							m_mutex{};
 		u32									m_capacity{ 0 };
 		u32									m_size{ 0 };
