@@ -22,13 +22,13 @@ namespace Havana::Graphics::D3D12::Core
 				description.Type = type;
 				
 				// Command Queue
-				DXCall(hr = device->CreateCommandQueue(&description, IID_PPV_ARGS(&commandQueue)));
+				DXCall(hr = device->CreateCommandQueue(&description, IID_PPV_ARGS(&m_commandQueue)));
 				if (FAILED(hr))
 				{
 					Release();
 					return;
 				}
-				NAME_D3D12_OBJECT(commandQueue, type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+				NAME_D3D12_OBJECT(m_commandQueue, type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
 												L"Graphics Command Queue" :
 												type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
 												L"Compute Command Queue" : L"Command Queue");
@@ -36,7 +36,7 @@ namespace Havana::Graphics::D3D12::Core
 				// Command allocators
 				for (u32 i{ 0 }; i < frameBufferCount; i++)
 				{
-					CommandFrame& frame{ commandFrames[i] };
+					CommandFrame& frame{ m_commandFrames[i] };
 					DXCall(hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&frame.commandAllocator)));
 					if (FAILED(hr))
 					{
@@ -51,59 +51,59 @@ namespace Havana::Graphics::D3D12::Core
 				}
 
 				// Command list
-				DXCall(hr = device->CreateCommandList(0, type, commandFrames[0].commandAllocator , nullptr, IID_PPV_ARGS(&commandList)));
+				DXCall(hr = device->CreateCommandList(0, type, m_commandFrames[0].commandAllocator , nullptr, IID_PPV_ARGS(&m_commandList)));
 				if (FAILED(hr))
 				{
 					Release();
 					return;
 				}
-				DXCall(commandList->Close());
-				NAME_D3D12_OBJECT(commandList, type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+				DXCall(m_commandList->Close());
+				NAME_D3D12_OBJECT(m_commandList, type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
 											   L"Graphics Command List" :
 											   type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
 											   L"Compute Command List" : L"Command List");
 
 				// Fence
-				DXCall(hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+				DXCall(hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
 				if (FAILED(hr))
 				{
 					Release();
 					return;
 				}
-				NAME_D3D12_OBJECT(fence, L"D3D12 Fence");
+				NAME_D3D12_OBJECT(m_fence, L"D3D12 Fence");
 
-				fenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
-				assert(fenceEvent);
+				m_fenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+				assert(m_fenceEvent);
 			}
 
 			~D3D12Command()
 			{
-				assert(!commandQueue && !commandList && !fence);
+				assert(!m_commandQueue && !m_commandList && !m_fence);
 			}
 
 			// Wait for the current frame to be signaled and reset the command list/allocator
 			void BeginFrame()
 			{
-				CommandFrame& frame{ commandFrames[frameIndex] };
-				frame.Wait(fenceEvent, fence);
+				CommandFrame& frame{ m_commandFrames[m_frameIndex] };
+				frame.Wait(m_fenceEvent, m_fence);
 				DXCall(frame.commandAllocator->Reset());
-				DXCall(commandList->Reset(frame.commandAllocator, nullptr));
+				DXCall(m_commandList->Reset(frame.commandAllocator, nullptr));
 			}
 
 			// Singal the fence with the new fence value
 			void EndFrame()
 			{
-				DXCall(commandList->Close());
-				ID3D12CommandList* const commandLists[]{ commandList };
-				commandQueue->ExecuteCommandLists(_countof(commandLists), &commandLists[0]);
+				DXCall(m_commandList->Close());
+				ID3D12CommandList* const commandLists[]{ m_commandList };
+				m_commandQueue->ExecuteCommandLists(_countof(commandLists), &commandLists[0]);
 
-				u64& newFenceValue{ fenceValue };
-				newFenceValue++;
-				CommandFrame& frame{ commandFrames[frameIndex] };
-				frame.fenceValue = newFenceValue;
-				commandQueue->Signal(fence, newFenceValue);
+				u64& fenceValue{ m_fenceValue };
+				fenceValue++;
+				CommandFrame& frame{ m_commandFrames[m_frameIndex] };
+				frame.fenceValue = fenceValue;
+				m_commandQueue->Signal(m_fence, fenceValue);
 
-				frameIndex = (frameIndex + 1) % frameBufferCount;
+				m_frameIndex = (m_frameIndex + 1) % frameBufferCount;
 			}
 
 			// Complete all work on GPU for all frames
@@ -111,32 +111,32 @@ namespace Havana::Graphics::D3D12::Core
 			{
 				for (u32 i{ 0 }; i < frameBufferCount; i++)
 				{
-					commandFrames[i].Wait(fenceEvent, fence);
+					m_commandFrames[i].Wait(m_fenceEvent, m_fence);
 				}
-				frameIndex = 0;
+				m_frameIndex = 0;
 			}
 			
 			void Release()
 			{
 				Flush();
-				Core::Release(fence);
-				fenceValue = 0;
+				Core::Release(m_fence);
+				m_fenceValue = 0;
 
-				CloseHandle(fenceEvent);
-				fenceEvent = nullptr;
+				CloseHandle(m_fenceEvent);
+				m_fenceEvent = nullptr;
 
-				Core::Release(commandQueue);
-				Core::Release(commandList);
+				Core::Release(m_commandQueue);
+				Core::Release(m_commandList);
 
 				for (u32 i{ 0 }; i < frameBufferCount; i++)
 				{
-					commandFrames[i].Release();
+					m_commandFrames[i].Release();
 				}
 			}
 
-			constexpr ID3D12CommandQueue* const CommandQueue() const { return commandQueue; }
-			constexpr ID3D12GraphicsCommandList6* const CommandList() const { return commandList; }
-			constexpr u32 FrameIndex() const { return frameIndex; }
+			constexpr ID3D12CommandQueue* const CommandQueue() const { return m_commandQueue; }
+			constexpr ID3D12GraphicsCommandList6* const CommandList() const { return m_commandList; }
+			constexpr u32 FrameIndex() const { return m_frameIndex; }
 
 		private:
 			struct CommandFrame
@@ -166,13 +166,13 @@ namespace Havana::Graphics::D3D12::Core
 				}
 			};
 
-			ID3D12CommandQueue*			commandQueue{ nullptr };
-			ID3D12GraphicsCommandList6* commandList{ nullptr };
-			ID3D12Fence1*				fence{ nullptr };
-			HANDLE						fenceEvent{ nullptr };
-			u64							fenceValue{ 0 };
-			CommandFrame				commandFrames[frameBufferCount]{};
-			u32							frameIndex{ 0 };
+			ID3D12CommandQueue*			m_commandQueue{ nullptr };
+			ID3D12GraphicsCommandList6* m_commandList{ nullptr };
+			ID3D12Fence1*				m_fence{ nullptr };
+			HANDLE						m_fenceEvent{ nullptr };
+			u64							m_fenceValue{ 0 };
+			CommandFrame				m_commandFrames[frameBufferCount]{};
+			u32							m_frameIndex{ 0 };
 		};
 
 		ID3D12Device8*				mainDevice{ nullptr };

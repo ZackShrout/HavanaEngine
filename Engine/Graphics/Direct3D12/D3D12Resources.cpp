@@ -64,7 +64,6 @@ namespace Havana::Graphics::D3D12
 			indices.clear();
 		}
 	}
-
 	
 	void DescriptorHeap::Release()
 	{
