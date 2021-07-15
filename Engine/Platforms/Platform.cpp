@@ -301,37 +301,37 @@ namespace Havana::Platform
 	void Window::SetFullscreen(bool isFullscreen) const
 	{
 		assert(IsValid());
-		SetWindowFullscreen(id, isFullscreen);
+		SetWindowFullscreen(m_id, isFullscreen);
 	}
 
 	bool Window::IsFullscreen() const
 	{
 		assert(IsValid());
-		return IsWindowFullscreen(id);
+		return IsWindowFullscreen(m_id);
 	}
 
 	void* Window::Handle() const
 	{
 		assert(IsValid());
-		return GetWindowHandle(id);
+		return GetWindowHandle(m_id);
 	}
 
 	void Window::SetCaption(const wchar_t* caption) const
 	{
 		assert(IsValid());
-		SetWindowCaption(id, caption);
+		SetWindowCaption(m_id, caption);
 	}
 
 	Math::Vec4u32 Window::Size() const
 	{
 		assert(IsValid());
-		return GetWindowSize(id);
+		return GetWindowSize(m_id);
 	}
 
 	void Window::Resize(u32 width, u32 height) const
 	{
 		assert(IsValid());
-		ResizeWindow(id, width, height);
+		ResizeWindow(m_id, width, height);
 	}
 
 	u32 Window::Width() const
@@ -349,7 +349,7 @@ namespace Havana::Platform
 	bool Window::IsClosed() const
 	{
 		assert(IsValid());
-		return IsWindowClosed(id);
+		return IsWindowClosed(m_id);
 	}
 
 }

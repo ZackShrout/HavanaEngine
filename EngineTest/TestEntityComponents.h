@@ -24,7 +24,7 @@ public:
 			{
 				CreateRandom();
 				RemoveRandom();
-				numEntities = (u32)entities.size();
+				m_numEntities = (u32)m_entities.size();
 			}
 			PrintResults();
 		} while (getchar() != 'q');
@@ -37,16 +37,16 @@ private:
 	void CreateRandom()
 	{
 		u32 count = rand() % 20;
-		if (entities.empty()) count = 1000;
+		if (m_entities.empty()) count = 1000;
 		Transform::InitInfo transformInfo{};
 		Entity::EntityInfo entityInfo { &transformInfo };
 
 		while (count > 0)
 		{
-			++added;
+			++m_added;
 			Entity::Entity entity{ Entity::CreateEntity(entityInfo) };
 			assert(entity.IsValid() && Id::IsValid(entity.GetID()));
-			entities.push_back(entity);
+			m_entities.push_back(entity);
 			assert(Entity::IsAlive(entity.GetID()));
 			--count;
 		}
@@ -55,19 +55,19 @@ private:
 	void RemoveRandom()
 	{
 		u32 count = rand() % 20;
-		if (entities.size() < 1000) return;
+		if (m_entities.size() < 1000) return;
 
 		while (count > 0)
 		{
-			const u32 index{ (u32)rand() % ((u32)entities.size()) };
-			const Entity::Entity entity{ entities[index] };
+			const u32 index{ (u32)rand() % ((u32)m_entities.size()) };
+			const Entity::Entity entity{ m_entities[index] };
 			assert(entity.IsValid() && Id::IsValid(entity.GetID()));
 			if (entity.IsValid())
 			{
 				Entity::RemoveEntity(entity.GetID());
-				entities.erase(entities.begin() + index);
+				m_entities.erase(m_entities.begin() + index);
 				assert(!Entity::IsAlive(entity.GetID()));
-				++removed;
+				++m_removed;
 			}
 			--count;
 		}
@@ -75,12 +75,12 @@ private:
 
 	void PrintResults()
 	{
-		std::cout << "Entities added: " << added << std::endl;
-		std::cout << "Entities removed: " << removed << std::endl;
+		std::cout << "Entities added: " << m_added << std::endl;
+		std::cout << "Entities removed: " << m_removed << std::endl;
 	}
 
-	Utils::vector<Entity::Entity> entities;
-	u32 added{ 0 };
-	u32 removed{ 0 };
-	u32 numEntities{ 0 };
+	Utils::vector<Entity::Entity> m_entities;
+	u32 m_added{ 0 };
+	u32 m_removed{ 0 };
+	u32 m_numEntities{ 0 };
 };

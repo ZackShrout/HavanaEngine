@@ -84,15 +84,15 @@ namespace Havana::Entity
 	// Entity class method implementations
 	Transform::Component Entity::Transform() const
 	{
-		assert(IsAlive(id));
-		const Id::id_type index{ Id::Index(id) };
+		assert(IsAlive(m_id));
+		const Id::id_type index{ Id::Index(m_id) };
 		return transforms[index];
 	}
 
 	Script::Component Entity::Script() const
 	{
-		assert(IsAlive(id));
-		const Id::id_type index{ Id::Index(id) };
+		assert(IsAlive(m_id));
+		const Id::id_type index{ Id::Index(m_id) };
 		return scripts[index];
 	}
 }

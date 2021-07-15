@@ -12,14 +12,14 @@ namespace Havana
 		class Entity
 		{
 		public:
-			constexpr Entity() : id{ Id::INVALID_ID } {}
-			constexpr explicit Entity(entity_id id) : id{ id } {}
-			constexpr entity_id GetID() const { return id; }
-			constexpr bool IsValid() const { return Id::IsValid(id); }
+			constexpr Entity() : m_id{ Id::INVALID_ID } {}
+			constexpr explicit Entity(entity_id id) : m_id{ id } {}
+			constexpr entity_id GetID() const { return m_id; }
+			constexpr bool IsValid() const { return Id::IsValid(m_id); }
 			Transform::Component Transform() const;
 			Script::Component Script() const;
 		private:
-			entity_id id;
+			entity_id m_id;
 		};
 	} // namespace entity
 

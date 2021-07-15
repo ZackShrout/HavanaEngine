@@ -8,12 +8,12 @@ namespace Havana::Script
 	class Component final
 	{
 	public:
-		constexpr Component() : id{ Id::INVALID_ID } {}
-		constexpr explicit Component(script_id id) : id{ id } {}
-		constexpr script_id GetID() const { return id; }
-		constexpr bool IsValid() const { return Id::IsValid(id); }
+		constexpr Component() : m_id{ Id::INVALID_ID } {}
+		constexpr explicit Component(script_id id) : m_id{ id } {}
+		constexpr script_id GetID() const { return m_id; }
+		constexpr bool IsValid() const { return Id::IsValid(m_id); }
 
 	private:
-		script_id id;
+		script_id m_id;
 	};
 }

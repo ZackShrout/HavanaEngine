@@ -43,18 +43,18 @@ namespace Havana::Transform
 	Math::Vec3 Component::Position() const
 	{
 		assert(IsValid());
-		return positions[Id::Index(id)];
+		return positions[Id::Index(m_id)];
 	}
 	
 	Math::Vec4 Component::Rotation() const
 	{
 		assert(IsValid());
-		return rotations[Id::Index(id)];
+		return rotations[Id::Index(m_id)];
 	}
 
 	Math::Vec3 Component::Scale() const
 	{
 		assert(IsValid());
-		return scales[Id::Index(id)];
+		return scales[Id::Index(m_id)];
 	}
 }
