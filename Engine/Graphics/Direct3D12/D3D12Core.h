@@ -1,6 +1,11 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
+namespace Havana::Graphics::D3D12
+{
+	class DescriptorHeap;
+}
+
 namespace Havana::Graphics::D3D12::Core
 {
 	bool Initialize();
@@ -33,6 +38,11 @@ namespace Havana::Graphics::D3D12::Core
 	}
 
 	ID3D12Device* const Device();
+	DescriptorHeap& RTVHeap();
+	DescriptorHeap& DSVHeap();
+	DescriptorHeap& SRVHeap();
+	DescriptorHeap& UAVHeap();
+	DXGI_FORMAT DefaultRenderTargetFormat();
 	u32 CurrentFrameIndex();
 	void SetDeferredReleasesFlag();
 }

@@ -37,4 +37,39 @@ namespace Havana::Graphics
 	{
 		gfx.Render();
 	}
+
+	Surface CreateSurface(Platform::Window window)
+	{
+		return gfx.surface.Create(window);
+	}
+
+	void RemoveSurface(surface_id id)
+	{
+		assert(Id::IsValid(id));
+		gfx.surface.Remove(id);
+	}
+
+	void Surface::Resize(u32 width, u32 height) const
+	{
+		assert(IsValid());
+		return gfx.surface.Resize(m_id, width, height);
+	}
+
+	u32 Surface::Width() const
+	{
+		assert(IsValid());
+		return gfx.surface.Width(m_id);
+	}
+
+	u32 Surface::Height() const
+	{
+		assert(IsValid());
+		return gfx.surface.Height(m_id);
+	}
+
+	void Surface::Render() const
+	{
+		assert(IsValid());
+		gfx.surface.Render(m_id);
+	}
 }

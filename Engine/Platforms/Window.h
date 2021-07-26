@@ -9,7 +9,7 @@ namespace Havana::Platform
 	class Window
 	{
 	public:
-		constexpr Window() : m_id{ Id::INVALID_ID } {}
+		constexpr Window() = default;
 		constexpr explicit Window(window_id id) : m_id{ id } {}
 		constexpr window_id GetID() const { return m_id; }
 		constexpr bool IsValid() const { return Id::IsValid(m_id); }

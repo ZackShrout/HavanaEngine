@@ -1,5 +1,5 @@
 #include "D3D12Resources.h"
-#include "D3DCore.h"
+#include "D3D12Core.h"
 
 namespace Havana::Graphics::D3D12
 {

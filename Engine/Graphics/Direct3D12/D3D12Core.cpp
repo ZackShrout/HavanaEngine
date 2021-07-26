@@ -1,4 +1,4 @@
-#include "D3DCore.h"
+#include "D3D12Core.h"
 #include "D3D12Resources.h"
 
 using namespace Microsoft::WRL;
@@ -187,6 +187,7 @@ namespace Havana::Graphics::D3D12::Core
 		std::mutex					deferredReleasesMutex{};
 
 		constexpr D3D_FEATURE_LEVEL minimumFeatureLevel{ D3D_FEATURE_LEVEL_11_0 };
+		constexpr DXGI_FORMAT renderTargetFormat{ DXGI_FORMAT_R8G8B8A8_UNORM_SRGB };
 
 		bool FailedInit()
 		{
@@ -426,6 +427,16 @@ namespace Havana::Graphics::D3D12::Core
 	{
 		return mainDevice;
 	}
+	
+	DescriptorHeap& RTVHeap() { return rtvDescHeap; }
+
+	DescriptorHeap& DSVHeap() { return dsvDescHeap; }
+
+	DescriptorHeap& SRVHeap() { return uavDescHeap; }
+
+	DescriptorHeap& UAVHeap() { return uavDescHeap; }
+
+	DXGI_FORMAT DefaultRenderTargetFormat() { return renderTargetFormat; }
 	
 	u32 CurrentFrameIndex()
 	{

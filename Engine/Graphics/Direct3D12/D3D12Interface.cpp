@@ -1,7 +1,7 @@
 #include "..\Common\CommonHeaders.h"
 #include "..\Graphics\GraphicsPlatformInterface.h"
 #include "D3D12Interface.h"
-#include "D3DCore.h"
+#include "D3D12Core.h"
 
 namespace Havana::Graphics
 {
