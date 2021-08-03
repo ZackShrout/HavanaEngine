@@ -36,6 +36,7 @@
     <ClInclude Include="Graphics\Direct3D12\D3D12Surface.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12Core.h" />
     <ClInclude Include="Graphics\GraphicsPlatformInterface.h" />
+    <ClInclude Include="Graphics\OpenGL\OpenGLCore.h" />
     <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="Platforms\Platform.h" />
     <ClInclude Include="Platforms\PlatformTypes.h" />

@@ -1,5 +1,6 @@
 #include "D3D12Core.h"
 #include "D3D12Resources.h"
+#include "D3D12Surface.h"
 
 using namespace Microsoft::WRL;
 
@@ -178,6 +179,7 @@ namespace Havana::Graphics::D3D12::Core
 		ID3D12Device8*				mainDevice{ nullptr };
 		IDXGIFactory7*				dxgiFactory{ nullptr };
 		D3D12Command				gfxCommand;
+		Utils::vector<D3D12Surface> surfaces;
 		DescriptorHeap				rtvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
 		DescriptorHeap				dsvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
 		DescriptorHeap				srvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
@@ -400,29 +402,6 @@ namespace Havana::Graphics::D3D12::Core
 		Release(mainDevice);
 	}
 
-	void Render()
-	{
-		// Wait for the GPU to finish with the command allocator and
-		// reset the allocator once the GPU is done with it.
-		// This frees the memory that was used to store commands.
-		gfxCommand.BeginFrame();
-		ID3D12GraphicsCommandList6* commandList{ gfxCommand.CommandList() };
-
-		// Check to see if there are deferred releases to handle
-		const u32 frameIdx{ CurrentFrameIndex() };
-		if (deferredReleasesFlag[frameIdx])
-		{
-			(ProcessDeferredReleases(frameIdx));
-		}
-
-		// Record commands
-		// ......
-		//
-		// Done recording commands, now execute them,
-		// signal and incriment fence value for next frame.
-		gfxCommand.EndFrame();
-	}
-
 	ID3D12Device* const Device()
 	{
 		return mainDevice;
@@ -446,6 +425,65 @@ namespace Havana::Graphics::D3D12::Core
 	void SetDeferredReleasesFlag()
 	{
 		deferredReleasesFlag[CurrentFrameIndex()] = 1;
+	}
+
+	Surface CreateSurface(Platform::Window window)
+	{
+		surfaces.emplace_back(window);
+		surface_id id{ (u32)surfaces.size() - 1 };
+		surfaces[id].CreateSwapChain(dxgiFactory, gfxCommand.CommandQueue(), renderTargetFormat);
+		return Surface{ id };
+	}
+
+	void RemoveSurface(surface_id id)
+	{
+		gfxCommand.Flush();
+		// TODO: use proper removal of surfaces.
+		surfaces[id].~D3D12Surface();
+	}
+
+	void ResizeSurface(surface_id id, u32, u32)
+	{
+		gfxCommand.Flush();
+		surfaces[id].Resize();
+	}
+	
+	u32 SurfaceWidth(surface_id id)
+	{
+		return surfaces[id].Width();
+	}
+
+	u32 SurfaceHeight(surface_id id)
+	{
+		return surfaces[id].Height();
+	}
+
+	void RenderSurface(surface_id id)
+	{
+		// Wait for the GPU to finish with the command allocator and
+		// reset the allocator once the GPU is done with it.
+		// This frees the memory that was used to store commands.
+		gfxCommand.BeginFrame();
+		ID3D12GraphicsCommandList6* commandList{ gfxCommand.CommandList() };
+
+		// Check to see if there are deferred releases to handle
+		const u32 frameIdx{ CurrentFrameIndex() };
+		if (deferredReleasesFlag[frameIdx])
+		{
+			(ProcessDeferredReleases(frameIdx));
+		}
+		
+		const D3D12Surface& surface{ surfaces[id] };
+		
+		// Presenting swap chain buffers happens in lockstep with frame buffers.
+		surface.Present();
+
+		// Record commands
+		// ......
+		//
+		// Done recording commands, now execute them,
+		// signal and incriment fence value for next frame.
+		gfxCommand.EndFrame();
 	}
 
 }

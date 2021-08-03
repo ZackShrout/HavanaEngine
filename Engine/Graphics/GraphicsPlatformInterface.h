@@ -9,7 +9,6 @@ namespace Havana::Graphics
 	{
 		bool(*Initialize)(void);
 		void(*Shutdown)(void);
-		void(*Render)(void);
 
 		struct
 		{
@@ -19,6 +18,6 @@ namespace Havana::Graphics
 			u32(*Width)(surface_id);
 			u32(*Height)(surface_id);
 			void(*Render)(surface_id);
-		} surface;
+		} Surface;
 	};
 }

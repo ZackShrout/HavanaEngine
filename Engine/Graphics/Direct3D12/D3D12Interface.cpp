@@ -11,7 +11,13 @@ namespace Havana::Graphics
 		{
 			platformInterface.Initialize = Core::Initialize;
 			platformInterface.Shutdown = Core::Shutdown;
-			platformInterface.Render = Core::Render;
+
+			platformInterface.Surface.Create = Core::CreateSurface;
+			platformInterface.Surface.Remove = Core::RemoveSurface;
+			platformInterface.Surface.Resize = Core::ResizeSurface;
+			platformInterface.Surface.Width = Core::SurfaceWidth;
+			platformInterface.Surface.Height = Core::SurfaceHeight;
+			platformInterface.Surface.Render = Core::RenderSurface;
 		}
 	} // D3D12 namespace
 }

@@ -10,7 +10,6 @@ namespace Havana::Graphics::D3D12::Core
 {
 	bool Initialize();
 	void Shutdown();
-	void Render();
 
 	template<typename T>
 	constexpr void Release(T*& resource)
@@ -45,4 +44,11 @@ namespace Havana::Graphics::D3D12::Core
 	DXGI_FORMAT DefaultRenderTargetFormat();
 	u32 CurrentFrameIndex();
 	void SetDeferredReleasesFlag();
+
+	Surface CreateSurface(Platform::Window window);
+	void RemoveSurface(surface_id id);
+	void ResizeSurface(surface_id id, u32, u32);
+	u32 SurfaceWidth(surface_id id);
+	u32 SurfaceHeight(surface_id id);
+	void RenderSurface(surface_id id);
 }

@@ -20,11 +20,16 @@ namespace Havana::Graphics::D3D12
 		assert(factory && cmdQueue);
 		Release();
 
+		if (SUCCEEDED(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &m_allowTearing, sizeof(u32))) && m_allowTearing)
+		{
+			m_presentFlags = DXGI_PRESENT_ALLOW_TEARING;
+		}
+
 		DXGI_SWAP_CHAIN_DESC1 desc{};
 		desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 		desc.BufferCount = frameBufferCount;
 		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		desc.Flags = 0;
+		desc.Flags = m_allowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 		desc.Format = ToNonSRGB(format);
 		desc.Height = m_window.Height();
 		desc.Width = m_window.Width();
@@ -54,7 +59,7 @@ namespace Havana::Graphics::D3D12
 	void D3D12Surface::Present() const
 	{
 		assert(m_swapChain);
-		DXCall(m_swapChain->Present(0, 0));
+		DXCall(m_swapChain->Present(0, m_presentFlags));
 		m_currentBBIndex = m_swapChain->GetCurrentBackBufferIndex();
 	}
 

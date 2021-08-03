@@ -31,12 +31,12 @@ namespace Havana::Graphics
 
 	enum GraphicsPlatform : u32
 	{
-		Direct3D12 = 0
+		Direct3D12 = 0,
+		OpenGL = 1
 	};
 	
 	bool Initialize(GraphicsPlatform platform);
 	void Shutdown();
-	void Render();
 
 	Surface CreateSurface(Platform::Window window);
 	void RemoveSurface(surface_id id);

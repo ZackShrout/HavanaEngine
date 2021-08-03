@@ -8,6 +8,8 @@
 using namespace Havana;
 
 Graphics::RenderSurface surfaces[4];
+TimeIt timer{};
+void DestroyRenderSurface(Graphics::RenderSurface& surface);
 
 LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -18,9 +20,16 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		bool allClosed{ true };
 		for (u32 i{ 0 }; i < _countof(surfaces); i++)
 		{
-			if (!surfaces[i].window.IsClosed())
+			if (surfaces[i].window.IsValid())
 			{
-				allClosed = false;
+				if (surfaces[i].window.IsClosed())
+				{
+					DestroyRenderSurface(surfaces[i]);
+				}
+				else
+				{
+					allClosed = false;
+				}
 			}
 		}
 		if (allClosed)
@@ -38,6 +47,12 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 			return 0;
 		}
 		break;
+	case WM_KEYDOWN:
+		if (wparam == VK_ESCAPE)
+		{
+			PostMessage(hwnd, WM_CLOSE, 0, 0);
+			return 0;
+		}
 	default:
 		break;
 	}
@@ -48,11 +63,15 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 void CreateRenderSurface(Graphics::RenderSurface& surface, Platform::WindowInitInfo info)
 {
 	surface.window = Platform::MakeWindow(&info);
+	surface.surface = Graphics::CreateSurface(surface.window);
 }
 
 void DestroyRenderSurface(Graphics::RenderSurface& surface)
 {
-	Platform::RemoveWindow(surface.window.GetID());
+	Graphics::RenderSurface temp{ surface };
+	surface = {};
+	if(temp.surface.IsValid()) Graphics::RemoveSurface(temp.surface.GetID());
+	if(temp.surface.IsValid()) Platform::RemoveWindow(temp.window.GetID());
 }
 
 bool EngineTest::Initialize()
@@ -79,8 +98,19 @@ bool EngineTest::Initialize()
 
 void EngineTest::Run()
 {
-	std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	Graphics::Render();
+	timer.Begin();
+	
+	//std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+	for (u32 i{ 0 }; i < _countof(surfaces); i++)
+	{
+		if (surfaces[i].surface.IsValid())
+		{
+			surfaces[i].surface.Render();
+		}
+	}
+
+	timer.End();
 }
 
 void EngineTest::Shutdown()
