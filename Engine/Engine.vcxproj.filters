@@ -26,6 +26,9 @@
     <ClInclude Include="Graphics\Direct3D12\D3D12Resources.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12Surface.h" />
     <ClInclude Include="Graphics\OpenGL\OpenGLCore.h" />
+    <ClInclude Include="Graphics\OpenGL\OpenGLCommonHeaders.h" />
+    <ClInclude Include="Utilities\FreeList.h" />
+    <ClInclude Include="Utilities\Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\Entity.cpp" />

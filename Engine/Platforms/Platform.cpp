@@ -18,37 +18,9 @@ namespace Havana::Platform
 			bool	isClosed{ false };
 		};
 
-		Utils::vector<WindowInfo> windows;
+		Utils::free_list<WindowInfo> windows;
 
-		/////////////////////////////////////////////////////////////////
-		// TODO: this part will be handled by a free-list container later
-		Utils::vector<u32> availableSlots;
-
-		u32 AddToWindows(WindowInfo info)
-		{
-			u32 id{ U32_INVALID_ID };
-			if (availableSlots.empty())
-			{
-				id = (u32)windows.size();
-				windows.emplace_back(info);
-			}
-			else
-			{
-				id = availableSlots.back();
-				availableSlots.pop_back();
-				assert(id != U32_INVALID_ID);
-				windows[id] = info;
-			}
-
-			return id;
-		}
-
-		void RemoveFromWindows(u32 id)
-		{
-			assert(id < windows.size());
-			availableSlots.emplace_back(id);
-		}
-		/////////////////////////////////////////////////////////////////
+		
 
 		WindowInfo& GetFromId(window_id id)
 		{
@@ -259,7 +231,7 @@ namespace Havana::Platform
 		if (info.hwnd)
 		{
 			DEBUG_OP(SetLastError(0));
-			const window_id id{ AddToWindows(info) };
+			const window_id id{ windows.add(info) };
 			// Include the window ID in the window class data structure
 			SetWindowLongPtr(info.hwnd, GWLP_USERDATA, (LONG_PTR)id);
 
@@ -284,7 +256,7 @@ namespace Havana::Platform
 	{
 		WindowInfo& info{ GetFromId(id) };
 		DestroyWindow(info.hwnd);
-		RemoveFromWindows(id);
+		windows.remove(id);
 	}
 #elif __APPLE__
 	// OSX stuff here... open window for Metal context

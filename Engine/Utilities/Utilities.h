@@ -41,3 +41,5 @@ namespace Havana::Utils
 {
 	// TODO: implement our own containers
 }
+
+#include "FreeList.h"

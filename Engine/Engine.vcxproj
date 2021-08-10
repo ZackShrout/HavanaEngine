@@ -36,14 +36,17 @@
     <ClInclude Include="Graphics\Direct3D12\D3D12Surface.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12Core.h" />
     <ClInclude Include="Graphics\GraphicsPlatformInterface.h" />
+    <ClInclude Include="Graphics\OpenGL\OpenGLCommonHeaders.h" />
     <ClInclude Include="Graphics\OpenGL\OpenGLCore.h" />
     <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="Platforms\Platform.h" />
     <ClInclude Include="Platforms\PlatformTypes.h" />
     <ClInclude Include="Platforms\Window.h" />
+    <ClInclude Include="Utilities\FreeList.h" />
     <ClInclude Include="Utilities\Math.h" />
     <ClInclude Include="Utilities\MathTypes.h" />
     <ClInclude Include="Utilities\Utilities.h" />
+    <ClInclude Include="Utilities\Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\Entity.cpp" />
@@ -223,7 +226,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <CallingConvention>FastCall</CallingConvention>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Common;$(SolutionDir)Glad\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
