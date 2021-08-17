@@ -38,7 +38,9 @@ namespace Havana::Graphics::D3D12
 
 			return *this;
 		}
-#endif
+#else
+		DISABLE_COPY_AND_MOVE(D3D12Surface);
+#endif // USE_STL_VECTOR
 		~D3D12Surface() { Release(); }
 
 		void CreateSwapChain(IDXGIFactory7* factory, ID3D12CommandQueue* cmdQueue, DXGI_FORMAT format);
@@ -102,6 +104,6 @@ namespace Havana::Graphics::D3D12
 
 			o.Reset();
 		}
-#endif
+#endif // USE_STL_VECTOR
 	};
 }

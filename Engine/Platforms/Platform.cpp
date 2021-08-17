@@ -20,8 +20,6 @@ namespace Havana::Platform
 
 		Utils::free_list<WindowInfo> windows;
 
-		
-
 		WindowInfo& GetFromId(window_id id)
 		{
 			assert(id < windows.size());

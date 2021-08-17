@@ -2,7 +2,7 @@
 
 // Set these flags to 1 to use STL vector and deque
 // Set these flags to 0 to use custom implementeation of those containers
-#define USE_STL_VECTOR 1
+#define USE_STL_VECTOR 0
 #define USE_STL_DEQUE 1
 
 #if USE_STL_VECTOR
@@ -24,6 +24,16 @@
 			{
 				v.clear();
 			}
+		}
+	}
+#else
+	#include "Vector.h"
+	namespace Havana::Utils
+	{
+		template<typename T>
+		void EraseUnordered(vector<T>& v, size_t index)
+		{
+			v.erase_unordered(index);
 		}
 	}
 #endif

@@ -4,6 +4,10 @@
 
 namespace Havana::Utils
 {
+#if USE_STL_VECTOR
+	#pragma message("WARNING: using Utils::free_list with std::vector results in duplicate calls to class constructor!")
+#endif
+
 	template<typename T>
 	class free_list
 	{
@@ -11,7 +15,13 @@ namespace Havana::Utils
 	public:
 		free_list() = default;
 		explicit free_list(u32 count) { m_array.reserve(count); }
-		~free_list() { assert(!m_size); }
+		~free_list() 
+		{ 
+			assert(!m_size);
+#if USE_STL_VECTOR
+			memset(m_array.data(), 0, m_array.size() * sizeof(T));
+#endif
+		}
 
 		template<class... params>
 		constexpr u32 add(params&&... p)
@@ -87,9 +97,12 @@ namespace Havana::Utils
 				return true;
 			}
 		}
-
-		Utils::vector<T>		m_array;
-		u32						m_nextFreeIndex{ U32_INVALID_ID };
-		u32						m_size{ 0 };
+#if USE_STL_VECTOR
+		Utils::vector<T>			m_array;
+#else
+		Utils::vector<T, false>		m_array;
+#endif
+		u32							m_nextFreeIndex{ U32_INVALID_ID };
+		u32							m_size{ 0 };
 	};
 }

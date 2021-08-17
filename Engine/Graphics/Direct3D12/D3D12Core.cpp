@@ -176,10 +176,12 @@ namespace Havana::Graphics::D3D12::Core
 			u32							m_frameIndex{ 0 };
 		};
 
+		using surface_collection = Utils::free_list<D3D12Surface>;
+
 		ID3D12Device8*				mainDevice{ nullptr };
 		IDXGIFactory7*				dxgiFactory{ nullptr };
 		D3D12Command				gfxCommand;
-		Utils::vector<D3D12Surface> surfaces;
+		surface_collection			surfaces;
 		DescriptorHeap				rtvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
 		DescriptorHeap				dsvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
 		DescriptorHeap				srvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
@@ -429,8 +431,7 @@ namespace Havana::Graphics::D3D12::Core
 
 	Surface CreateSurface(Platform::Window window)
 	{
-		surfaces.emplace_back(window);
-		surface_id id{ (u32)surfaces.size() - 1 };
+		surface_id id{ surfaces.add(window) };
 		surfaces[id].CreateSwapChain(dxgiFactory, gfxCommand.CommandQueue(), renderTargetFormat);
 		return Surface{ id };
 	}
@@ -438,8 +439,7 @@ namespace Havana::Graphics::D3D12::Core
 	void RemoveSurface(surface_id id)
 	{
 		gfxCommand.Flush();
-		// TODO: use proper removal of surfaces.
-		surfaces[id].~D3D12Surface();
+		surfaces.remove(id);
 	}
 
 	void ResizeSurface(surface_id id, u32, u32)
