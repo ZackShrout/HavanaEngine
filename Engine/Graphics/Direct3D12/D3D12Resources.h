@@ -56,4 +56,58 @@ namespace Havana::Graphics::D3D12
 		u32									m_descriptorSize{ 0 };
 		const D3D12_DESCRIPTOR_HEAP_TYPE	m_type{};
 	};
+
+	struct D3D12TextureInitInfo
+	{
+		ID3D12Heap1*						heap{ nullptr };
+		ID3D12Resource*						resource{ nullptr };
+		D3D12_SHADER_RESOURCE_VIEW_DESC*	srvDesc{ nullptr };
+		D3D12_RESOURCE_DESC*				desc{ nullptr };
+		D3D12_RESOURCE_ALLOCATION_INFO1		allocationInfo{};
+		D3D12_RESOURCE_STATES				initialState{};
+		D3D12_CLEAR_VALUE					clearValue{};
+	};
+	
+	class D3D12Texture
+	{
+	public:
+		D3D12Texture() = default;
+		explicit D3D12Texture(D3D12TextureInitInfo info);
+		DISABLE_COPY(D3D12Texture);
+		constexpr D3D12Texture(D3D12Texture&& o) : m_resource{ o.m_resource }, m_srv{ o.m_srv }
+		{
+			o.Reset();
+		}
+		constexpr D3D12Texture& operator=(D3D12Texture&& o)
+		{
+			assert(this != &o);
+			if (this != &o)
+			{
+				Release();
+				Move(o);
+			}
+			return *this;
+		}
+
+		void Release();
+		constexpr ID3D12Resource* const Resource() const { return m_resource; }
+		constexpr DescriptorHandle SRV() const { return m_srv; }
+
+	private:
+		constexpr void Move(D3D12Texture& o)
+		{
+			m_resource = o.m_resource;
+			m_srv = o.m_srv;
+			o.Reset();
+		}
+
+		constexpr void Reset()
+		{
+			m_resource = nullptr;
+			m_srv = {};
+		}
+
+		ID3D12Resource* m_resource{ nullptr };
+		DescriptorHandle m_srv;
+	};
 }

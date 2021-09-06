@@ -64,7 +64,7 @@ namespace Havana::Utils
 			return m_array.size();
 		}
 
-		constexpr u32 empty() const
+		constexpr bool empty() const
 		{
 			return m_size == 0;
 		}

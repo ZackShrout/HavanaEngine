@@ -95,10 +95,10 @@ namespace Havana::Utils
 			}
 			assert(m_size < m_capacity);
 
-			new (std::addressof(m_data[m_size])) T(std::forward<params>(p)...);
+			T* const item{ new (std::addressof(m_data[m_size])) T(std::forward<params>(p)...) };
 			++m_size;
 
-			return m_data[m_size - 1];
+			return *item;
 		}
 
 		// Resizes the vector and initializes new items with their default value.
@@ -120,6 +120,8 @@ namespace Havana::Utils
 				{
 					DestructRange(newSize, m_size);
 				}
+
+				m_size = newSize;
 			}
 
 			// Do nothing if newSize == m_size
@@ -145,6 +147,8 @@ namespace Havana::Utils
 				{
 					DestructRange(newSize, m_size);
 				}
+
+				m_size = newSize;
 			}
 
 			// Do nothing if newSize == m_size
@@ -225,9 +229,9 @@ namespace Havana::Utils
 		{
 			if (this != std::addressof(o))
 			{
-				auto temp(o);
-				o = *this;
-				*this = temp;
+				auto temp(std::move(o));
+				o.move(*this);
+				move(temp);
 			}
 		}
 

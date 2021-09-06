@@ -13,7 +13,7 @@
 		using vector = std::vector<T>;
 
 		template<typename T>
-		void EraseUnordered(std::vector<T>& v, size_t index)
+		void EraseUnordered(T& v, size_t index)
 		{
 			if (v.size() > 1)
 			{
@@ -31,7 +31,7 @@
 	namespace Havana::Utils
 	{
 		template<typename T>
-		void EraseUnordered(vector<T>& v, size_t index)
+		void EraseUnordered(T& v, size_t index)
 		{
 			v.erase_unordered(index);
 		}

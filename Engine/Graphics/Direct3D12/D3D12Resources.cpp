@@ -1,5 +1,6 @@
 #include "D3D12Resources.h"
 #include "D3D12Core.h"
+#include "D3D12Helpers.h"
 
 namespace Havana::Graphics::D3D12
 {
@@ -111,5 +112,51 @@ namespace Havana::Graphics::D3D12
 		m_deferredFreeIndices[frameIdx].push_back(index);
 		Core::SetDeferredReleasesFlag();
 		handle = {};
+	}
+
+	//// D3D12 TEXTURE ////////////////////////////////////////////////////////////////////////////
+	D3D12Texture::D3D12Texture(D3D12TextureInitInfo info)
+	{
+		auto* const device{ Core::Device() };
+		assert(device);
+
+		D3D12_CLEAR_VALUE* const clearValue
+		{
+			(info.desc &&
+			(info.desc->Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET ||
+				info.desc->Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL))
+			? &info.clearValue : nullptr
+		};
+
+		if (info.resource)
+		{
+			assert(!info.heap);
+			m_resource = info.resource;
+		}
+		else if (info.heap && info.desc)
+		{
+			assert(!info.resource);
+			DXCall(device->CreatePlacedResource(
+				info.heap, info.allocationInfo.Offset, info.desc, info.initialState,
+				clearValue, IID_PPV_ARGS(&m_resource)));
+		}
+		else if(info.desc)
+		{
+			assert(!info.resource);
+
+			DXCall(device->CreateCommittedResource(
+				&D3DX::heapProperties.defaultHeap, D3D12_HEAP_FLAG_NONE, info.desc, info.initialState,
+				clearValue, IID_PPV_ARGS(&m_resource)));
+		}
+
+		assert(m_resource);
+		m_srv = Core::SRVHeap().Allocate();
+		device->CreateShaderResourceView(m_resource, info.srvDesc, m_srv.cpu);
+	}
+
+	void D3D12Texture::Release()
+	{
+		Core::SRVHeap().Free(m_srv);
+		Core::DeferredRelease(m_resource);
 	}
 }

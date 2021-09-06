@@ -7,6 +7,7 @@ namespace Havana::Graphics::D3D12
 	class D3D12Surface
 	{
 	public:
+		constexpr static u32 bufferCount{ 3 };
 		explicit D3D12Surface(Platform::Window window) : m_window{ window }
 		{
 			assert(m_window.Handle());
@@ -62,7 +63,7 @@ namespace Havana::Graphics::D3D12
 
 		Platform::Window	m_window{};
 		IDXGISwapChain4*	m_swapChain{ nullptr };
-		RenderTargetData	m_renderTargetData[frameBufferCount]{};
+		RenderTargetData	m_renderTargetData[bufferCount]{};
 		mutable u32			m_currentBBIndex{ 0 };
 		u32					m_allowTearing{ 0 };
 		u32					m_presentFlags{ 0 };
@@ -77,7 +78,7 @@ namespace Havana::Graphics::D3D12
 		{
 			m_window = {};
 			m_swapChain = nullptr;
-			for (u32 i{ 0 }; i < frameBufferCount; i++)
+			for (u32 i{ 0 }; i < bufferCount; i++)
 			{
 				m_renderTargetData[i] = {};
 			}

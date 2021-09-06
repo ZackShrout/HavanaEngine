@@ -27,7 +27,7 @@ namespace Havana::Graphics::D3D12
 
 		DXGI_SWAP_CHAIN_DESC1 desc{};
 		desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-		desc.BufferCount = frameBufferCount;
+		desc.BufferCount = bufferCount;
 		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		desc.Flags = m_allowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 		desc.Format = ToNonSRGB(format);
@@ -72,7 +72,7 @@ namespace Havana::Graphics::D3D12
 	void D3D12Surface::Finalize()
 	{
 		// Create RTVs for back-buffers
-		for (u32 i{ 0 }; i < frameBufferCount; i++)
+		for (u32 i{ 0 }; i < bufferCount; i++)
 		{
 			RenderTargetData& data{ m_renderTargetData[i] };
 			assert(!data.resource);
@@ -102,7 +102,7 @@ namespace Havana::Graphics::D3D12
 	
 	void D3D12Surface::Release()
 	{
-		for (u32 i{ 0 }; i < frameBufferCount; i++)
+		for (u32 i{ 0 }; i < bufferCount; i++)
 		{
 			RenderTargetData& data{ m_renderTargetData[i] };
 			Core::Release(data.resource);
