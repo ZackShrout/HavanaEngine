@@ -20,7 +20,7 @@ namespace Havana::Graphics::D3D12
 
 		Release();
 
-		ID3D12Device* const device{ Core::Device() };
+		auto* const device{ Core::Device() };
 		assert(device);
 
 		D3D12_DESCRIPTOR_HEAP_DESC desc{};
@@ -158,5 +158,76 @@ namespace Havana::Graphics::D3D12
 	{
 		Core::SRVHeap().Free(m_srv);
 		Core::DeferredRelease(m_resource);
+	}
+
+	//// RENDER TEXTURE ///////////////////////////////////////////////////////////////////////////
+	D3D12RenderTexture::D3D12RenderTexture(D3D12TextureInitInfo info) : m_texture{ info }
+	{
+		m_mipCount = Resource()->GetDesc().MipLevels;
+		assert(m_mipCount && m_mipCount <= D3D12Texture::maxMips);
+
+		DescriptorHeap& rtvHeap{ Core::RTVHeap() };
+		D3D12_RENDER_TARGET_VIEW_DESC desc{};
+		desc.Format = info.desc->Format;
+		desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+		desc.Texture2D.MipSlice = 0;
+
+		auto* const device{ Core::Device() };
+		assert(device);
+
+		for (u32 i{ 0 }; i < m_mipCount; i++)
+		{
+			m_rtv[i] = rtvHeap.Allocate();
+			device->CreateRenderTargetView(Resource(), &desc, m_rtv[i].cpu);
+			++desc.Texture2D.MipSlice;
+		}
+	}
+
+	void D3D12RenderTexture::Release()
+	{
+		for (u32 i{ 0 }; i < m_mipCount; i++) Core::RTVHeap().Free(m_rtv[i]);
+		m_mipCount = 0;
+	}
+	//// DEPTH BUFFER /////////////////////////////////////////////////////////////////////////////
+	D3D12DepthBuffer::D3D12DepthBuffer(D3D12TextureInitInfo info)
+	{
+		assert(info.desc);
+		const DXGI_FORMAT dsvFormat{ info.desc->Format };
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+		// depth stencil view cannot be the same format as the shader resource view
+		if (info.desc->Format == DXGI_FORMAT_D32_FLOAT)
+		{
+			info.desc->Format == DXGI_FORMAT_R32_TYPELESS;
+			srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+		}
+
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MipLevels = 1;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.PlaneSlice = 0;
+		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+		assert(!info.srvDesc && !info.resource);
+		info.srvDesc = &srvDesc;
+		m_texture = D3D12Texture(info);
+
+		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+		dsvDesc.Format = dsvFormat; // Now that info was used to make the texture, revert the depth stencil view to it's previous format
+		dsvDesc.Texture2D.MipSlice = 0;
+
+		m_dsv = Core::DSVHeap().Allocate();
+		auto* const device{ Core::Device() };
+		assert(device);
+		device->CreateDepthStencilView(Resource(), &dsvDesc, m_dsv.cpu);
+	}
+	
+	void D3D12DepthBuffer::Release()
+	{
+		Core::DSVHeap().Free(m_dsv);
+		m_texture.Release();
 	}
 }
