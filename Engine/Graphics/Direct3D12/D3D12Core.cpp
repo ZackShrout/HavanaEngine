@@ -6,6 +6,8 @@ using namespace Microsoft::WRL;
 
 namespace Havana::Graphics::D3D12::Core
 {
+	// TODO: remove when example is not needed
+	void CreateRootSignature();
 	namespace
 	{
 		class D3D12Command
@@ -353,6 +355,9 @@ namespace Havana::Graphics::D3D12::Core
 		NAME_D3D12_OBJECT(srvDescHeap.Heap(), L"SRV Descriptor Heap");
 		NAME_D3D12_OBJECT(uavDescHeap.Heap(), L"USV Descriptor Heap");
 
+		// TODO: remove
+		CreateRootSignature();
+
 		return true;
 	}
 
@@ -486,4 +491,88 @@ namespace Havana::Graphics::D3D12::Core
 		gfxCommand.EndFrame();
 	}
 
+	// Demonstrates how to create a root signature. Exmaple only, will be removed later once helper functions have been written
+	void CreateRootSignature()
+	{
+		D3D12_ROOT_PARAMETER1 params[3];
+		{// param 0: 2 constants
+			auto& param = params[0];
+			param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+			D3D12_ROOT_CONSTANTS consts{};
+			consts.Num32BitValues = 2;
+			consts.ShaderRegister = 0;
+			consts.RegisterSpace = 0;
+			param.Constants = consts;
+			param.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		}
+		{// param 1: 1 constant buffer view (descriptor)
+			auto& param = params[1];
+			param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			D3D12_ROOT_DESCRIPTOR1 rootDesc{};
+			rootDesc.Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE;
+			rootDesc.ShaderRegister = 0;
+			rootDesc.RegisterSpace = 0;
+			param.Descriptor = rootDesc;
+			param.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+		}
+		{// param 2: root descriptor table (unbounded/bindless)
+			auto& param = params[2];
+			param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			D3D12_ROOT_DESCRIPTOR_TABLE1 table{};
+			table.NumDescriptorRanges = 1;
+			D3D12_DESCRIPTOR_RANGE1 range{};
+			range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			range.NumDescriptors = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+			range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+			range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+			range.BaseShaderRegister = 0;
+			range.RegisterSpace = 0;
+			table.pDescriptorRanges = &range;
+			param.DescriptorTable = table;
+			param.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		}
+
+		D3D12_STATIC_SAMPLER_DESC samplerDesc{};
+		samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+		D3D12_ROOT_SIGNATURE_DESC1 desc{};
+		desc.Flags =
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS;
+		desc.NumParameters = _countof(params);
+		desc.pParameters = &params[0];
+		desc.NumStaticSamplers = 1;
+		desc.pStaticSamplers = &samplerDesc;
+
+		D3D12_VERSIONED_ROOT_SIGNATURE_DESC rsDesc{};
+		rsDesc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
+		rsDesc.Desc_1_1 = desc;
+		
+		HRESULT hr{ S_OK };
+		ID3DBlob* rootSigBlob{ nullptr };
+		ID3DBlob* errorBlob{ nullptr };
+		if (FAILED(hr = D3D12SerializeVersionedRootSignature(&rsDesc, &rootSigBlob, &errorBlob)))
+		{
+			DEBUG_OP(const char* errorMsg{ errorBlob ? (const char*)errorBlob->GetBufferPointer() : "" });
+			DEBUG_OP(OutputDebugStringA(errorMsg));
+			return;
+		}
+		
+		assert(rootSigBlob);
+		ID3D12RootSignature* rootSig{ nullptr };
+		DXCall(hr = Device()->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS(&rootSig)));
+		Release(rootSigBlob);
+		Release(errorBlob);
+
+		// Use rootSig
+
+		// When renderer shuts down
+		Release(rootSig);
+	}
 }
