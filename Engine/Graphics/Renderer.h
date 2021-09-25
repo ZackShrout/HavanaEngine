@@ -1,6 +1,6 @@
 #pragma once
-#include "..\Common\CommonHeaders.h"
-#include "..\Platforms\Platform.h"
+#include "../Common/CommonHeaders.h"
+#include "../Platforms/Platform.h"
 
 namespace Havana::Graphics
 {

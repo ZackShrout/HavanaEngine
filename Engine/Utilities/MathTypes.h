@@ -1,6 +1,5 @@
 #pragma once
-#include "..\Common\CommonHeaders.h"
-
+#include "../Common/CommonHeaders.h"
 namespace Havana::Math
 {
 	constexpr float pi = 3.1415926535897932384626433832795f;
@@ -23,6 +22,24 @@ namespace Havana::Math
 	using Mat3 = DirectX::XMFLOAT3X3;
 	using Mat4 = DirectX::XMFLOAT4X4;
 	using Mat4A = DirectX::XMFLOAT4X4A;
+#endif
+
+#if defined (__linux__)
+	using Vec2 = glm::vec2;
+	using Vec2A = glm::vec2;
+	using Vec3 = glm::vec3;
+	using Vec3A = glm::vec3;
+	using Vec4 = glm::vec4;
+	using Vec4A = glm::vec4;
+	using Vec2u32 = glm::u32vec2;
+	using Vec3u32 = glm::u32vec3;
+	using Vec4u32 = glm::uvec4;
+	using Vec2s32 = glm::ivec2;
+	using Vec3s32 = glm::ivec3;
+	using Vec4s32 = glm::ivec4;
+	using Mat3 = glm::mat3;
+	using Mat4 = glm::mat4;
+	using Mat4A = glm::mat4;
 #endif
 
 }

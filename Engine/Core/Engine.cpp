@@ -1,13 +1,15 @@
 #ifndef SHIPPING
 
 #include<thread>
-#include "..\Content\ContentLoader.h"
-#include "..\Components\Script.h"
-#include "..\Platforms\PlatformTypes.h"
-#include "..\Platforms\Platform.h" 
-#include "..\Graphics\Renderer.h"
+#include "../Content/ContentLoader.h"
+#include "../Components/Script.h"
+#include "../Platforms/PlatformTypes.h"
+#include "../Platforms/Platform.h" 
+#include "../Graphics/Renderer.h"
 
 using namespace Havana;
+
+#ifdef _Win64
 
 namespace
 {
@@ -68,5 +70,7 @@ void EngineShutdown()
 	Platform::RemoveWindow(gameWindow.window.GetID());
 	Havana::Content::UnloadGame();
 }
+
+#endif // _Win64
 
 #endif // !SHIPPING

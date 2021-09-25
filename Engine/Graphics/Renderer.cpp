@@ -1,6 +1,6 @@
 #include "Renderer.h"
 #include "GraphicsPlatformInterface.h"
-#include "..\Graphics\Direct3D12\D3D12Interface.h"
+#include "../Graphics/Direct3D12/D3D12Interface.h"
 
 namespace Havana::Graphics
 {

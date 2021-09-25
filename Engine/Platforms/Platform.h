@@ -1,7 +1,6 @@
 #pragma once
-#include "..\Common\CommonHeaders.h"
+#include "../Common/CommonHeaders.h"
 #include "Window.h"
-
 namespace Havana::Platform
 {
 	struct WindowInitInfo; // forward declaration, defined by platform in PlatformTypes.h

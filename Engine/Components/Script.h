@@ -1,6 +1,8 @@
 #pragma once
 #include "ComponentsCommon.h"
+#ifndef __linux__
 #include <atlsafe.h>
+#endif // !__linux__
 
 namespace Havana::Script
 {

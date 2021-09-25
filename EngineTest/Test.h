@@ -5,8 +5,8 @@
 
 // What test are we performing?
 #define TEST_ENTITY_COMPONENTS 0
-#define TEST_WINDOW 0
-#define TEST_RENDERER 1
+#define TEST_WINDOW 1
+#define TEST_RENDERER 0
 
 class Test
 {
@@ -54,3 +54,11 @@ private:
 	time_stamp	m_seconds{ clock::now() };
 };
 #endif // _WIN64
+
+#ifndef _WIN64
+template < typename T, size_t N >
+size_t constexpr _countof( T ( & arr )[ N ] )
+{
+    return std::extent< T[ N ] >::value;
+}
+#endif // !_WIN64
