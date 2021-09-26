@@ -1,8 +1,9 @@
 #include "ContentLoader.h"
-#include "..\Components\Entity.h"
-#include "..\Components\Transform.h"
-#include "..\Components\Script.h"
+#include "../Components/Entity.h"
+#include "../Components/Transform.h"
+#include "../Components/Script.h"
 
+#ifdef _Win64
 #ifndef SHIPPING
 #include <fstream>
 #include <filesystem>
@@ -131,3 +132,4 @@ namespace Havana::Content
 }
 
 #endif // !SHIPPING
+#endif // _Win64

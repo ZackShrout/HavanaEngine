@@ -1,5 +1,5 @@
 #pragma once
-#include "..\Common\CommonHeaders.h"
+#include "CommonHeaders.h"
 
 #ifdef _WIN64
 
@@ -27,3 +27,34 @@ namespace Havana::Platform
 }
 
 #endif // _WIN64
+
+#ifdef __linux__
+
+#include <GL/glx.h>
+#include <X11/Xlib.h>
+#include <stdlib.h>
+
+// Prevents collision from our Window class and the XWindow Window define
+using XWindow = Window;
+
+namespace Havana::Platform
+{
+	using glXCreateContextAttribsARBProc = 
+		GLXContext (*)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+	
+	using window_proc = XEvent(*)(Display*);
+	using window_handle = XWindow*;
+
+	struct WindowInitInfo
+	{
+		window_proc		callback{ nullptr };
+		window_handle	parent{ nullptr };
+		const wchar_t*	caption{ nullptr };
+		s32				left{ 0 };
+		s32				top{ 0 };
+		s32				width{ 1580 };
+		s32				height{ 950 };
+	};
+}
+
+#endif // __linux__

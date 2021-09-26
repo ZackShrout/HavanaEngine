@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\Common\CommonHeaders.h"
+#include "CommonHeaders.h"
 #include "MathTypes.h"
 
 namespace Havana::Math
@@ -16,8 +16,11 @@ namespace Havana::Math
 	{
 		static_assert(bits <= sizeof(u32) * 8);
 		assert(f >= 0.0f && f <= 1.0f);
-
+	#ifdef _Win64
 		constexpr u32 intervals{ (u32)((1ui32 << bits) - 1) };
+	#else
+		constexpr u32 intervals{ (u32)((1_ui32 << bits) - 1) };
+	#endif
 
 		return (u32)(intervals * f + 0.5f);
 	}
@@ -26,9 +29,13 @@ namespace Havana::Math
 	constexpr f32 UnpackToUnitFloat(u32 i)
 	{
 		static_assert(bits <= sizeof(u32) * 8);
+	#ifdef _Win64
 		assert(i < (1ui32 << bits));
-
 		constexpr u32 intervals{ (u32)((1ui32 << bits) - 1) };
+	#else
+		assert(i < (1_ui32 << bits));
+		constexpr u32 intervals{ (u32)((1_ui32 << bits) - 1) };
+	#endif
 
 		return (f32)i / intervals;
 	}

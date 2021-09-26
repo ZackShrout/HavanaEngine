@@ -1,11 +1,13 @@
 #pragma once
 #include "Test.h"
-#include "..\Platforms\PlatformTypes.h"
-#include "..\Platforms\Platform.h"
+#include "../Platforms/PlatformTypes.h"
+#include "../Platforms/Platform.h"
 
 using namespace Havana;
 
 Platform::Window windows[4];
+
+#ifdef _WIN64
 
 LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -42,6 +44,19 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+
+#elif __linux__
+
+XEvent WinProc(Display* display)
+{
+	// TODO: this needs to be implemented		
+	
+	XEvent xev;
+
+	return xev;
+}
+
+#endif // _WIN64
 
 class EngineTest : public Test
 {

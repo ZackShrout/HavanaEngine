@@ -259,7 +259,193 @@ namespace Havana::Platform
 #elif __APPLE__
 	// OSX stuff here... open window for Metal context
 #elif __linux__
-	// Linux stuff here... open window for OpenGL or Vulkan context
+	namespace {
+		// Linux OS specific window info
+		struct WindowInfo
+		{
+			XWindow*	window{ nullptr };
+			Display*	display{ nullptr };
+			//RECT	fullScreenArea{};
+			s32			left;
+			s32			top;
+			s32			width;
+			s32			height;
+
+			//DWORD	style{ WS_VISIBLE };
+			bool		isFullscreen{ false };
+			bool		isClosed{ false };
+		};
+
+		void ConvertToChar(const wchar_t* text, char* outText)
+		{
+			size_t outSize = (sizeof(text) * sizeof(wchar_t)) + 1;
+			char output[outSize];
+			wcstombs(output, text, outSize);
+			outText = output;
+		}
+
+		Utils::free_list<WindowInfo> windows;
+
+		WindowInfo& GetFromId(window_id id)
+		{
+			assert(id < windows.size());
+			assert(windows[id].window);
+			return windows[id];
+		}
+		
+		// Linux specific window cDisplay(info.display);lass functions
+		void ResizeWindow(window_id id, u32 width, u32 height)
+		{
+			
+
+		}
+
+		void SetWindowFullscreen(window_id id, bool isFullscreen)
+		{
+
+		}
+
+		bool IsWindowFullscreen(window_id id)
+		{
+			return GetFromId(id).isFullscreen;
+		}
+
+		window_handle GetWindowHandle(window_id id)
+		{
+			return GetFromId(id).window;
+		}
+
+		void SetWindowCaption(window_id id, const wchar_t* caption)
+		{
+			WindowInfo& info{ GetFromId(id) };
+			size_t outSize = (sizeof(caption) * sizeof(wchar_t)) + 1;
+			char title[outSize];
+			wcstombs(title, caption, outSize);
+			XStoreName(info.display, *(info.window), title);
+		}
+
+		Math::Vec4u32 GetWindowSize(window_id id)
+		{
+			WindowInfo& info{ GetFromId(id) };
+			return { (u32)info.left, (u32)info.top, (u32)info.width - (u32)info.left, (u32)info.height - (u32)info.top };
+		}
+
+		bool IsWindowClosed(window_id id)
+		{
+			return GetFromId(id).isClosed;
+		}
+	} // anonymous namespace
+
+	Window MakeWindow(const WindowInitInfo* const initInfo /*= nullptr*/)
+	{
+		// Create display
+		Display* display { XOpenDisplay(0) };
+		if (display == NULL) {
+			return {};
+		}
+
+		window_proc callback{ initInfo ? initInfo->callback : nullptr };
+		window_handle parent{ initInfo ? initInfo->parent : &(DefaultRootWindow(display)) };
+		if (parent == nullptr)
+		{
+			parent = &(DefaultRootWindow(display));
+		}
+		assert(parent != nullptr);
+
+		// Setup the screen, visual, and colormap
+		int screen { DefaultScreen(display) };
+		Visual* visual { DefaultVisual(display, screen) };
+		Colormap colormap { XCreateColormap(display, DefaultRootWindow(display), visual, AllocNone) };
+
+		// Define attributes for the window
+		XSetWindowAttributes attributes;
+		attributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | 
+								ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
+		attributes.colormap = colormap;
+
+		// Create an instance of WindowInfo
+		WindowInfo info{};
+		info.left = (initInfo && initInfo->left) ? initInfo->left : 0;	// generally, the X window manager overrides
+		info.top = (initInfo && initInfo->top) ? initInfo->top : 0;		// the starting top left coords, so default is 0,0
+		info.width = (initInfo && initInfo->width) ? initInfo->width : DisplayWidth(display, DefaultScreen(display));
+		info.height = (initInfo && initInfo->height) ? initInfo->height : DisplayHeight(display, DefaultScreen(display));
+		info.display = display;
+
+		// check for initial info, use defaults if none given
+		const wchar_t* caption{ (initInfo && initInfo->caption) ? initInfo->caption : L"Havana Game" };
+		size_t outSize = (sizeof(caption) * sizeof(wchar_t)) + 1;
+		char title[outSize];
+		wcstombs(title, caption, outSize);
+
+		XWindow window { XCreateWindow(display, *parent, info.left, info.top, info.width, info.height, 0,
+										DefaultDepth(display, screen), InputOutput, visual,
+										CWColormap | CWEventMask, &attributes) };
+		info.window = &window;
+
+		// Create_the_modern_OpenGL_context
+		static int visualAttribs[] {
+			GLX_RENDER_TYPE, GLX_RGBA_BIT,
+			GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+			GLX_DOUBLEBUFFER, true,
+			GLX_RED_SIZE, 1,
+			GLX_GREEN_SIZE, 1,
+			GLX_BLUE_SIZE, 1,
+			None
+		};
+
+		int numFBC { 0 };
+		GLXFBConfig *fbc { glXChooseFBConfig(display,
+											DefaultScreen(display),
+											visualAttribs, &numFBC) };
+		if (!fbc) {
+			return {};
+		}
+
+		glXCreateContextAttribsARBProc glXCreateContextAttribsARB { 0 };
+		glXCreateContextAttribsARB =
+			(glXCreateContextAttribsARBProc)
+			glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
+
+		if (!glXCreateContextAttribsARB) {
+			return {};
+		}
+
+		// Set desired minimum OpenGL version
+		int contextAttribs[] {
+			GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
+			GLX_CONTEXT_MINOR_VERSION_ARB, 2,
+			None
+		};
+
+		// Create modern OpenGL context
+		GLXContext context { glXCreateContextAttribsARB(display, fbc[0], NULL, true,
+													contextAttribs) };
+		if (!context) {
+			return {};
+		}
+
+		// Show window
+		XMapWindow(display, window);
+		XStoreName(display, window, title);
+		glXMakeCurrent(display, window, context);
+
+		int major { 0 }, minor { 0 };
+		glGetIntegerv(GL_MAJOR_VERSION, &major);
+		glGetIntegerv(GL_MINOR_VERSION, &minor);
+
+		const window_id id{ windows.add(info) };
+		return Window{ id };
+	}
+
+	void RemoveWindow(window_id id)
+	{
+		WindowInfo& info{ GetFromId(id) };
+		XDestroyWindow(info.display, *(info.window));
+    	// NOTE: we do not need to call XCloseDisplay() because the handle's
+		//		 desctructor will do that for us, and any Xlib calls after this
+		//		 explicit call will fail, including for any other Window that may be open.
+		windows.remove(id);
+	}
 #elif
 #error Must implement at least one platform.
 #endif

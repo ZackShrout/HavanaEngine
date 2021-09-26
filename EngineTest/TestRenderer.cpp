@@ -1,7 +1,7 @@
 #include "TestRenderer.h"
-#include "..\Platforms\PlatformTypes.h"
-#include "..\Platforms\Platform.h"
-#include "..\Graphics\Renderer.h"
+#include "../Platforms/PlatformTypes.h"
+#include "../Platforms/Platform.h"
+#include "../Graphics/Renderer.h"
 
 #if TEST_RENDERER
 
