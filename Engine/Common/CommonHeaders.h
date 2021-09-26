@@ -13,6 +13,10 @@
 	#include <DirectXMath.h>
 #endif
 
+#if defined (__linux__)
+	#include <glm/glm.hpp>
+#endif
+
 #ifndef DISABLE_COPY
 #define DISABLE_COPY(T)					\
 		explicit T(const T&) = delete;	\
@@ -37,7 +41,7 @@
 
 // COMMON HEADERS
 #include "PrimitiveTypes.h"
-#include "..\Utilities\Math.h"
-#include "..\Utilities\Utilities.h"
+#include "../Utilities/Math.h"
+#include "../Utilities/Utilities.h"
 #include "Id.h"
-#include "..\Utilities\MathTypes.h"
+#include "../Utilities/MathTypes.h"
