@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Common/CommonHeaders.h"
+#include "CommonHeaders.h"
 
 namespace Havana::Platform
 {

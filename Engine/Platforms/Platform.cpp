@@ -276,45 +276,15 @@ namespace Havana::Platform
 			bool		isClosed{ false };
 		};
 
-		const char* ConvertToChar(const wchar_t* text)
+		void ConvertToChar(const wchar_t* text, char* outText)
 		{
 			size_t outSize = (sizeof(text) * sizeof(wchar_t)) + 1;
-			char outText[outSize];
-			wcstombs(outText, text, outSize);
-			return outText;
+			char output[outSize];
+			wcstombs(output, text, outSize);
+			outText = output;
 		}
 
-		Utils::vector<WindowInfo> windows;
-
-		/////////////////////////////////////////////////////////////////
-		// TODO: this part will be handled by a free-list container later
-		Utils::vector<u32> availableSlots;
-
-		u32 AddToWindows(WindowInfo info)
-		{
-			u32 id{ U32_INVALID_ID };
-			if (availableSlots.empty())
-			{
-				id = (u32)windows.size();
-				windows.emplace_back(info);
-			}
-			else
-			{
-				id = availableSlots.back();
-				availableSlots.pop_back();
-				assert(id != U32_INVALID_ID);
-				windows[id] = info;
-			}
-
-			return id;
-		}
-
-		void RemoveFromWindows(u32 id)
-		{
-			assert(id < windows.size());
-			availableSlots.emplace_back(id);
-		}
-		/////////////////////////////////////////////////////////////////
+		Utils::free_list<WindowInfo> windows;
 
 		WindowInfo& GetFromId(window_id id)
 		{
@@ -323,7 +293,7 @@ namespace Havana::Platform
 			return windows[id];
 		}
 		
-		// Linux specific window class functions
+		// Linux specific window cDisplay(info.display);lass functions
 		void ResizeWindow(window_id id, u32 width, u32 height)
 		{
 			
@@ -348,7 +318,10 @@ namespace Havana::Platform
 		void SetWindowCaption(window_id id, const wchar_t* caption)
 		{
 			WindowInfo& info{ GetFromId(id) };
-			XStoreName(info.display, *(info.window), ConvertToChar(caption));
+			size_t outSize = (sizeof(caption) * sizeof(wchar_t)) + 1;
+			char title[outSize];
+			wcstombs(title, caption, outSize);
+			XStoreName(info.display, *(info.window), title);
 		}
 
 		Math::Vec4u32 GetWindowSize(window_id id)
@@ -373,6 +346,11 @@ namespace Havana::Platform
 
 		window_proc callback{ initInfo ? initInfo->callback : nullptr };
 		window_handle parent{ initInfo ? initInfo->parent : &(DefaultRootWindow(display)) };
+		if (parent == nullptr)
+		{
+			parent = &(DefaultRootWindow(display));
+		}
+		assert(parent != nullptr);
 
 		// Setup the screen, visual, and colormap
 		int screen { DefaultScreen(display) };
@@ -395,6 +373,9 @@ namespace Havana::Platform
 
 		// check for initial info, use defaults if none given
 		const wchar_t* caption{ (initInfo && initInfo->caption) ? initInfo->caption : L"Havana Game" };
+		size_t outSize = (sizeof(caption) * sizeof(wchar_t)) + 1;
+		char title[outSize];
+		wcstombs(title, caption, outSize);
 
 		XWindow window { XCreateWindow(display, *parent, info.left, info.top, info.width, info.height, 0,
 										DefaultDepth(display, screen), InputOutput, visual,
@@ -445,20 +426,25 @@ namespace Havana::Platform
 
 		// Show window
 		XMapWindow(display, window);
-		XStoreName(display, window, "Modern GLX with X11");
+		XStoreName(display, window, title);
 		glXMakeCurrent(display, window, context);
 
 		int major { 0 }, minor { 0 };
 		glGetIntegerv(GL_MAJOR_VERSION, &major);
 		glGetIntegerv(GL_MINOR_VERSION, &minor);
+
+		const window_id id{ windows.add(info) };
+		return Window{ id };
 	}
 
 	void RemoveWindow(window_id id)
 	{
 		WindowInfo& info{ GetFromId(id) };
 		XDestroyWindow(info.display, *(info.window));
-    	XCloseDisplay(info.display);
-		RemoveFromWindows(id);
+    	// NOTE: we do not need to call XCloseDisplay() because the handle's
+		//		 desctructor will do that for us, and any Xlib calls after this
+		//		 explicit call will fail, including for any other Window that may be open.
+		windows.remove(id);
 	}
 #elif
 #error Must implement at least one platform.

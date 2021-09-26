@@ -1,5 +1,5 @@
 #pragma once
-#include "../Common/CommonHeaders.h"
+#include "CommonHeaders.h"
 namespace Havana::Math
 {
 	constexpr float pi = 3.1415926535897932384626433832795f;

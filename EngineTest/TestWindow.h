@@ -45,45 +45,6 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-class EngineTest : public Test
-{
-public:
-	bool Initialize() override
-	{
-		Platform::WindowInitInfo info[]
-		{
-			{ &WinProc, nullptr, L"Test Window 1", 100, 100, 400, 800 },
-			{ &WinProc, nullptr, L"Test Window 2", 150, 150, 800, 400 },
-			{ &WinProc, nullptr, L"Test Window 3", 200, 200, 400, 400 },
-			{ &WinProc, nullptr, L"Test Window 4", 250, 250, 800, 600 },
-		};
-
-		static_assert(_countof(info) == _countof(windows));
-
-		for (u32 i{ 0 }; i < _countof(windows); i++)
-		{
-			windows[i] = Platform::MakeWindow(&info[i]);
-		}
-
-		return true;
-	}
-
-	void Run() override
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	}
-
-	void Shutdown() override
-	{
-		for (u32 i{ 0 }; i < _countof(windows); i++)
-		{
-			Platform::RemoveWindow(windows[i].GetID());
-		}
-	}
-private:
-
-};
-
 #elif __linux__
 
 XEvent WinProc(Display* display)
@@ -95,6 +56,8 @@ XEvent WinProc(Display* display)
 	return xev;
 }
 
+#endif // _WIN64
+
 class EngineTest : public Test
 {
 public:
@@ -120,7 +83,7 @@ public:
 
 	void Run() override
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 	}
 
 	void Shutdown() override
@@ -133,6 +96,3 @@ public:
 private:
 
 };
-
-#endif // _Win64
-

@@ -1,5 +1,5 @@
 #pragma once
-#include "../Common/CommonHeaders.h"
+#include "CommonHeaders.h"
 #include "Renderer.h"
 #include "../Platforms/Window.h"
 

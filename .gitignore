@@ -351,6 +351,7 @@ MigrationBackup/
 
 # Other VSCode generated files
 packages-microsoft-prod.deb
+.vscode/
 
 # CMake build folder
 build/

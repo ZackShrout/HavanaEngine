@@ -3,6 +3,25 @@
 
 namespace Havana::Utils
 {
+#ifndef _WIN64
+	#include <type_traits>
+
+	// Default case: non-iterator type
+	template<class T, class = void>
+	struct _Is_iterator : std::false_type {};
+
+	// Specialized case: iterator types
+	template<class T>
+	struct _Is_iterator<T, std::void_t< typename std::iterator_traits<T>::difference_type,
+										typename std::iterator_traits<T>::pointer,
+										typename std::iterator_traits<T>::reference,
+										typename std::iterator_traits<T>::value_type,
+										typename std::iterator_traits<T>::iterator_category>> : std::true_type {};
+	
+	template<class T>
+	constexpr bool _Is_iterator_v = _Is_iterator<T>::value;
+#endif // !_WIN64
+	
 	// A vector class similar to std::vector with basic functionality.
 	// The user can specify in the template argument whether they want
 	// the element's desctructor to be called when being removed or while
@@ -19,8 +38,12 @@ namespace Havana::Utils
 		
 		// Constructor resizes the vector and initializes 'count' items using 'value'.
 		constexpr explicit vector(u64 count, const T& value) { resize(count, value); }
-		
+	
+	#ifdef _WIN64
 		template<typename it, typename = std::enable_if_t<std::_Is_iterator_v<it>>>
+	#else
+		template<typename it, typename = std::enable_if_t<_Is_iterator_v<it>>>
+	#endif // _WIN64
 		constexpr explicit vector(it first, it last)
 		{
 			for (; first != last; first++)
@@ -104,7 +127,11 @@ namespace Havana::Utils
 		// Resizes the vector and initializes new items with their default value.
 		constexpr void resize(u64 newSize)
 		{
+		#ifdef _WIN64
 			static_assert(std::is_default_constructible_v<T>, "Type must be default-constructable.");
+		#else
+			static_assert(std::is_default_constructible<T>::value, "Type must be default-constructable.");
+		#endif // _WIN64
 
 			if (newSize > m_size)
 			{
@@ -131,8 +158,11 @@ namespace Havana::Utils
 		// Resizes the vector and initializes new items by copying 'value'.
 		constexpr void resize(u64 newSize, const T& value)
 		{
+		#ifdef _WIN64
 			static_assert(std::is_copy_constructible_v<T>, "Type must be copy-constructable.");
-
+		#else
+			static_assert(std::is_copy_constructible<T>::value, "Type must be copy-constructable.");
+		#endif // _WIN64
 			if (newSize > m_size)
 			{
 				reserve(newSize);

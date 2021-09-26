@@ -1,5 +1,5 @@
 #pragma once
-#include "../Common/CommonHeaders.h"
+#include "CommonHeaders.h"
 
 #ifdef _WIN64
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Common/CommonHeaders.h"
+#include "CommonHeaders.h"
 #include "MathTypes.h"
 
 namespace Havana::Math
