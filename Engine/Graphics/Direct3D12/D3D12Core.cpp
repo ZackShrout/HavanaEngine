@@ -575,4 +575,9 @@ namespace Havana::Graphics::D3D12::Core
 		// When renderer shuts down
 		Release(rootSig);
 	}
+
+	void CreateARootSignature2()
+	{
+
+	}
 }
