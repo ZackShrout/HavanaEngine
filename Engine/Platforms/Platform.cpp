@@ -339,7 +339,7 @@ namespace Havana::Platform
 	Window MakeWindow(const WindowInitInfo* const initInfo /*= nullptr*/)
 	{
 		// Create display
-		Display* display { XOpenDisplay(0) };
+		Display* display { XOpenDisplay(NULL) };
 		if (display == NULL) {
 			return {};
 		}
