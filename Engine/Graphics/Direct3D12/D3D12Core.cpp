@@ -1,6 +1,7 @@
 #include "D3D12Core.h"
 #include "D3D12Resources.h"
 #include "D3D12Surface.h"
+#include "D3D12Helpers.h"
 
 using namespace Microsoft::WRL;
 
@@ -8,6 +9,7 @@ namespace Havana::Graphics::D3D12::Core
 {
 	// TODO: remove when example is not needed
 	void CreateRootSignature();
+	void CreateRootSignature2();
 	namespace
 	{
 		class D3D12Command
@@ -357,6 +359,7 @@ namespace Havana::Graphics::D3D12::Core
 
 		// TODO: remove
 		CreateRootSignature();
+		CreateRootSignature2();
 
 		return true;
 	}
@@ -409,7 +412,7 @@ namespace Havana::Graphics::D3D12::Core
 		Release(mainDevice);
 	}
 
-	ID3D12Device* const Device()
+	ID3D12Device8* const Device()
 	{
 		return mainDevice;
 	}
@@ -576,8 +579,86 @@ namespace Havana::Graphics::D3D12::Core
 		Release(rootSig);
 	}
 
-	void CreateARootSignature2()
+	void CreateRootSignature2()
 	{
+		D3DX::D3D12_Descriptor_Range range{ D3D12_DESCRIPTOR_RANGE_TYPE_SRV, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND, 0 };
+		D3DX::D3D12_Root_Parameter params[3];
+		params[0].AsConstants(2, D3D12_SHADER_VISIBILITY_PIXEL, 0);
+		params[1].AsCBV(D3D12_SHADER_VISIBILITY_PIXEL, 1);
+		params[2].AsDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL, &range, 1);
+		
+		D3DX::D3D12_Root_Signature_Desc rootSigDesc{ &params[0], _countof(params) };
+		ID3D12RootSignature* rootSig{ rootSigDesc.Create() };
 
+		// Use rootSig
+
+		// When renderer shuts down
+		Release(rootSig);
+	}
+
+	ID3D12RootSignature* m_rootSignature;
+	D3D12_SHADER_BYTECODE m_vs{};
+
+	template<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE type, typename T>
+	class alignas(void*) D3D12_Pipeline_State_Subobject
+	{
+	public:
+		D3D12_Pipeline_State_Subobject() = default;
+		constexpr explicit D3D12_Pipeline_State_Subobject(T subobject) : m_type{ type }, m_subobject{ subobject }{}
+		D3D12_Pipeline_State_Subobject& operator=(const T& subobject) { m_subobject = subobject; return *this; }
+	private:
+		const D3D12_PIPELINE_STATE_SUBOBJECT_TYPE m_type{ type };
+		T m_subobject{};
+	};
+
+	using D3D12_Pipeline_State_Subobject_Root_Signature = D3D12_Pipeline_State_Subobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE, ID3D12RootSignature*>;
+	using D3D12_Pipeline_State_Subobject_VS = D3D12_Pipeline_State_Subobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS, D3D12_SHADER_BYTECODE>;
+
+	void CreatePipelineStateObject()
+	{
+		struct
+		{
+			struct alignas(void*)
+			{
+				const D3D12_PIPELINE_STATE_SUBOBJECT_TYPE type{ D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE };
+				ID3D12RootSignature* rootSignature;
+			} rootSig;
+			struct alignas(void*)
+			{
+				const D3D12_PIPELINE_STATE_SUBOBJECT_TYPE type{ D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS };
+				D3D12_SHADER_BYTECODE vsCode{};
+			} vs;
+		} stream;
+
+		stream.rootSig.rootSignature = m_rootSignature;
+		stream.vs.vsCode = m_vs;
+		
+		D3D12_PIPELINE_STATE_STREAM_DESC desc{};
+		desc.pPipelineStateSubobjectStream = &stream;
+		desc.SizeInBytes = sizeof(stream);
+
+		ID3D12PipelineState* pso{ nullptr };
+		Device()->CreatePipelineState(&desc, IID_PPV_ARGS(&pso));
+
+		// use pso during rendering
+
+		// when renderer shuts down
+		Release(pso);
+	}
+
+	void CreatePipelineStateObject2()
+	{
+		struct
+		{
+			D3DX::D3D12_Pipeline_State_Subobject_rootSignature rootSig{ m_rootSignature };
+			D3DX::D3D12_Pipeline_State_Subobject_vs vs{ m_vs };
+		} stream;
+
+		auto pso = D3DX::CreatePipelineState(&stream, sizeof(stream));
+
+		// use pso during rendering
+
+		// when renderer shuts down
+		Release(pso);
 	}
 }

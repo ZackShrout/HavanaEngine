@@ -36,7 +36,7 @@ namespace Havana::Graphics::D3D12::Core
 		}
 	}
 
-	ID3D12Device* const Device();
+	ID3D12Device8* const Device();
 	DescriptorHeap& RTVHeap();
 	DescriptorHeap& DSVHeap();
 	DescriptorHeap& SRVHeap();

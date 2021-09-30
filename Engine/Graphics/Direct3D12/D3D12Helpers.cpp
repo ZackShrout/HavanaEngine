@@ -37,4 +37,22 @@ namespace Havana::Graphics::D3D12::D3DX
 		return signature;
 	}
 
+	ID3D12PipelineState* CreatePipelineState(D3D12_PIPELINE_STATE_STREAM_DESC desc)
+	{
+		assert(desc.pPipelineStateSubobjectStream && desc.SizeInBytes);
+		ID3D12PipelineState* pso{ nullptr };
+		DXCall(Core::Device()->CreatePipelineState(&desc, IID_PPV_ARGS(&pso)));
+		assert(pso);
+		return pso;
+	}
+
+	ID3D12PipelineState* CreatePipelineState(void* stream, u64 streamSize)
+	{
+		assert(stream && streamSize);
+		D3D12_PIPELINE_STATE_STREAM_DESC desc{};
+		desc.SizeInBytes = streamSize;
+		desc.pPipelineStateSubobjectStream = stream;
+
+		return CreatePipelineState(desc);
+	}
 }
