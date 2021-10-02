@@ -165,6 +165,11 @@ namespace Havana::Platform
 		{
 			return GetFromId(id).isClosed;
 		}
+
+		void SetWindowClosed(window_id id)
+		{
+			GetFromId(id).isClosed = true;
+		}
 	} // anonymous namespace
 
 	/// <summary>
@@ -263,7 +268,7 @@ namespace Havana::Platform
 		// Linux OS specific window info
 		struct WindowInfo
 		{
-			XWindow*	window{ nullptr };
+			XWindow		window{};
 			Display*	display{ nullptr };
 			//RECT	fullScreenArea{};
 			s32			left;
@@ -290,6 +295,7 @@ namespace Havana::Platform
 		{
 			assert(id < windows.size());
 			assert(windows[id].window);
+			WindowInfo result = windows[id];
 			return windows[id];
 		}
 		
@@ -312,7 +318,8 @@ namespace Havana::Platform
 
 		window_handle GetWindowHandle(window_id id)
 		{
-			return GetFromId(id).window;
+			window_handle result = &GetFromId(id).window;
+			return &GetFromId(id).window;
 		}
 
 		void SetWindowCaption(window_id id, const wchar_t* caption)
@@ -321,7 +328,7 @@ namespace Havana::Platform
 			size_t outSize = (sizeof(caption) * sizeof(wchar_t)) + 1;
 			char title[outSize];
 			wcstombs(title, caption, outSize);
-			XStoreName(info.display, *(info.window), title);
+			XStoreName(info.display, info.window, title);
 		}
 
 		Math::Vec4u32 GetWindowSize(window_id id)
@@ -334,18 +341,25 @@ namespace Havana::Platform
 		{
 			return GetFromId(id).isClosed;
 		}
+
+		void SetWindowClosed(window_id id)
+		{
+			WindowInfo& info{ GetFromId(id) };
+			GetFromId(id).isClosed = true;
+			XDestroyWindow(info.display, info.window);
+		}
 	} // anonymous namespace
 
 	Window MakeWindow(const WindowInitInfo* const initInfo /*= nullptr*/, void* disp)
 	{
 		// Cache a casted pointer of the display to save on casting later
-		Display* display = (Display*)disp;
+		Display* display{ (Display*)disp };
 		
 		window_proc callback{ initInfo ? initInfo->callback : nullptr };
 		window_handle parent{ initInfo ? initInfo->parent : &(DefaultRootWindow(display)) };
 		if (parent == nullptr)
 		{
-			parent = &(DefaultRootWindow((Display*)display));
+			parent = &(DefaultRootWindow(display));
 		}
 		assert(parent != nullptr);
 
@@ -378,7 +392,7 @@ namespace Havana::Platform
 		XWindow window { XCreateWindow(display, *parent, info.left, info.top, info.width, info.height, 0,
 										DefaultDepth(display, screen), InputOutput, visual,
 										CWColormap | CWEventMask, &attributes) };
-		info.window = &window;
+		info.window = window;
 
 		// Create_the_modern_OpenGL_context
 		static int visualAttribs[] {
@@ -448,7 +462,6 @@ namespace Havana::Platform
 	void RemoveWindow(window_id id)
 	{
 		WindowInfo& info{ GetFromId(id) };
-		XDestroyWindow(info.display, *(info.window));
 		windows.remove(id);
 	}
 #elif
@@ -511,5 +524,10 @@ namespace Havana::Platform
 	{
 		assert(IsValid());
 		return IsWindowClosed(m_id);
+	}
+
+	void Window::Close()
+	{
+		SetWindowClosed(m_id);
 	}
 }

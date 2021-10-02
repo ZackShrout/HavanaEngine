@@ -53,6 +53,7 @@ int main(int argc, char* argv[])
         if (display == NULL) return 1;
 
     Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
+    Atom quit_msg = XInternAtom(display, "QUIT_MSG", false);
 
 	if (test.Initialize(display))
 	{
@@ -72,12 +73,19 @@ int main(int argc, char* argv[])
                     case ClientMessage:
                         if ((Atom)xev.xclient.data.l[0] == wm_delete_window)
                         {      
+                            //isRunning = false;
+                            // Dont handle this here
+                            XPutBackEvent(display, &xev);
+                        }
+                        if ((Atom)xev.xclient.data.l[0] == quit_msg)
+                        {
                             isRunning = false;
                         }
                         break;
                 }
             }
-            test.Run();
+            // If statement here prevents test.Run() being called with no events possible and hanging the program
+            if (isRunning) test.Run(display);
         }
         test.Shutdown();
         XCloseDisplay(display);

@@ -56,6 +56,7 @@ XEvent WinProc(Display* display)
 	return xev;
 }
 
+
 #endif // _WIN64
 
 class EngineTest : public Test
@@ -80,11 +81,69 @@ public:
 
 		return true;
 	}
-
+#ifdef _WIN64
 	void Run() override
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
+#elif __linux__
+
+	void Run(void* disp) override
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+		Display* display{ (Display*)disp };
+		// Open dummy window to send close mssg with
+		Window window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, 100, 100, 0, 0, 0);
+		Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
+		Atom quit_msg = XInternAtom(display, "QUIT_MSG", false);
+
+		XEvent xev;
+		XPeekEvent(display, &xev);
+		switch (xev.type)
+		{
+			case ClientMessage:
+				if ((Atom)xev.xclient.data.l[0] == wm_delete_window)
+				{      
+					// Event handled here, remove from queue
+					XNextEvent(display, &xev);
+					
+					for (u32 i{ 0 }; i < _countof(windows); i++)
+					{
+						if (*((Window*)windows[i].Handle()) == xev.xany.window)
+						{
+							windows[i].Close();
+						}
+					}
+
+					bool allClosed{ true };
+					for (u32 i{ 0 }; i < _countof(windows); i++)
+					{
+						if (!windows[i].IsClosed())
+						{
+							allClosed = false;
+						}
+					}
+					if (allClosed)
+					{
+						
+						
+						// Post quit message
+						XEvent close;
+						close.xclient.type = ClientMessage;
+						close.xclient.serial = window;
+						close.xclient.send_event = true;
+						close.xclient.message_type = XInternAtom(display, "QUIT_MSG", false);
+						close.xclient.format = 32;
+						close.xclient.window = 0;
+						close.xclient.data.l[0] = XInternAtom(display, "QUIT_MSG", false);
+						XSendEvent(display, window, false, NoEventMask, &close);
+					}
+				}
+				break;
+		}
+	}
+#endif
 
 	void Shutdown() override
 	{

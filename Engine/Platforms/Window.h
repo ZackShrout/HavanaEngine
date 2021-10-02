@@ -23,6 +23,7 @@ namespace Havana::Platform
 		u32 Width() const;
 		u32 Height() const;
 		bool IsClosed() const;
+		void Close();
 
 	private:
 		window_id m_id{ Id::INVALID_ID };
