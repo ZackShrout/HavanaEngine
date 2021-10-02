@@ -422,6 +422,10 @@ namespace Havana::Platform
 			return {};
 		}
 
+		// Set custom window manager event for closing a window
+		Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
+		XSetWMProtocols(display, window, &wm_delete_window, 1);
+
 		// Show window
 		XMapWindow(display, window);
 		XStoreName(display, window, title);

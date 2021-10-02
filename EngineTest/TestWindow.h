@@ -43,11 +43,6 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	}
 
 	return DefWindowProc(hwnd, msg, wparam, lparam);
-
-	void Run() override
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	}
 }
 
 #elif __linux__

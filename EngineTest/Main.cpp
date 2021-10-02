@@ -52,6 +52,8 @@ int main(int argc, char* argv[])
     Display* display { XOpenDisplay(NULL) };
         if (display == NULL) return 1;
 
+    Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
+
 	if (test.Initialize(display))
 	{
         XEvent xev;
@@ -62,19 +64,24 @@ int main(int argc, char* argv[])
             {
                 XNextEvent(display, &xev);
 
-                if (xev.type == KeyPress)
+                switch (xev.type)
                 {
-                    isRunning = false;
+                    case KeyPress:
+                        
+                        break;
+                    case ClientMessage:
+                        if ((Atom)xev.xclient.data.l[0] == wm_delete_window)
+                        {      
+                            isRunning = false;
+                        }
+                        break;
                 }
             }
-
             test.Run();
         }
-
         test.Shutdown();
         XCloseDisplay(display);
+        return 0;
 	}
-
-	return 0;
 }
 #endif // _WIN64
