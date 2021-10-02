@@ -71,8 +71,8 @@ int main(int argc, char* argv[])
             test.Run();
         }
 
-        XCloseDisplay(display);
         test.Shutdown();
+        XCloseDisplay(display);
 	}
 
 	return 0;

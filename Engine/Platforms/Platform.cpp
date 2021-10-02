@@ -336,10 +336,13 @@ namespace Havana::Platform
 		}
 	} // anonymous namespace
 
-	Window MakeWindow(const WindowInitInfo* const initInfo /*= nullptr*/, void* display)
+	Window MakeWindow(const WindowInitInfo* const initInfo /*= nullptr*/, void* disp)
 	{
+		// Cache a casted pointer of the display to save on casting later
+		Display* display = (Display*)disp;
+		
 		window_proc callback{ initInfo ? initInfo->callback : nullptr };
-		window_handle parent{ initInfo ? initInfo->parent : &(DefaultRootWindow((Display*)display)) };
+		window_handle parent{ initInfo ? initInfo->parent : &(DefaultRootWindow(display)) };
 		if (parent == nullptr)
 		{
 			parent = &(DefaultRootWindow((Display*)display));
@@ -347,9 +350,9 @@ namespace Havana::Platform
 		assert(parent != nullptr);
 
 		// Setup the screen, visual, and colormap
-		int screen { DefaultScreen((Display*)display) };
-		Visual* visual { DefaultVisual((Display*)display, screen) };
-		Colormap colormap { XCreateColormap((Display*)display, DefaultRootWindow((Display*)display), 
+		int screen { DefaultScreen(display) };
+		Visual* visual { DefaultVisual(display, screen) };
+		Colormap colormap { XCreateColormap(display, DefaultRootWindow(display), 
 											visual, AllocNone) };
 
 		// Define attributes for the window
@@ -362,9 +365,9 @@ namespace Havana::Platform
 		WindowInfo info{};
 		info.left = (initInfo && initInfo->left) ? initInfo->left : 0;	// generally, the X window manager overrides
 		info.top = (initInfo && initInfo->top) ? initInfo->top : 0;		// the starting top left coords, so default is 0,0
-		info.width = (initInfo && initInfo->width) ? initInfo->width : DisplayWidth((Display*)display, DefaultScreen((Display*)display));
-		info.height = (initInfo && initInfo->height) ? initInfo->height : DisplayHeight((Display*)display, DefaultScreen((Display*)display));
-		info.display = (Display*)display;
+		info.width = (initInfo && initInfo->width) ? initInfo->width : DisplayWidth(display, DefaultScreen(display));
+		info.height = (initInfo && initInfo->height) ? initInfo->height : DisplayHeight(display, DefaultScreen(display));
+		info.display = display;
 
 		// check for initial info, use defaults if none given
 		const wchar_t* caption{ (initInfo && initInfo->caption) ? initInfo->caption : L"Havana Game" };
@@ -372,8 +375,8 @@ namespace Havana::Platform
 		char title[outSize];
 		wcstombs(title, caption, outSize);
 
-		XWindow window { XCreateWindow((Display*)display, *parent, info.left, info.top, info.width, info.height, 0,
-										DefaultDepth((Display*)display, screen), InputOutput, visual,
+		XWindow window { XCreateWindow(display, *parent, info.left, info.top, info.width, info.height, 0,
+										DefaultDepth(display, screen), InputOutput, visual,
 										CWColormap | CWEventMask, &attributes) };
 		info.window = &window;
 
@@ -389,8 +392,8 @@ namespace Havana::Platform
 		};
 
 		int numFBC { 0 };
-		GLXFBConfig *fbc { glXChooseFBConfig((Display*)display,
-											DefaultScreen((Display*)display),
+		GLXFBConfig *fbc { glXChooseFBConfig(display,
+											DefaultScreen(display),
 											visualAttribs, &numFBC) };
 		if (!fbc) {
 			return {};
@@ -413,16 +416,16 @@ namespace Havana::Platform
 		};
 
 		// Create modern OpenGL context
-		GLXContext context { glXCreateContextAttribsARB((Display*)display, fbc[0], NULL, true,
+		GLXContext context { glXCreateContextAttribsARB(display, fbc[0], NULL, true,
 													contextAttribs) };
 		if (!context) {
 			return {};
 		}
 
 		// Show window
-		XMapWindow((Display*)display, window);
-		XStoreName((Display*)display, window, title);
-		glXMakeCurrent((Display*)display, window, context);
+		XMapWindow(display, window);
+		XStoreName(display, window, title);
+		glXMakeCurrent(display, window, context);
 
 		int major { 0 }, minor { 0 };
 		glGetIntegerv(GL_MAJOR_VERSION, &major);
@@ -442,9 +445,6 @@ namespace Havana::Platform
 	{
 		WindowInfo& info{ GetFromId(id) };
 		XDestroyWindow(info.display, *(info.window));
-    	// NOTE: we do not need to call XCloseDisplay() because the handle's
-		//		 desctructor will do that for us, and any Xlib calls after this
-		//		 explicit call will fail, including for any other Window that may be open.
 		windows.remove(id);
 	}
 #elif

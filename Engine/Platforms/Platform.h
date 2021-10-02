@@ -7,7 +7,7 @@ namespace Havana::Platform
 #ifdef _WIN64
 	Window MakeWindow(const WindowInitInfo* const initInfo = nullptr);
 #elif __linux__
-	Window MakeWindow(const WindowInitInfo* const initInfo = nullptr, void* display = nullptr);
+	Window MakeWindow(const WindowInitInfo* const initInfo = nullptr, void* disp = nullptr);
 #endif
 	void RemoveWindow(window_id id);
 }
