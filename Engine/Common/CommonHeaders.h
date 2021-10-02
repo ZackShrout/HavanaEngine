@@ -15,6 +15,7 @@
 
 #if defined (__linux__)
 	#include <glm/glm.hpp>
+	#include <cstring>
 #endif
 
 #ifndef DISABLE_COPY

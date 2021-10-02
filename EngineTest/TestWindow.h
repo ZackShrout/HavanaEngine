@@ -43,6 +43,11 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	}
 
 	return DefWindowProc(hwnd, msg, wparam, lparam);
+
+	void Run() override
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
 }
 
 #elif __linux__
@@ -61,7 +66,7 @@ XEvent WinProc(Display* display)
 class EngineTest : public Test
 {
 public:
-	bool Initialize() override
+	bool Initialize(void* display) override
 	{
 		Platform::WindowInitInfo info[]
 		{
@@ -75,7 +80,7 @@ public:
 
 		for (u32 i{ 0 }; i < _countof(windows); i++)
 		{
-			windows[i] = Platform::MakeWindow(&info[i]);
+			windows[i] = Platform::MakeWindow(&info[i], display);
 		}
 
 		return true;
@@ -83,7 +88,7 @@ public:
 
 	void Run() override
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 
 	void Shutdown() override

@@ -293,7 +293,7 @@ namespace Havana::Platform
 			return windows[id];
 		}
 		
-		// Linux specific window cDisplay(info.display);lass functions
+		// Linux specific window class functions
 		void ResizeWindow(window_id id, u32 width, u32 height)
 		{
 			
@@ -336,26 +336,21 @@ namespace Havana::Platform
 		}
 	} // anonymous namespace
 
-	Window MakeWindow(const WindowInitInfo* const initInfo /*= nullptr*/)
+	Window MakeWindow(const WindowInitInfo* const initInfo /*= nullptr*/, void* display)
 	{
-		// Create display
-		Display* display { XOpenDisplay(NULL) };
-		if (display == NULL) {
-			return {};
-		}
-
 		window_proc callback{ initInfo ? initInfo->callback : nullptr };
-		window_handle parent{ initInfo ? initInfo->parent : &(DefaultRootWindow(display)) };
+		window_handle parent{ initInfo ? initInfo->parent : &(DefaultRootWindow((Display*)display)) };
 		if (parent == nullptr)
 		{
-			parent = &(DefaultRootWindow(display));
+			parent = &(DefaultRootWindow((Display*)display));
 		}
 		assert(parent != nullptr);
 
 		// Setup the screen, visual, and colormap
-		int screen { DefaultScreen(display) };
-		Visual* visual { DefaultVisual(display, screen) };
-		Colormap colormap { XCreateColormap(display, DefaultRootWindow(display), visual, AllocNone) };
+		int screen { DefaultScreen((Display*)display) };
+		Visual* visual { DefaultVisual((Display*)display, screen) };
+		Colormap colormap { XCreateColormap((Display*)display, DefaultRootWindow((Display*)display), 
+											visual, AllocNone) };
 
 		// Define attributes for the window
 		XSetWindowAttributes attributes;
@@ -367,9 +362,9 @@ namespace Havana::Platform
 		WindowInfo info{};
 		info.left = (initInfo && initInfo->left) ? initInfo->left : 0;	// generally, the X window manager overrides
 		info.top = (initInfo && initInfo->top) ? initInfo->top : 0;		// the starting top left coords, so default is 0,0
-		info.width = (initInfo && initInfo->width) ? initInfo->width : DisplayWidth(display, DefaultScreen(display));
-		info.height = (initInfo && initInfo->height) ? initInfo->height : DisplayHeight(display, DefaultScreen(display));
-		info.display = display;
+		info.width = (initInfo && initInfo->width) ? initInfo->width : DisplayWidth((Display*)display, DefaultScreen((Display*)display));
+		info.height = (initInfo && initInfo->height) ? initInfo->height : DisplayHeight((Display*)display, DefaultScreen((Display*)display));
+		info.display = (Display*)display;
 
 		// check for initial info, use defaults if none given
 		const wchar_t* caption{ (initInfo && initInfo->caption) ? initInfo->caption : L"Havana Game" };
@@ -377,8 +372,8 @@ namespace Havana::Platform
 		char title[outSize];
 		wcstombs(title, caption, outSize);
 
-		XWindow window { XCreateWindow(display, *parent, info.left, info.top, info.width, info.height, 0,
-										DefaultDepth(display, screen), InputOutput, visual,
+		XWindow window { XCreateWindow((Display*)display, *parent, info.left, info.top, info.width, info.height, 0,
+										DefaultDepth((Display*)display, screen), InputOutput, visual,
 										CWColormap | CWEventMask, &attributes) };
 		info.window = &window;
 
@@ -394,8 +389,8 @@ namespace Havana::Platform
 		};
 
 		int numFBC { 0 };
-		GLXFBConfig *fbc { glXChooseFBConfig(display,
-											DefaultScreen(display),
+		GLXFBConfig *fbc { glXChooseFBConfig((Display*)display,
+											DefaultScreen((Display*)display),
 											visualAttribs, &numFBC) };
 		if (!fbc) {
 			return {};
@@ -418,16 +413,16 @@ namespace Havana::Platform
 		};
 
 		// Create modern OpenGL context
-		GLXContext context { glXCreateContextAttribsARB(display, fbc[0], NULL, true,
+		GLXContext context { glXCreateContextAttribsARB((Display*)display, fbc[0], NULL, true,
 													contextAttribs) };
 		if (!context) {
 			return {};
 		}
 
 		// Show window
-		XMapWindow(display, window);
-		XStoreName(display, window, title);
-		glXMakeCurrent(display, window, context);
+		XMapWindow((Display*)display, window);
+		XStoreName((Display*)display, window, title);
+		glXMakeCurrent((Display*)display, window, context);
 
 		int major { 0 }, minor { 0 };
 		glGetIntegerv(GL_MAJOR_VERSION, &major);
@@ -435,6 +430,12 @@ namespace Havana::Platform
 
 		const window_id id{ windows.add(info) };
 		return Window{ id };
+	}
+
+	Display* GetXDisplay(window_id id)
+	{
+		WindowInfo& info{ GetFromId(id) };
+		return info.display;
 	}
 
 	void RemoveWindow(window_id id)
@@ -507,5 +508,4 @@ namespace Havana::Platform
 		assert(IsValid());
 		return IsWindowClosed(m_id);
 	}
-
 }

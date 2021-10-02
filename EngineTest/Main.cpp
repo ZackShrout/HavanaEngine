@@ -17,7 +17,7 @@
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 #if _DEBUG
-    // Debug flags that help check for memory leaks
+    // MSVC Debug flags that help check for memory leaks
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
@@ -42,23 +42,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 }
 
-#else
-int main()
+#elif __linux__
+#include <X11/Xlib.h>
+
+int main(int argc, char* argv[])
 {
-
-#if _DEBUG
-	// Debug flags that help check for memory leaks
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif
-
 	EngineTest test{};
 
-	if (test.Initialize())
-	{
-		test.Run();
-	}
+    Display* display { XOpenDisplay(NULL) };
+        if (display == NULL) return 1;
 
-	test.Shutdown();
+	if (test.Initialize(display))
+	{
+        XEvent xev;
+        bool isRunning{ true };
+        while (isRunning)
+        {
+            while (XPending(display))
+            {
+                XNextEvent(display, &xev);
+
+                if (xev.type == KeyPress)
+                {
+                    isRunning = false;
+                }
+            }
+
+            test.Run();
+        }
+
+        XCloseDisplay(display);
+        test.Shutdown();
+	}
 
 	return 0;
 }
