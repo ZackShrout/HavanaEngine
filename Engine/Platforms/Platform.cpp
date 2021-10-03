@@ -394,47 +394,47 @@ namespace Havana::Platform
 										CWColormap | CWEventMask, &attributes) };
 		info.window = window;
 
-		// Create_the_modern_OpenGL_context
-		static int visualAttribs[] {
-			GLX_RENDER_TYPE, GLX_RGBA_BIT,
-			GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-			GLX_DOUBLEBUFFER, true,
-			GLX_RED_SIZE, 1,
-			GLX_GREEN_SIZE, 1,
-			GLX_BLUE_SIZE, 1,
-			None
-		};
+		// // Create_the_modern_OpenGL_context
+		// static int visualAttribs[] {
+		// 	GLX_RENDER_TYPE, GLX_RGBA_BIT,
+		// 	GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+		// 	GLX_DOUBLEBUFFER, true,
+		// 	GLX_RED_SIZE, 1,
+		// 	GLX_GREEN_SIZE, 1,
+		// 	GLX_BLUE_SIZE, 1,
+		// 	None
+		// };
 
-		int numFBC { 0 };
-		GLXFBConfig *fbc { glXChooseFBConfig(display,
-											DefaultScreen(display),
-											visualAttribs, &numFBC) };
-		if (!fbc) {
-			return {};
-		}
+		// int numFBC { 0 };
+		// GLXFBConfig *fbc { glXChooseFBConfig(display,
+		// 									DefaultScreen(display),
+		// 									visualAttribs, &numFBC) };
+		// if (!fbc) {
+		// 	return {};
+		// }
 
-		glXCreateContextAttribsARBProc glXCreateContextAttribsARB { 0 };
-		glXCreateContextAttribsARB =
-			(glXCreateContextAttribsARBProc)
-			glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
+		// glXCreateContextAttribsARBProc glXCreateContextAttribsARB { 0 };
+		// glXCreateContextAttribsARB =
+		// 	(glXCreateContextAttribsARBProc)
+		// 	glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
 
-		if (!glXCreateContextAttribsARB) {
-			return {};
-		}
+		// if (!glXCreateContextAttribsARB) {
+		// 	return {};
+		// }
 
-		// Set desired minimum OpenGL version
-		int contextAttribs[] {
-			GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
-			GLX_CONTEXT_MINOR_VERSION_ARB, 2,
-			None
-		};
+		// // Set desired minimum OpenGL version
+		// int contextAttribs[] {
+		// 	GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
+		// 	GLX_CONTEXT_MINOR_VERSION_ARB, 2,
+		// 	None
+		// };
 
-		// Create modern OpenGL context
-		GLXContext context { glXCreateContextAttribsARB(display, fbc[0], NULL, true,
-													contextAttribs) };
-		if (!context) {
-			return {};
-		}
+		// // Create modern OpenGL context
+		// GLXContext context { glXCreateContextAttribsARB(display, fbc[0], NULL, true,
+		// 											contextAttribs) };
+		// if (!context) {
+		// 	return {};
+		// }
 
 		// Set custom window manager event for closing a window
 		Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
@@ -443,11 +443,11 @@ namespace Havana::Platform
 		// Show window
 		XMapWindow(display, window);
 		XStoreName(display, window, title);
-		glXMakeCurrent(display, window, context);
+		// glXMakeCurrent(display, window, context);
 
-		int major { 0 }, minor { 0 };
-		glGetIntegerv(GL_MAJOR_VERSION, &major);
-		glGetIntegerv(GL_MINOR_VERSION, &minor);
+		// int major { 0 }, minor { 0 };
+		// glGetIntegerv(GL_MAJOR_VERSION, &major);
+		// glGetIntegerv(GL_MINOR_VERSION, &minor);
 
 		const window_id id{ windows.add(info) };
 		return Window{ id };

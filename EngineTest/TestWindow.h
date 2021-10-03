@@ -8,7 +8,6 @@ using namespace Havana;
 Platform::Window windows[4];
 
 #ifdef _WIN64
-
 LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	switch (msg)
@@ -44,19 +43,6 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
-
-#elif __linux__
-
-XEvent WinProc(Display* display)
-{
-	// TODO: this needs to be implemented		
-	
-	XEvent xev;
-
-	return xev;
-}
-
-
 #endif // _WIN64
 
 class EngineTest : public Test
@@ -66,10 +52,10 @@ public:
 	{
 		Platform::WindowInitInfo info[]
 		{
-			{ &WinProc, nullptr, L"Test Window 1", 100, 100, 400, 800 },
-			{ &WinProc, nullptr, L"Test Window 2", 150, 150, 800, 400 },
-			{ &WinProc, nullptr, L"Test Window 3", 200, 200, 400, 400 },
-			{ &WinProc, nullptr, L"Test Window 4", 250, 250, 800, 600 },
+			{ nullptr, nullptr, L"Test Window 1", 100, 100, 400, 800 },
+			{ nullptr, nullptr, L"Test Window 2", 150, 150, 800, 400 },
+			{ nullptr, nullptr, L"Test Window 3", 200, 200, 400, 400 },
+			{ nullptr, nullptr, L"Test Window 4", 250, 250, 800, 600 },
 		};
 
 		static_assert(_countof(info) == _countof(windows));
@@ -81,66 +67,74 @@ public:
 
 		return true;
 	}
+	
 #ifdef _WIN64
 	void Run() override
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 #elif __linux__
-
 	void Run(void* disp) override
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
+		// Cache a casted pointer of the display to save on casting later
 		Display* display{ (Display*)disp };
-		// Open dummy window to send close mssg with
+		// Open dummy window to send close msg with
 		Window window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, 100, 100, 0, 0, 0);
+		// Set up custom client messages
 		Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
 		Atom quit_msg = XInternAtom(display, "QUIT_MSG", false);
 
 		XEvent xev;
-		XPeekEvent(display, &xev);
-		switch (xev.type)
+		// NOTE: we use an if statement here because we are not handling all events in this translation
+		//       unit, so XPending(display) will often not ever be 0, and therefore this can create
+		//       an infinite loop... but this protects XNextEvent from blocking if there are no events.
+		if (XPending(display) > 0)
 		{
-			case ClientMessage:
-				if ((Atom)xev.xclient.data.l[0] == wm_delete_window)
-				{      
-					// Event handled here, remove from queue
-					XNextEvent(display, &xev);
-					
-					for (u32 i{ 0 }; i < _countof(windows); i++)
-					{
-						if (*((Window*)windows[i].Handle()) == xev.xany.window)
+			XNextEvent(display, &xev);
+			switch (xev.type)
+			{
+				case ClientMessage:
+					if ((Atom)xev.xclient.data.l[0] == wm_delete_window)
+					{      
+						for (u32 i{ 0 }; i < _countof(windows); i++)
 						{
-							windows[i].Close();
+							if (*((Window*)windows[i].Handle()) == xev.xany.window)
+							{
+								windows[i].Close();
+							}
 						}
-					}
 
-					bool allClosed{ true };
-					for (u32 i{ 0 }; i < _countof(windows); i++)
-					{
-						if (!windows[i].IsClosed())
+						bool allClosed{ true };
+						for (u32 i{ 0 }; i < _countof(windows); i++)
 						{
-							allClosed = false;
+							if (!windows[i].IsClosed())
+							{
+								allClosed = false;
+							}
+						}
+						if (allClosed)
+						{
+							// Set up quit message and send it using dummy window
+							XEvent close;
+							close.xclient.type = ClientMessage;
+							close.xclient.serial = window;
+							close.xclient.send_event = true;
+							close.xclient.message_type = XInternAtom(display, "QUIT_MSG", false);
+							close.xclient.format = 32;
+							close.xclient.window = 0;
+							close.xclient.data.l[0] = XInternAtom(display, "QUIT_MSG", false);
+							XSendEvent(display, window, false, NoEventMask, &close);
 						}
 					}
-					if (allClosed)
+					else
 					{
-						
-						
-						// Post quit message
-						XEvent close;
-						close.xclient.type = ClientMessage;
-						close.xclient.serial = window;
-						close.xclient.send_event = true;
-						close.xclient.message_type = XInternAtom(display, "QUIT_MSG", false);
-						close.xclient.format = 32;
-						close.xclient.window = 0;
-						close.xclient.data.l[0] = XInternAtom(display, "QUIT_MSG", false);
-						XSendEvent(display, window, false, NoEventMask, &close);
+						// Dont handle this here
+                        XPutBackEvent(display, &xev);
 					}
-				}
-				break;
+					break;
+			}
 		}
 	}
 #endif

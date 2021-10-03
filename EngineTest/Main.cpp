@@ -49,9 +49,11 @@ int main(int argc, char* argv[])
 {
 	EngineTest test{};
 
+    // Open an X server connection
     Display* display { XOpenDisplay(NULL) };
         if (display == NULL) return 1;
-
+    
+    // Set up custom client messages
     Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
     Atom quit_msg = XInternAtom(display, "QUIT_MSG", false);
 
@@ -61,7 +63,10 @@ int main(int argc, char* argv[])
         bool isRunning{ true };
         while (isRunning)
         {
-            while (XPending(display))
+            // NOTE: we use an if statement here because we are not handling all events in this translation
+            //       unit, so XPending(display) will often not ever be 0, and therefore this can create
+            //       an infinite loop... but this protects XNextEvent from blocking if there are no events.
+            if (XPending(display) > 0)
             {
                 XNextEvent(display, &xev);
 
@@ -72,8 +77,7 @@ int main(int argc, char* argv[])
                         break;
                     case ClientMessage:
                         if ((Atom)xev.xclient.data.l[0] == wm_delete_window)
-                        {      
-                            //isRunning = false;
+                        {
                             // Dont handle this here
                             XPutBackEvent(display, &xev);
                         }
@@ -84,8 +88,7 @@ int main(int argc, char* argv[])
                         break;
                 }
             }
-            // If statement here prevents test.Run() being called with no events possible and hanging the program
-            if (isRunning) test.Run(display);
+            test.Run(display);
         }
         test.Shutdown();
         XCloseDisplay(display);
