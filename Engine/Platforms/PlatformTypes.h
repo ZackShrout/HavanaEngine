@@ -42,7 +42,6 @@ namespace Havana::Platform
 	using glXCreateContextAttribsARBProc = 
 		GLXContext (*)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 	
-	using window_proc = XEvent(*)(Display*);
 	using window_handle = XWindow*;
 
 	struct WindowInitInfo

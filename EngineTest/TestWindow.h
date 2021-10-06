@@ -95,9 +95,29 @@ public:
 			XNextEvent(display, &xev);
 			switch (xev.type)
 			{
+				case ConfigureNotify:
+				{
+					XConfigureEvent xce{ xev.xconfigure };
+
+					// NOTE: This event is generated for a variety of reasons, so
+					//		 we need to check to see which window generated the event, 
+					//		 and the check if this was a window resize.
+					for (u32 i{ 0 }; i < _countof(windows); i++)
+					{
+						if (*((Window*)windows[i].Handle()) == xev.xany.window)
+						{
+							if ((u32)xce.width != windows[i].Width() || (u32)xce.height != windows[i].Height())
+							{
+								windows[i].Resize((u32)xce.width, (u32)xce.height);
+							}
+						}
+					}
+					break;
+				}
 				case ClientMessage:
 					if ((Atom)xev.xclient.data.l[0] == wm_delete_window)
 					{      
+						// Find which window was sent the close event, and call function
 						for (u32 i{ 0 }; i < _countof(windows); i++)
 						{
 							if (*((Window*)windows[i].Handle()) == xev.xany.window)
@@ -106,6 +126,7 @@ public:
 							}
 						}
 
+						// Check if all windows are closed, and exit application if so
 						bool allClosed{ true };
 						for (u32 i{ 0 }; i < _countof(windows); i++)
 						{
@@ -134,6 +155,17 @@ public:
                         XPutBackEvent(display, &xev);
 					}
 					break;
+				case KeyPress:
+					if (xev.xkey.keycode == 95) // F11
+					{
+						for (u32 i{ 0 }; i < _countof(windows); i++)
+						{
+							if (*((Window*)windows[i].Handle()) == xev.xany.window)
+							{
+								windows[i].SetFullscreen(!windows[i].IsFullscreen());
+							}
+						}
+					}
 			}
 		}
 	}
