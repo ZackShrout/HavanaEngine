@@ -46,7 +46,7 @@ namespace Havana::Platform
 
 	struct WindowInitInfo
 	{
-		window_proc		callback{ nullptr };
+		void*			callback{ nullptr };
 		window_handle	parent{ nullptr };
 		const wchar_t*	caption{ nullptr };
 		s32				left{ 0 };

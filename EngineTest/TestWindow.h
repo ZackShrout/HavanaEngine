@@ -156,7 +156,10 @@ public:
 					}
 					break;
 				case KeyPress:
-					if (xev.xkey.keycode == 95) // F11
+					// xkey,state 24 is alt, xkey.keycode 36 is enter
+					// xkey,state 80 is win, xkey.keycode 41 is f
+					if (xev.xkey.state == 24 && xev.xkey.keycode == 36)
+					//if (xev.xkey.state == 80 && xev.xkey.keycode == 41)
 					{
 						for (u32 i{ 0 }; i < _countof(windows); i++)
 						{
