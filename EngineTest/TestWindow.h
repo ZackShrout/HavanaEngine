@@ -43,6 +43,16 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+#elif __linux__
+enum Key
+{
+	ENTER = 36
+};
+
+enum State
+{
+	ALT = 0x18
+};
 #endif // _WIN64
 
 class EngineTest : public Test
@@ -156,10 +166,9 @@ public:
 					}
 					break;
 				case KeyPress:
-					// xkey,state 24 is alt, xkey.keycode 36 is enter
-					// xkey,state 80 is win, xkey.keycode 41 is f
-					if (xev.xkey.state == 24 && xev.xkey.keycode == 36)
-					//if (xev.xkey.state == 80 && xev.xkey.keycode == 41)
+					// NOTE: "state" represents the keys held down prior to the key press the
+					//		 keycode represents - the numeric evaluation is also different.
+					if (xev.xkey.state == State::ALT && xev.xkey.keycode == Key::ENTER)
 					{
 						for (u32 i{ 0 }; i < _countof(windows); i++)
 						{

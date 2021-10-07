@@ -437,7 +437,7 @@ namespace Havana::Graphics::D3D12::Core
 		deferredReleasesFlag[CurrentFrameIndex()] = 1;
 	}
 
-	Surface CreateSurface(Platform::Window window)
+	Surface CreateSurface(Platform::Window window, void* disp /*= nullptr*/)
 	{
 		surface_id id{ surfaces.add(window) };
 		surfaces[id].CreateSwapChain(dxgiFactory, gfxCommand.CommandQueue(), renderTargetFormat);

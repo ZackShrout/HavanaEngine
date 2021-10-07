@@ -12,7 +12,7 @@ namespace Havana::Graphics
 
 		struct
 		{
-			Surface(*Create)(Platform::Window);
+			Surface(*Create)(Platform::Window, void*);
 			void(*Remove)(surface_id);
 			void(*Resize)(surface_id, u32, u32);
 			u32(*Width)(surface_id);

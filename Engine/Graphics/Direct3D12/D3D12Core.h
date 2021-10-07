@@ -45,7 +45,7 @@ namespace Havana::Graphics::D3D12::Core
 	u32 CurrentFrameIndex();
 	void SetDeferredReleasesFlag();
 
-	Surface CreateSurface(Platform::Window window);
+	Surface CreateSurface(Platform::Window window, void* disp = nullptr);
 	void RemoveSurface(surface_id id);
 	void ResizeSurface(surface_id id, u32, u32);
 	u32 SurfaceWidth(surface_id id);

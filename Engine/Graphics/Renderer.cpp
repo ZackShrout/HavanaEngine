@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "GraphicsPlatformInterface.h"
 #include "../Graphics/Direct3D12/D3D12Interface.h"
+#include "../Graphics/OpenGL/OpenGLInterface.h"
 
 namespace Havana::Graphics
 {
@@ -14,6 +15,9 @@ namespace Havana::Graphics
 			{
 			case GraphicsPlatform::Direct3D12:
 				D3D12::GetPlatformInterface(gfx);
+				break;
+			case GraphicsPlatform::OpenGraphicsL:
+				OpenGL::GetPlatformInterface(gfx);
 				break;
 			default:
 				return false;
@@ -33,9 +37,9 @@ namespace Havana::Graphics
 		gfx.Shutdown();
 	}
 
-	Surface CreateSurface(Platform::Window window)
+	Surface CreateSurface(Platform::Window window, void* disp /*= nullptr*/)
 	{
-		return gfx.Surface.Create(window);
+		return gfx.Surface.Create(window, disp);
 	}
 
 	void RemoveSurface(surface_id id)
