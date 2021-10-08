@@ -6,18 +6,10 @@ namespace Havana::Graphics::OpenGL
     class OpenGLSurface
     {
     public:
-    #ifdef __linux__
-        explicit OpenGLSurface(Platform::Window window, Display* display) : m_window{ window }, m_display{ display }
-        {
-            assert(m_window.Handle());
-            assert(m_display));
-        }
-    #elif _WIN64
         explicit OpenGLSurface(Platform::Window window) : m_window{ window }
         {
             assert(m_window.Handle());
         }
-    #endif // __linux__
     #if USE_STL_VECTOR
         // TODO: implememt
     #else

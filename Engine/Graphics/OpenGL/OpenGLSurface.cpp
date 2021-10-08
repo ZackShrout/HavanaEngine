@@ -1,4 +1,5 @@
 #include "OpenGLSurface.h"
+#include "OpenGLCore.h"
 
 namespace Havana::Graphics::OpenGL
 {

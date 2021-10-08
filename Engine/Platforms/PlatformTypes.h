@@ -30,7 +30,6 @@ namespace Havana::Platform
 
 #ifdef __linux__
 
-#include <GL/glx.h>
 #include <X11/Xlib.h>
 #include <stdlib.h>
 
@@ -38,10 +37,7 @@ namespace Havana::Platform
 using XWindow = Window;
 
 namespace Havana::Platform
-{
-	using glXCreateContextAttribsARBProc = 
-		GLXContext (*)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
-	
+{	
 	using window_handle = XWindow*;
 
 	struct WindowInitInfo

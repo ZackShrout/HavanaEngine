@@ -1,6 +1,10 @@
 #include "Platform.h"
 #include "PlatformTypes.h"
 
+#define OPEN_GL_EXT_LOADER
+#include "../Graphics/OpenGL/OpenGLExtensionLoader.h"
+#include <GL/glx.h>
+
 namespace Havana::Platform
 {
 #ifdef _WIN64 // open window for DirectX context
@@ -31,6 +35,11 @@ namespace Havana::Platform
 		{
 			const window_id id{(Id::id_type)GetWindowLongPtr(handle, GWLP_USERDATA)};
 			return GetFromId(id);
+		}
+
+		void* GetDisplay(window_id id)
+		{
+			return nullptr;
 		}
 
 		// Callback method for message handling
@@ -351,8 +360,12 @@ namespace Havana::Platform
 
 		window_handle GetWindowHandle(window_id id)
 		{
-			window_handle result = &GetFromId(id).window;
 			return &GetFromId(id).window;
+		}
+
+		Display* GetDisplay(window_id id)
+		{
+			return GetFromId(id).display;
 		}
 
 		void SetWindowCaption(window_id id, const wchar_t *caption)
@@ -426,48 +439,6 @@ namespace Havana::Platform
 									 CWColormap | CWEventMask, &attributes)};
 		info.window = window;
 
-		// // Create_the_modern_OpenGL_context
-		// static int visualAttribs[] {
-		// 	GLX_RENDER_TYPE, GLX_RGBA_BIT,
-		// 	GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-		// 	GLX_DOUBLEBUFFER, true,
-		// 	GLX_RED_SIZE, 1,
-		// 	GLX_GREEN_SIZE, 1,
-		// 	GLX_BLUE_SIZE, 1,
-		// 	None
-		// };
-
-		// int numFBC { 0 };
-		// GLXFBConfig *fbc { glXChooseFBConfig(display,
-		// 									DefaultScreen(display),
-		// 									visualAttribs, &numFBC) };
-		// if (!fbc) {
-		// 	return {};
-		// }
-
-		// glXCreateContextAttribsARBProc glXCreateContextAttribsARB { 0 };
-		// glXCreateContextAttribsARB =
-		// 	(glXCreateContextAttribsARBProc)
-		// 	glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
-
-		// if (!glXCreateContextAttribsARB) {
-		// 	return {};
-		// }
-
-		// // Set desired minimum OpenGL version
-		// int contextAttribs[] {
-		// 	GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
-		// 	GLX_CONTEXT_MINOR_VERSION_ARB, 2,
-		// 	None
-		// };
-
-		// // Create modern OpenGL context
-		// GLXContext context { glXCreateContextAttribsARB(display, fbc[0], NULL, true,
-		// 											contextAttribs) };
-		// if (!context) {
-		// 	return {};
-		// }
-
 		// Set custom window manager event for closing a window
 		Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
 		XSetWMProtocols(display, window, &wm_delete_window, 1);
@@ -475,11 +446,6 @@ namespace Havana::Platform
 		// Show window
 		XMapWindow(display, window);
 		XStoreName(display, window, title);
-		// glXMakeCurrent(display, window, context);
-
-		// int major { 0 }, minor { 0 };
-		// glGetIntegerv(GL_MAJOR_VERSION, &major);
-		// glGetIntegerv(GL_MINOR_VERSION, &minor);
 
 		const window_id id{windows.add(info)};
 		return Window{id};
@@ -510,10 +476,16 @@ namespace Havana::Platform
 		return IsWindowFullscreen(m_id);
 	}
 
-	void *Window::Handle() const
+	void* Window::Handle() const
 	{
 		assert(IsValid());
 		return GetWindowHandle(m_id);
+	}
+
+	void* Window::Display() const
+	{
+		assert(IsValid());
+		return GetDisplay(m_id);
 	}
 
 	void Window::SetCaption(const wchar_t *caption) const
