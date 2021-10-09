@@ -23,7 +23,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     EngineTest test{};
 
-    if (test.Initialize())
+    if (test.Initialize(nullptr))
     {
         MSG msg;
         bool isRunning{ true };

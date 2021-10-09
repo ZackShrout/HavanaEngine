@@ -4,7 +4,11 @@
 class EngineTest : public Test
 {
 public:
-	bool Initialize() override;
+#ifdef _WIN64
 	void Run() override;
+#elif __linux__
+	void Run(void* disp) override;
+#endif
+	bool Initialize(void* disp) override;
 	void Shutdown() override;
 };

@@ -38,6 +38,6 @@ namespace Havana::Graphics
 	bool Initialize(GraphicsPlatform platform);
 	void Shutdown();
 
-	Surface CreateSurface(Platform::Window window, void* disp = nullptr);
+	Surface CreateSurface(Platform::Window window);
 	void RemoveSurface(surface_id id);
 }

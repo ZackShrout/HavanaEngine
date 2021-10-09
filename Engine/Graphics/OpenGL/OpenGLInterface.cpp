@@ -1,5 +1,5 @@
-#include "..\Common\CommonHeaders.h"
-#include "..\Graphics\GraphicsPlatformInterface.h"
+#include "../Common/CommonHeaders.h"
+#include "../Graphics/GraphicsPlatformInterface.h"
 #include "OpenGLInterface.h"
 #include "OpenGLCore.h"
 

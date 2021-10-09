@@ -454,6 +454,8 @@ namespace Havana::Platform
 	void RemoveWindow(window_id id)
 	{
 		WindowInfo &info{GetFromId(id)};
+		GetFromId(id).isClosed = true;
+		XDestroyWindow(info.display, info.window);
 		windows.remove(id);
 	}
 #elif

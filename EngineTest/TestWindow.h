@@ -59,7 +59,7 @@ enum State
 class EngineTest : public Test
 {
 public:
-	bool Initialize(void* display) override
+	bool Initialize(void* disp) override
 	{
 		Platform::WindowInitInfo info[]
 		{
@@ -73,7 +73,7 @@ public:
 
 		for (u32 i{ 0 }; i < _countof(windows); i++)
 		{
-			windows[i] = Platform::MakeWindow(&info[i], display);
+			windows[i] = Platform::MakeWindow(&info[i], disp);
 		}
 
 		return true;
@@ -95,7 +95,7 @@ public:
 		Window window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, 100, 100, 0, 0, 0);
 		// Set up custom client messages
 		Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
-		Atom quit_msg = XInternAtom(display, "QUIT_MSG", false);
+		Atom quit_msg = XInternAtom(display, "QUIT_MSG", false);		
 
 		XEvent xev;
 		// NOTE: we use an if statement here because we are not handling all events in this translation

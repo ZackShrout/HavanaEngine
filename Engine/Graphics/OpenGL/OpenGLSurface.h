@@ -19,19 +19,17 @@ namespace Havana::Graphics::OpenGL
 
         void Present() const;
         void Resize();
+        void SetContext(GLXContext context) { m_context = context; }
         constexpr u32 Width() const { return m_width; }
         constexpr u32 Height() const { return m_height; }
 
     private:
         Platform::Window m_window{};
-    #ifdef __linux__
-        Display* m_display{};
-    #endif // __linux__
+        GLXContext m_context{ nullptr };
         u32 m_width{ 0 };
         u32 m_height{ 0 };
 
-        Release();
-
+        void Release();
     };
 
 } // OpenGL namespace

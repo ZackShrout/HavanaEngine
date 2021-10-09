@@ -13,9 +13,11 @@ namespace Havana::Graphics
 		{
 			switch (platform)
 			{
+			#ifdef _WIN64
 			case GraphicsPlatform::Direct3D12:
 				D3D12::GetPlatformInterface(gfx);
 				break;
+			#endif // _WIN64
 			case GraphicsPlatform::OpenGraphicsL:
 				OpenGL::GetPlatformInterface(gfx);
 				break;
@@ -37,9 +39,9 @@ namespace Havana::Graphics
 		gfx.Shutdown();
 	}
 
-	Surface CreateSurface(Platform::Window window, void* disp /*= nullptr*/)
+	Surface CreateSurface(Platform::Window window)
 	{
-		return gfx.Surface.Create(window, disp);
+		return gfx.Surface.Create(window);
 	}
 
 	void RemoveSurface(surface_id id)

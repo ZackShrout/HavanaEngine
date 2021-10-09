@@ -1,16 +1,35 @@
 #include "OpenGLCore.h"
+#include "OpenGLSurface.h"
 #include "OpenGLHelpers.h"
 
 namespace Havana::Graphics::OpenGL::Core
 {
-    bool Initialize()
-    {
+    namespace
+	{
+		using surface_collection = Utils::free_list<OpenGLSurface>;
 
+		surface_collection surfaces;
+
+	} // anomymous namespace
+	
+	bool Initialize()
+    {
+		return true;
     }
+	
+	void Shutdown()
+	{
+
+	}
 
     Surface CreateSurface(Platform::Window window)
     {
-        // Create_the_modern_OpenGL_context
+        surface_id id{ surfaces.add(window) };
+		
+		// Cache a casted pointer of the display to save on casting later
+		Display* display{ (Display*)window.Display() };
+		
+		// Create_the_modern_OpenGL_context
 		static int visualAttribs[] {
 			GLX_RENDER_TYPE, GLX_RGBA_BIT,
 			GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
@@ -22,8 +41,8 @@ namespace Havana::Graphics::OpenGL::Core
 		};
 
 		int numFBC { 0 };
-		GLXFBConfig *fbc { glXChooseFBConfig(window.Display(),
-											DefaultScreen(window.Display()),
+		GLXFBConfig *fbc { glXChooseFBConfig(display,
+											DefaultScreen(display),
 											visualAttribs, &numFBC) };
 		if (!fbc) {
 			return {};
@@ -46,7 +65,7 @@ namespace Havana::Graphics::OpenGL::Core
 		};
 
 		// Create modern OpenGL context
-		GLXContext context { glXCreateContextAttribsARB(window.Display(), fbc[0], NULL, true,
+		GLXContext context { glXCreateContextAttribsARB(display, fbc[0], NULL, true,
 													contextAttribs) };
 		if (!context) {
 			return {};
@@ -54,11 +73,38 @@ namespace Havana::Graphics::OpenGL::Core
 
 		OGL::GetOpenGLExtensions();
 
-		glXMakeCurrent(window.Display(), window.Handle(), context);
-
 		int major { 0 }, minor { 0 };
 		glGetIntegerv(GL_MAJOR_VERSION, &major);
 		glGetIntegerv(GL_MINOR_VERSION, &minor);
+
+		surfaces[id].SetContext(context);
+
+		return Surface{ id };
     }
+
+	void RemoveSurface(surface_id id)
+	{
+		surfaces.remove(id);
+	}
+
+	void ResizeSurface(surface_id id, u32, u32)
+	{
+		surfaces[id].Resize();
+	}
+
+	u32 SurfaceWidth(surface_id id)
+	{
+		return surfaces[id].Width();
+	}
+
+	u32 SurfaceHeight(surface_id id)
+	{
+		return surfaces[id].Height();
+	}
+
+	void RenderSurface(surface_id id)
+	{
+		surfaces[id].Present();
+	}
 }
 

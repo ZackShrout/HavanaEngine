@@ -4,7 +4,7 @@
 #include <wrl.h>
 
 #include "CommonHeaders.h"
-#include "..\Graphics\Renderer.h"
+#include "../Graphics/Renderer.h"
 
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d12.lib")
