@@ -3,58 +3,61 @@
 
 namespace Havana::Graphics::OpenGL::OGL
 {
-    #ifdef __linux__
+#ifdef __linux__
     #include <dlfcn.h>
     // Function pointer needed to get X11 context attributes
     using glXCreateContextAttribsARBProc = 
         GLXContext (*)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
-    #define GLDECL // Not needed for Linux
-    #define GL_LIST_WIN32 // Not needed for Linux
-    #endif // __linux__
+#define GLDECL // Not needed for Linux
+#define GL_LIST_WIN32 // Not needed for Linux
+    void* libGL{ nullptr };
+#endif // __linux__
 
-    #ifdef _WIN32
-    #ifndef NOMINMAX
-    #define NOMINMAX
-    #endif // !NOMINMAX
-    #ifndef WIN32_LEAN_AND_MEAN
-    #define WIN32_LEAN_AND_MEAN
-    #endif // !WIN32_LEAN_AND_MEAN
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // !NOMINMAX
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif // !WIN32_LEAN_AND_MEAN
     #include <windows.h>
-    #define GLDECL CALLBACK
+#define GLDECL CALLBACK
 
-    #define GL_ARRAY_BUFFER                   0x8892
-    #define GL_ARRAY_BUFFER_BINDING           0x8894
-    #define GL_COLOR_ATTACHMENT0              0x8CE0
-    #define GL_COMPILE_STATUS                 0x8B81
-    #define GL_CURRENT_PROGRAM                0x8B8D
-    #define GL_DYNAMIC_DRAW                   0x88E8
-    #define GL_ELEMENT_ARRAY_BUFFER           0x8893
-    #define GL_ELEMENT_ARRAY_BUFFER_BINDING   0x8895
-    #define GL_FRAGMENT_SHADER                0x8B30
-    #define GL_FRAMEBUFFER                    0x8D40
-    #define GL_FRAMEBUFFER_COMPLETE           0x8CD5
-    #define GL_FUNC_ADD                       0x8006
-    #define GL_INVALID_FRAMEBUFFER_OPERATION  0x0506
-    #define GL_MAJOR_VERSION                  0x821B
-    #define GL_MINOR_VERSION                  0x821C
-    #define GL_STATIC_DRAW                    0x88E4
-    #define GL_STREAM_DRAW                    0x88E0
-    #define GL_TEXTURE0                       0x84C0
-    #define GL_VERTEX_SHADER                  0x8B31
+#define GL_ARRAY_BUFFER                   0x8892
+#define GL_ARRAY_BUFFER_BINDING           0x8894
+#define GL_COLOR_ATTACHMENT0              0x8CE0
+#define GL_COMPILE_STATUS                 0x8B81
+#define GL_CURRENT_PROGRAM                0x8B8D
+#define GL_DYNAMIC_DRAW                   0x88E8
+#define GL_ELEMENT_ARRAY_BUFFER           0x8893
+#define GL_ELEMENT_ARRAY_BUFFER_BINDING   0x8895
+#define GL_FRAGMENT_SHADER                0x8B30
+#define GL_FRAMEBUFFER                    0x8D40
+#define GL_FRAMEBUFFER_COMPLETE           0x8CD5
+#define GL_FUNC_ADD                       0x8006
+#define GL_INVALID_FRAMEBUFFER_OPERATION  0x0506
+#define GL_MAJOR_VERSION                  0x821B
+#define GL_MINOR_VERSION                  0x821C
+#define GL_STATIC_DRAW                    0x88E4
+#define GL_STREAM_DRAW                    0x88E0
+#define GL_TEXTURE0                       0x84C0
+#define GL_VERTEX_SHADER                  0x8B31
 
     typedef char GLchar;
     typedef ptrdiff_t GLintptr;
     typedef ptrdiff_t GLsizeiptr;
 
-    #define GL_LIST_WIN32\
+    HINSTANCE dll{};
+
+#define GL_LIST_WIN32\
         X(void,      BlendEquation,           GLenum mode)\
         X(void,      ActiveTexture,           GLenum texture)
-    #endif // _WIN32
+#endif // _WIN32
 
     #include <GL/gl.h>
 
     // List of OpenGL extntion (modern) functions to load. This list can be modified as needed
-    #define GL_LIST\
+#define GL_LIST\
         X(void,      AttachShader,            GLuint program, GLuint shader)\
         X(void,      BindBuffer,              GLenum target, GLuint buffer)\
         X(void,      BindFramebuffer,         GLenum target, GLuint framebuffer)\
@@ -86,28 +89,27 @@ namespace Havana::Graphics::OpenGL::OGL
         X(void,      UseProgram,              GLuint program)\
         X(void,      VertexAttribPointer,     GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid * pointer)
 
-    #define X(ret, name, ...) typedef ret GLDECL name##proc(__VA_ARGS__); extern name##proc * gl##name;
+#define X(ret, name, ...) typedef ret GLDECL name##proc(__VA_ARGS__); extern name##proc * gl##name;
     GL_LIST
     GL_LIST_WIN32
-    #undef X
+#undef X
 
     // Call this to "initialize" OpenGL functions, after getting an OpenGL context
     bool GetOpenGLExtensions();
 
     // NOTE: This must be defined in exactly one CPP file (and only one) in order for the
     //       GetOpenGLExtensions() call to to be defined and work at runtime.
-    #ifdef OPENGL_IMPLEMENT_LOADER
+#ifdef OPENGL_IMPLEMENT_LOADER
 
-    #define X(ret, name, ...) name##proc * gl##name;
+#define X(ret, name, ...) name##proc * gl##name;
     GL_LIST
     GL_LIST_WIN32
-    #undef X
+#undef X
 
     bool GetOpenGLExtensions()
     {
-    #ifdef __linux__
-        // TODO: call dlclose() on this dll when renderer closes
-        void* libGL{ dlopen("libGL.so", RTLD_LAZY) };
+#ifdef __linux__
+        libGL = dlopen("libGL.so", RTLD_LAZY);
         if (!libGL) {
             printf("libGL.so couldn't be loaded!\n");
             return false;
@@ -122,9 +124,8 @@ namespace Havana::Graphics::OpenGL::OGL
             GL_LIST
         #undef X
 
-    #elif _WIN32
-        // TODO: call FreeLibrary() on this dll when renderer closes
-        HINSTANCE dll{ LoadLibraryA("opengl32.dll") };
+#elif _WIN32
+        dll = LoadLibraryA("opengl32.dll");
         typedef PROC WINAPI wglGetProcAddressproc(LPCSTR lpszProc);
         if (!dll) {
             OutputDebugStringA("opengl32.dll not found.\n");
@@ -142,12 +143,22 @@ namespace Havana::Graphics::OpenGL::OGL
             GL_LIST_WIN32
         #undef X
 
-    #else
+#else
         #error "OpenGL extension loading is not supported for this platform"
-    #endif
+#endif
 
         return true;
     }
 
-    #endif // OPEN_GL_EXT_LOADER
+    // Call this to free the dll giving OpenGL functions, once no more OpenGL calls will be made
+    bool FreeOpenGLExtensions()
+    {
+#ifdef __linux__
+        return (dlclose(libGL) == 0);
+#elif _WIN32
+        return FreeLibrary(dll);
+#endif
+    }
+
+#endif // OPENGL_IMPLEMENT_LOADER
 }

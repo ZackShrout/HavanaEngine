@@ -19,7 +19,11 @@ namespace Havana::Graphics::OpenGL::Core
 	
 	void Shutdown()
 	{
+		// Shutdown everything else ...
+		//
+		//				... and at the end ...
 
+		OGL::FreeOpenGLExtensions();
 	}
 
     Surface CreateSurface(Platform::Window window)
