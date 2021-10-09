@@ -1,9 +1,6 @@
 #include "OpenGLCore.h"
 #include "OpenGLHelpers.h"
 
-#define OPEN_GL_EXT_LOADER
-#include "OpenGLExtensionLoader.h"
-
 namespace Havana::Graphics::OpenGL::Core
 {
     bool Initialize()
@@ -55,7 +52,7 @@ namespace Havana::Graphics::OpenGL::Core
 			return {};
 		}
 
-		GetOpenGLExtensions();
+		OGL::GetOpenGLExtensions();
 
 		glXMakeCurrent(window.Display(), window.Handle(), context);
 
