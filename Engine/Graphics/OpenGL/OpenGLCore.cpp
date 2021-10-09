@@ -26,6 +26,7 @@ namespace Havana::Graphics::OpenGL::Core
     {
         surface_id id{ surfaces.add(window) };
 		
+#ifdef __linux__
 		// Cache a casted pointer of the display to save on casting later
 		Display* display{ (Display*)window.Display() };
 		
@@ -78,7 +79,7 @@ namespace Havana::Graphics::OpenGL::Core
 		glGetIntegerv(GL_MINOR_VERSION, &minor);
 
 		surfaces[id].SetContext(context);
-
+#endif
 		return Surface{ id };
     }
 

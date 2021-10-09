@@ -39,6 +39,10 @@
     <ClInclude Include="Graphics\GraphicsPlatformInterface.h" />
     <ClInclude Include="Graphics\OpenGL\OpenGLCommonHeaders.h" />
     <ClInclude Include="Graphics\OpenGL\OpenGLCore.h" />
+    <ClInclude Include="Graphics\OpenGL\OpenGLExtensionLoader.h" />
+    <ClInclude Include="Graphics\OpenGL\OpenGLHelpers.h" />
+    <ClInclude Include="Graphics\OpenGL\OpenGLInterface.h" />
+    <ClInclude Include="Graphics\OpenGL\OpenGLSurface.h" />
     <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="Platforms\Platform.h" />
     <ClInclude Include="Platforms\PlatformTypes.h" />
@@ -61,6 +65,10 @@
     <ClCompile Include="Graphics\Direct3D12\D3D12Resources.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Surface.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Core.cpp" />
+    <ClCompile Include="Graphics\OpenGL\OpenGLCore.cpp" />
+    <ClCompile Include="Graphics\OpenGL\OpenGLHelpers.cpp" />
+    <ClCompile Include="Graphics\OpenGL\OpenGLInterface.cpp" />
+    <ClCompile Include="Graphics\OpenGL\OpenGLSurface.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="Platforms\Platform.cpp" />
   </ItemGroup>

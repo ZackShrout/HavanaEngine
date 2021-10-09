@@ -8,7 +8,11 @@
 using namespace Havana;
 
 Graphics::RenderSurface surfaces[4];
-//TimeIt timer{};
+
+#ifdef _WIN64
+TimeIt timer{};
+#endif // _WIN64
+
 void DestroyRenderSurface(Graphics::RenderSurface &surface);
 
 #ifdef _WIN64
@@ -79,7 +83,7 @@ void DestroyRenderSurface(Graphics::RenderSurface &surface)
 }
 
 #ifdef _WIN64
-bool EngineTest::Initialize(void *disp)
+bool EngineTest::Initialize()
 {
 	bool result{Graphics::Initialize(Graphics::GraphicsPlatform::Direct3D12)};
 
@@ -96,7 +100,7 @@ bool EngineTest::Initialize(void *disp)
 	static_assert(_countof(info) == _countof(surfaces));
 
 	for (u32 i{0}; i < _countof(surfaces); i++)
-		CreateRenderSurface(surfaces[i], info[i]);
+		CreateRenderSurface(surfaces[i], info[i], nullptr);
 
 	return result;
 }

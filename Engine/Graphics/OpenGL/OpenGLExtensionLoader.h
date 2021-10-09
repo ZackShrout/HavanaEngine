@@ -106,7 +106,7 @@ namespace Havana::Graphics::OpenGL::OGL
     bool GetOpenGLExtensions()
     {
     #ifdef __linux__
-
+        // TODO: call dlclose() on this dll when renderer closes
         void* libGL{ dlopen("libGL.so", RTLD_LAZY) };
         if (!libGL) {
             printf("libGL.so couldn't be loaded!\n");
@@ -123,7 +123,7 @@ namespace Havana::Graphics::OpenGL::OGL
         #undef X
 
     #elif _WIN32
-
+        // TODO: call FreeLibrary() on this dll when renderer closes
         HINSTANCE dll{ LoadLibraryA("opengl32.dll") };
         typedef PROC WINAPI wglGetProcAddressproc(LPCSTR lpszProc);
         if (!dll) {

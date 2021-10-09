@@ -12,11 +12,12 @@ class Test
 {
 public:
 #ifdef _WIN64
+	virtual bool Initialize() = 0;
 	virtual void Run() = 0;
 #elif __linux__
+	virtual bool Initialize(void* disp) = 0;
 	virtual void Run(void* disp) = 0;
 #endif
-	virtual bool Initialize(void* disp) = 0;
 	virtual void Shutdown() = 0;
 };
 
