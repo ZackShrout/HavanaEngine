@@ -1,10 +1,6 @@
 #include "Platform.h"
 #include "PlatformTypes.h"
 
-#define OPEN_GL_EXT_LOADER
-#include "../Graphics/OpenGL/OpenGLExtensionLoader.h"
-#include <GL/glx.h>
-
 namespace Havana::Platform
 {
 #ifdef _WIN64 // open window for DirectX context

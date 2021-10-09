@@ -1,7 +1,7 @@
 #include "OpenGLCore.h"
 #include "OpenGLSurface.h"
-#include "OpenGLHelpers.h"
-
+#define OPENGL_IMPLEMENT_LOADER // This needs to be defined here in order to call GetOpenGLExtensions();
+#include "OpenGLExtensionLoader.h"
 namespace Havana::Graphics::OpenGL::Core
 {
     namespace
