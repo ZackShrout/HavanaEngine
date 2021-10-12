@@ -32,7 +32,8 @@ namespace Havana::Graphics
 	enum GraphicsPlatform : u32
 	{
 		Direct3D12 = 0,
-		OpenGraphicsL = 1
+		VulkanAPI = 1,
+		OpenGraphicsL = 2
 	};
 	
 	bool Initialize(GraphicsPlatform platform);

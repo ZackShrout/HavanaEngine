@@ -199,7 +199,7 @@ namespace Havana::Graphics::D3D12
 		// depth stencil view cannot be the same format as the shader resource view
 		if (info.desc->Format == DXGI_FORMAT_D32_FLOAT)
 		{
-			info.desc->Format == DXGI_FORMAT_R32_TYPELESS;
+			info.desc->Format = DXGI_FORMAT_R32_TYPELESS;
 			srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 		}
 

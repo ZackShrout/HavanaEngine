@@ -64,6 +64,20 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+
+void ActivateConsole()
+{
+	FILE* out;
+	FILE* err;
+	
+	AllocConsole();
+	AttachConsole(GetCurrentProcessId());
+	freopen_s(&out, "CON", "w", stdout);
+	freopen_s(&err, "CON", "w", stderr);
+	SetConsoleTitle(TEXT("Render Test"));
+}
+
+
 #endif // _WIN64
 
 void CreateRenderSurface(Graphics::RenderSurface &surface, Platform::WindowInitInfo info, void* disp)
@@ -85,7 +99,9 @@ void DestroyRenderSurface(Graphics::RenderSurface &surface)
 #ifdef _WIN64
 bool EngineTest::Initialize()
 {
-	bool result{Graphics::Initialize(Graphics::GraphicsPlatform::Direct3D12)};
+	ActivateConsole();
+	
+	bool result{Graphics::Initialize(Graphics::GraphicsPlatform::VulkanAPI)};
 
 	if (!result)
 		return result;

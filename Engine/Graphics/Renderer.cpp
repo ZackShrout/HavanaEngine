@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "GraphicsPlatformInterface.h"
 #include "../Graphics/Direct3D12/D3D12Interface.h"
+#include "../Graphics/Vulkan/VulkanInterface.h"
 #include "../Graphics/OpenGL/OpenGLInterface.h"
 
 namespace Havana::Graphics
@@ -18,6 +19,9 @@ namespace Havana::Graphics
 				D3D12::GetPlatformInterface(gfx);
 				break;
 			#endif // _WIN64
+			case GraphicsPlatform::VulkanAPI:
+				Vulkan::GetPlatformInterface(gfx);
+				break;
 			case GraphicsPlatform::OpenGraphicsL:
 				OpenGL::GetPlatformInterface(gfx);
 				break;

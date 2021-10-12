@@ -10,6 +10,7 @@ namespace Havana::Platform
 		struct WindowInfo
 		{
 			HWND hwnd{nullptr};
+			HINSTANCE hinstance{ nullptr };
 			RECT clientArea{0, 0, 1580, 950};
 			RECT fullScreenArea{};
 			POINT topLeft{0, 0};
@@ -33,9 +34,9 @@ namespace Havana::Platform
 			return GetFromId(id);
 		}
 
-		void* GetDisplay(window_id id)
+		HINSTANCE GetDisplay(window_id id)
 		{
-			return nullptr;
+			return GetFromId(id).hinstance;
 		}
 
 		// Callback method for message handling
@@ -211,6 +212,7 @@ namespace Havana::Platform
 		info.clientArea.right = (initInfo && initInfo->width) ? info.clientArea.left + initInfo->width : info.clientArea.right;
 		info.clientArea.bottom = (initInfo && initInfo->height) ? info.clientArea.top + initInfo->height : info.clientArea.bottom;
 		info.style |= parent ? WS_CHILD : WS_OVERLAPPEDWINDOW;
+		info.hinstance = wc.hInstance;
 		RECT rect{info.clientArea};
 
 		// Adjust the window size for correct device size

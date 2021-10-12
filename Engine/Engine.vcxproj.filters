@@ -34,6 +34,14 @@
     <ClInclude Include="Graphics\OpenGL\OpenGLHelpers.h" />
     <ClInclude Include="Graphics\OpenGL\OpenGLInterface.h" />
     <ClInclude Include="Graphics\OpenGL\OpenGLSurface.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanCommonHeaders.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanCore.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanHelpers.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanInterface.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanResources.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanSurface.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanExtensionLoader.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanValidation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\Entity.cpp" />
@@ -53,5 +61,17 @@
     <ClCompile Include="Graphics\OpenGL\OpenGLHelpers.cpp" />
     <ClCompile Include="Graphics\OpenGL\OpenGLInterface.cpp" />
     <ClCompile Include="Graphics\OpenGL\OpenGLSurface.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanCore.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanHelpers.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanInterface.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanResources.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanSurface.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Graphics\Vulkan\Shaders\compile_shaders.bat" />
+    <None Include="Graphics\Vulkan\Shaders\frag.spv" />
+    <None Include="Graphics\Vulkan\Shaders\Shader.frag" />
+    <None Include="Graphics\Vulkan\Shaders\Shader.vert" />
+    <None Include="Graphics\Vulkan\Shaders\vert.spv" />
   </ItemGroup>
 </Project>
