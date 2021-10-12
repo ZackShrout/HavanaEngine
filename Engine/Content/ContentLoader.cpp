@@ -3,7 +3,7 @@
 #include "../Components/Transform.h"
 #include "../Components/Script.h"
 
-#ifdef _Win64
+#ifdef _WIN64
 #ifndef SHIPPING
 #include <fstream>
 #include <filesystem>
@@ -73,24 +73,36 @@ namespace Havana::Content
 		using component_reader = bool(*)(const u8*&, Entity::EntityInfo&);
 		component_reader componentReaders[]{ ReadTransform, ReadScript };
 		static_assert(_countof(componentReaders) == ComponentType::Count);
+
+		bool ReadFile(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
+		{
+			if (!std::filesystem::exists(path)) return false;
+
+			size = std::filesystem::file_size(path);
+			assert(size);
+			if (!size) return false;
+
+			data = std::make_unique<u8[]>(size);
+			std::ifstream file{ path, std::ios::in | std::ios::binary };
+			if (!file || !file.read((char*)data.get(), size))
+			{
+				file.close();
+				return false;
+			}
+
+			file.close();
+			return true;
+		}
 	} // anonymous namespace
 
 	bool LoadGame()
 	{
-		// set the working directory to the executable path
-		wchar_t path[MAX_PATH];
-		const u32 length{ GetModuleFileName(0, &path[0], MAX_PATH) };
-
-	    if (!length || GetLastError() == ERROR_INSUFFICIENT_BUFFER) return false;
-		
-		std::filesystem::path p{ path };
-		SetCurrentDirectory(p.parent_path().wstring().c_str());
-	
 		// read game.bin and create entities
-		std::ifstream game("game.bin", std::ios::in | std::ios::binary);
-		Utils::vector<u8> buffer(std::istreambuf_iterator<char>(game), {});
-		assert(buffer.size());
-		const u8* at{ buffer.data() };
+		std::unique_ptr<u8[]> gameData{};
+		u64 size{ 0 };
+		if (!ReadFile("game.bin", gameData, size)) return false;
+		assert(gameData.get());
+		const u8* at{ gameData.get() };
 		constexpr u32 su32{ sizeof(u32) };
 		const u32 numEntities{ *at }; at += su32;
 		
@@ -118,7 +130,7 @@ namespace Havana::Content
 			entities.emplace_back(entity);
 		}
 
-		assert(at == buffer.data() + buffer.size());
+		assert(at == gameData.get() + size);
 		return true;
 	}
 

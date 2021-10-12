@@ -8,6 +8,8 @@ namespace Havana::Graphics::D3D12
 	{
 	public:
 		constexpr static u32 bufferCount{ 3 };
+		constexpr static DXGI_FORMAT defaultBackBufferFormat{ DXGI_FORMAT_R8G8B8A8_UNORM_SRGB };
+
 		explicit D3D12Surface(Platform::Window window) : m_window{ window }
 		{
 			assert(m_window.Handle());
@@ -44,7 +46,7 @@ namespace Havana::Graphics::D3D12
 #endif // USE_STL_VECTOR
 		~D3D12Surface() { Release(); }
 
-		void CreateSwapChain(IDXGIFactory7* factory, ID3D12CommandQueue* cmdQueue, DXGI_FORMAT format);
+		void CreateSwapChain(IDXGIFactory7* factory, ID3D12CommandQueue* cmdQueue, DXGI_FORMAT format = defaultBackBufferFormat);
 		void Present() const;
 		void Resize();
 		constexpr u32 Width() const { return (u32)m_viewport.Width; }
@@ -62,6 +64,7 @@ namespace Havana::Graphics::D3D12
 		};
 
 		Platform::Window	m_window{};
+		DXGI_FORMAT			m_format{ defaultBackBufferFormat };
 		IDXGISwapChain4*	m_swapChain{ nullptr };
 		RenderTargetData	m_renderTargetData[bufferCount]{};
 		mutable u32			m_currentBBIndex{ 0 };

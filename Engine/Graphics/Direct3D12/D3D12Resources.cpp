@@ -188,6 +188,7 @@ namespace Havana::Graphics::D3D12
 		for (u32 i{ 0 }; i < m_mipCount; i++) Core::RTVHeap().Free(m_rtv[i]);
 		m_mipCount = 0;
 	}
+
 	//// DEPTH BUFFER /////////////////////////////////////////////////////////////////////////////
 	D3D12DepthBuffer::D3D12DepthBuffer(D3D12TextureInitInfo info)
 	{

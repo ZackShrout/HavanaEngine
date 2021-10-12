@@ -36,12 +36,11 @@ namespace Havana::Graphics::D3D12::Core
 		}
 	}
 
-	ID3D12Device8* const Device();
+	id3d12Device* const Device();
 	DescriptorHeap& RTVHeap();
 	DescriptorHeap& DSVHeap();
 	DescriptorHeap& SRVHeap();
 	DescriptorHeap& UAVHeap();
-	DXGI_FORMAT DefaultRenderTargetFormat();
 	u32 CurrentFrameIndex();
 	void SetDeferredReleasesFlag();
 

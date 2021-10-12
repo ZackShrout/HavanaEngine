@@ -12,6 +12,8 @@
 namespace Havana::Graphics::D3D12
 {
 	constexpr u32 frameBufferCount{ 3 };
+	using id3d12Device = ID3D12Device8;
+	using id3d12GraphicsCommandList = ID3D12GraphicsCommandList6;
 }
 
 // Assert that COM call to D3D API succeeded

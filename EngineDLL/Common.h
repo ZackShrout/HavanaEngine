@@ -1,5 +1,5 @@
 #pragma once
-#include "..\Common\CommonHeaders.h"
+#include "CommonHeaders.h"
 
 #ifndef EDITOR_INTERFACE
 #define EDITOR_INTERFACE extern"C" __declspec(dllexport)

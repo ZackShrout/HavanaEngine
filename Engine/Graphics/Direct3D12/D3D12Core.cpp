@@ -7,9 +7,6 @@ using namespace Microsoft::WRL;
 
 namespace Havana::Graphics::D3D12::Core
 {
-	// TODO: remove when example is not needed
-	void CreateRootSignature();
-	void CreateRootSignature2();
 	namespace
 	{
 		class D3D12Command
@@ -17,7 +14,7 @@ namespace Havana::Graphics::D3D12::Core
 		public:
 			D3D12Command() = default;
 			DISABLE_COPY_AND_MOVE(D3D12Command)
-			explicit D3D12Command(ID3D12Device8* const device, D3D12_COMMAND_LIST_TYPE type)
+			explicit D3D12Command(id3d12Device* const device, D3D12_COMMAND_LIST_TYPE type)
 			{
 				HRESULT hr{ S_OK };
 				D3D12_COMMAND_QUEUE_DESC description{};
@@ -140,7 +137,7 @@ namespace Havana::Graphics::D3D12::Core
 			}
 
 			constexpr ID3D12CommandQueue* const CommandQueue() const { return m_commandQueue; }
-			constexpr ID3D12GraphicsCommandList6* const CommandList() const { return m_commandList; }
+			constexpr id3d12GraphicsCommandList* const CommandList() const { return m_commandList; }
 			constexpr u32 FrameIndex() const { return m_frameIndex; }
 
 		private:
@@ -172,7 +169,7 @@ namespace Havana::Graphics::D3D12::Core
 			};
 
 			ID3D12CommandQueue*			m_commandQueue{ nullptr };
-			ID3D12GraphicsCommandList6* m_commandList{ nullptr };
+			id3d12GraphicsCommandList*	m_commandList{ nullptr };
 			ID3D12Fence1*				m_fence{ nullptr };
 			HANDLE						m_fenceEvent{ nullptr };
 			u64							m_fenceValue{ 0 };
@@ -182,7 +179,7 @@ namespace Havana::Graphics::D3D12::Core
 
 		using surface_collection = Utils::free_list<D3D12Surface>;
 
-		ID3D12Device8*				mainDevice{ nullptr };
+		id3d12Device*				mainDevice{ nullptr };
 		IDXGIFactory7*				dxgiFactory{ nullptr };
 		D3D12Command				gfxCommand;
 		surface_collection			surfaces;
@@ -357,10 +354,6 @@ namespace Havana::Graphics::D3D12::Core
 		NAME_D3D12_OBJECT(srvDescHeap.Heap(), L"SRV Descriptor Heap");
 		NAME_D3D12_OBJECT(uavDescHeap.Heap(), L"USV Descriptor Heap");
 
-		// TODO: remove
-		CreateRootSignature();
-		CreateRootSignature2();
-
 		return true;
 	}
 
@@ -412,7 +405,7 @@ namespace Havana::Graphics::D3D12::Core
 		Release(mainDevice);
 	}
 
-	ID3D12Device8* const Device()
+	id3d12Device* const Device()
 	{
 		return mainDevice;
 	}
@@ -425,8 +418,6 @@ namespace Havana::Graphics::D3D12::Core
 
 	DescriptorHeap& UAVHeap() { return uavDescHeap; }
 
-	DXGI_FORMAT DefaultRenderTargetFormat() { return renderTargetFormat; }
-	
 	u32 CurrentFrameIndex()
 	{
 		return gfxCommand.FrameIndex();
@@ -472,7 +463,7 @@ namespace Havana::Graphics::D3D12::Core
 		// reset the allocator once the GPU is done with it.
 		// This frees the memory that was used to store commands.
 		gfxCommand.BeginFrame();
-		ID3D12GraphicsCommandList6* commandList{ gfxCommand.CommandList() };
+		id3d12GraphicsCommandList* commandList{ gfxCommand.CommandList() };
 
 		// Check to see if there are deferred releases to handle
 		const u32 frameIdx{ CurrentFrameIndex() };
@@ -492,173 +483,5 @@ namespace Havana::Graphics::D3D12::Core
 		// Done recording commands, now execute them,
 		// signal and incriment fence value for next frame.
 		gfxCommand.EndFrame();
-	}
-
-	// Demonstrates how to create a root signature. Exmaple only, will be removed later once helper functions have been written
-	void CreateRootSignature()
-	{
-		D3D12_ROOT_PARAMETER1 params[3];
-		{// param 0: 2 constants
-			auto& param = params[0];
-			param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-			D3D12_ROOT_CONSTANTS consts{};
-			consts.Num32BitValues = 2;
-			consts.ShaderRegister = 0;
-			consts.RegisterSpace = 0;
-			param.Constants = consts;
-			param.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-		}
-		{// param 1: 1 constant buffer view (descriptor)
-			auto& param = params[1];
-			param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			D3D12_ROOT_DESCRIPTOR1 rootDesc{};
-			rootDesc.Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE;
-			rootDesc.ShaderRegister = 0;
-			rootDesc.RegisterSpace = 0;
-			param.Descriptor = rootDesc;
-			param.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-		}
-		{// param 2: root descriptor table (unbounded/bindless)
-			auto& param = params[2];
-			param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			D3D12_ROOT_DESCRIPTOR_TABLE1 table{};
-			table.NumDescriptorRanges = 1;
-			D3D12_DESCRIPTOR_RANGE1 range{};
-			range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-			range.NumDescriptors = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-			range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
-			range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-			range.BaseShaderRegister = 0;
-			range.RegisterSpace = 0;
-			table.pDescriptorRanges = &range;
-			param.DescriptorTable = table;
-			param.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-		}
-
-		D3D12_STATIC_SAMPLER_DESC samplerDesc{};
-		samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-		samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-		samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-		samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-		D3D12_ROOT_SIGNATURE_DESC1 desc{};
-		desc.Flags =
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS;
-		desc.NumParameters = _countof(params);
-		desc.pParameters = &params[0];
-		desc.NumStaticSamplers = 1;
-		desc.pStaticSamplers = &samplerDesc;
-
-		D3D12_VERSIONED_ROOT_SIGNATURE_DESC rsDesc{};
-		rsDesc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
-		rsDesc.Desc_1_1 = desc;
-		
-		HRESULT hr{ S_OK };
-		ID3DBlob* rootSigBlob{ nullptr };
-		ID3DBlob* errorBlob{ nullptr };
-		if (FAILED(hr = D3D12SerializeVersionedRootSignature(&rsDesc, &rootSigBlob, &errorBlob)))
-		{
-			DEBUG_OP(const char* errorMsg{ errorBlob ? (const char*)errorBlob->GetBufferPointer() : "" });
-			DEBUG_OP(OutputDebugStringA(errorMsg));
-			return;
-		}
-		
-		assert(rootSigBlob);
-		ID3D12RootSignature* rootSig{ nullptr };
-		DXCall(hr = Device()->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS(&rootSig)));
-		Release(rootSigBlob);
-		Release(errorBlob);
-
-		// Use rootSig
-
-		// When renderer shuts down
-		Release(rootSig);
-	}
-
-	void CreateRootSignature2()
-	{
-		D3DX::D3D12_Descriptor_Range range{ D3D12_DESCRIPTOR_RANGE_TYPE_SRV, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND, 0 };
-		D3DX::D3D12_Root_Parameter params[3];
-		params[0].AsConstants(2, D3D12_SHADER_VISIBILITY_PIXEL, 0);
-		params[1].AsCBV(D3D12_SHADER_VISIBILITY_PIXEL, 1);
-		params[2].AsDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL, &range, 1);
-		
-		D3DX::D3D12_Root_Signature_Desc rootSigDesc{ &params[0], _countof(params) };
-		ID3D12RootSignature* rootSig{ rootSigDesc.Create() };
-
-		// Use rootSig
-
-		// When renderer shuts down
-		Release(rootSig);
-	}
-
-	ID3D12RootSignature* m_rootSignature;
-	D3D12_SHADER_BYTECODE m_vs{};
-
-	template<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE type, typename T>
-	class alignas(void*) D3D12_Pipeline_State_Subobject
-	{
-	public:
-		D3D12_Pipeline_State_Subobject() = default;
-		constexpr explicit D3D12_Pipeline_State_Subobject(T subobject) : m_type{ type }, m_subobject{ subobject }{}
-		D3D12_Pipeline_State_Subobject& operator=(const T& subobject) { m_subobject = subobject; return *this; }
-	private:
-		const D3D12_PIPELINE_STATE_SUBOBJECT_TYPE m_type{ type };
-		T m_subobject{};
-	};
-
-	using D3D12_Pipeline_State_Subobject_Root_Signature = D3D12_Pipeline_State_Subobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE, ID3D12RootSignature*>;
-	using D3D12_Pipeline_State_Subobject_VS = D3D12_Pipeline_State_Subobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS, D3D12_SHADER_BYTECODE>;
-
-	void CreatePipelineStateObject()
-	{
-		struct
-		{
-			struct alignas(void*)
-			{
-				const D3D12_PIPELINE_STATE_SUBOBJECT_TYPE type{ D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE };
-				ID3D12RootSignature* rootSignature;
-			} rootSig;
-			struct alignas(void*)
-			{
-				const D3D12_PIPELINE_STATE_SUBOBJECT_TYPE type{ D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS };
-				D3D12_SHADER_BYTECODE vsCode{};
-			} vs;
-		} stream;
-
-		stream.rootSig.rootSignature = m_rootSignature;
-		stream.vs.vsCode = m_vs;
-		
-		D3D12_PIPELINE_STATE_STREAM_DESC desc{};
-		desc.pPipelineStateSubobjectStream = &stream;
-		desc.SizeInBytes = sizeof(stream);
-
-		ID3D12PipelineState* pso{ nullptr };
-		Device()->CreatePipelineState(&desc, IID_PPV_ARGS(&pso));
-
-		// use pso during rendering
-
-		// when renderer shuts down
-		Release(pso);
-	}
-
-	void CreatePipelineStateObject2()
-	{
-		struct
-		{
-			D3DX::D3D12_Pipeline_State_Subobject_rootSignature rootSig{ m_rootSignature };
-			D3DX::D3D12_Pipeline_State_Subobject_vs vs{ m_vs };
-		} stream;
-
-		auto pso = D3DX::CreatePipelineState(&stream, sizeof(stream));
-
-		// use pso during rendering
-
-		// when renderer shuts down
-		Release(pso);
 	}
 }

@@ -15,7 +15,7 @@ namespace Havana::Graphics::D3D12
 	} // anonymous namespace
 	
 	// PUBLIC
-	void D3D12Surface::CreateSwapChain(IDXGIFactory7* factory, ID3D12CommandQueue* cmdQueue, DXGI_FORMAT format)
+	void D3D12Surface::CreateSwapChain(IDXGIFactory7* factory, ID3D12CommandQueue* cmdQueue, DXGI_FORMAT format /*= defaultBackBufferFormat*/)
 	{
 		assert(factory && cmdQueue);
 		Release();
@@ -24,6 +24,8 @@ namespace Havana::Graphics::D3D12
 		{
 			m_presentFlags = DXGI_PRESENT_ALLOW_TEARING;
 		}
+
+		m_format = format;
 
 		DXGI_SWAP_CHAIN_DESC1 desc{};
 		desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
@@ -78,7 +80,7 @@ namespace Havana::Graphics::D3D12
 			assert(!data.resource);
 			DXCall(m_swapChain->GetBuffer(i, IID_PPV_ARGS(&data.resource)));
 			D3D12_RENDER_TARGET_VIEW_DESC desc{};
-			desc.Format = Core::DefaultRenderTargetFormat();
+			desc.Format = m_format;
 			desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 			Core::Device()->CreateRenderTargetView(data.resource, &desc, data.rtv.cpu);
 		}
