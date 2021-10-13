@@ -112,7 +112,7 @@ namespace Havana::Graphics::Vulkan
 		}
 
 		// Create a list of physical devices the instance can access
-		std::vector<VkPhysicalDevice> deviceList(deviceCount);
+		Utils::vector<VkPhysicalDevice> deviceList(deviceCount);
 		assert(vkEnumeratePhysicalDevices(m_instance, &deviceCount, deviceList.data()) == VK_SUCCESS);
 
 		// Choose physical device based on it's suitability
@@ -446,7 +446,7 @@ namespace Havana::Graphics::Vulkan
 		surfaceCreateInfo.dpy = (Display*)m_window.Display();
 		surfaceCreateInfo.window = (Window)m_window.Handle();
 
-		VkCall(vkCreateXlibSurfaceKHR(m_instance, &surfaceCreateInfo, nullptr, &m_surface), "Failed to create a surface!")
+		VkCall(vkCreateXlibSurfaceKHR(m_instance, &surfaceCreateInfo, nullptr, &m_surface), "Failed to create a surface!");
 #endif // _WIN32
 	}
 
