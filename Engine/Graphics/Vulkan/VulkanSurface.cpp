@@ -102,7 +102,7 @@ namespace Havana::Graphics::Vulkan
 	{
 		// Need to get number of physical devices the instance can access
 		uint32_t deviceCount{ 0 };
-		assert(vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr) == VK_SUCCESS);
+		VkCall(vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr), "Failed to get physical device count!");
 		assert(deviceCount >= 1);
 
 		// Make sure there is at least one device that supports Vulkan
@@ -113,7 +113,7 @@ namespace Havana::Graphics::Vulkan
 
 		// Create a list of physical devices the instance can access
 		Utils::vector<VkPhysicalDevice> deviceList(deviceCount);
-		assert(vkEnumeratePhysicalDevices(m_instance, &deviceCount, deviceList.data()) == VK_SUCCESS);
+		VkCall(vkEnumeratePhysicalDevices(m_instance, &deviceCount, deviceList.data()), "Failed to get a list of physical devices!");
 
 		// Choose physical device based on it's suitability
 		for (const auto& device : deviceList)
