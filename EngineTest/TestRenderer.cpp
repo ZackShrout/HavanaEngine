@@ -141,7 +141,7 @@ void EngineTest::Run()
 
 bool EngineTest::Initialize(void *disp)
 {
-	bool result{Graphics::Initialize(Graphics::GraphicsPlatform::OpenGraphicsL)};
+	bool result{Graphics::Initialize(Graphics::GraphicsPlatform::VulkanAPI)};
 
 	if (!result)
 		return result;

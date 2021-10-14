@@ -64,7 +64,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 int main(int argc, char* argv[])
 {
-	EngineTest test{};
+	XInitThreads();
+    
+    EngineTest test{};
 
     // Open an X server connection
     Display* display { XOpenDisplay(NULL) };

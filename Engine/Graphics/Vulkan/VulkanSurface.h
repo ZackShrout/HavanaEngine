@@ -106,6 +106,8 @@ namespace Havana::Graphics::Vulkan
 		VkPipeline m_graphicsPipeline;
 		VkPipelineLayout m_pipelineLayout;
 		VkRenderPass m_renderPass;
+		VkShaderModule m_vertexShaderModule;
+		VkShaderModule m_fragmentShaderModule;
 		// - Pools
 		VkCommandPool m_graphicsCommandPool;
 		// - Utility

@@ -365,6 +365,9 @@ namespace Havana::Graphics::Vulkan
 		// Wait until no action pm device and then destroy everything
 		vkDeviceWaitIdle(m_mainDevice.logicalDevice);
 
+		vkDestroyShaderModule(m_mainDevice.logicalDevice, m_vertexShaderModule, nullptr);
+		vkDestroyShaderModule(m_mainDevice.logicalDevice, m_fragmentShaderModule, nullptr);
+
 		for (size_t i{ 0 }; i < maxFrameDraws; i++)
 		{
 			vkDestroySemaphore(m_mainDevice.logicalDevice, m_renderFinished[i], nullptr);
@@ -444,7 +447,7 @@ namespace Havana::Graphics::Vulkan
 		VkXlibSurfaceCreateInfoKHR surfaceCreateInfo{};
 		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
 		surfaceCreateInfo.dpy = (Display*)m_window.Display();
-		surfaceCreateInfo.window = (Window)m_window.Handle();
+		surfaceCreateInfo.window = *(Window*)m_window.Handle();
 
 		VkCall(vkCreateXlibSurfaceKHR(m_instance, &surfaceCreateInfo, nullptr, &m_surface), "Failed to create a surface!");
 #endif // _WIN32
@@ -598,8 +601,8 @@ namespace Havana::Graphics::Vulkan
 		auto fragmentShaderCode{ ReadFile("../../Engine/Graphics/Vulkan/Shaders/frag.spv") };
 
 		// Create Shader Modules to link to Graphics Pipeline
-		VkShaderModule vertexShaderModule = CreateShaderModule(vertexShaderCode);
-		VkShaderModule fragmentShaderModule = CreateShaderModule(fragmentShaderCode);
+		m_vertexShaderModule = CreateShaderModule(vertexShaderCode);
+		m_fragmentShaderModule = CreateShaderModule(fragmentShaderCode);
 
 		// *************************************** //
 		// -- Shader Stage Creation Information -- //
@@ -608,14 +611,14 @@ namespace Havana::Graphics::Vulkan
 		VkPipelineShaderStageCreateInfo vertexShaderCreateInfo{};
 		vertexShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vertexShaderCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;					// Shader stage name
-		vertexShaderCreateInfo.module = vertexShaderModule;							// Shader module used by stage
+		vertexShaderCreateInfo.module = m_vertexShaderModule;						// Shader module used by stage
 		vertexShaderCreateInfo.pName = "main";										// Entry point in shader
 
 		// Fragment Stage creation information
 		VkPipelineShaderStageCreateInfo fragmentShaderCreateInfo{};
 		fragmentShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		fragmentShaderCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;					// Shader stage name
-		fragmentShaderCreateInfo.module = fragmentShaderModule;							// Shader module used by stage
+		fragmentShaderCreateInfo.module = m_fragmentShaderModule;						// Shader module used by stage
 		fragmentShaderCreateInfo.pName = "main";										// Entry point in shader
 
 		// Array pf shader stage create infos for the creation of the graphics pipeline
