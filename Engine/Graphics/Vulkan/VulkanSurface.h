@@ -74,7 +74,7 @@ namespace Havana::Graphics::Vulkan
 		~VulkanSurface() { Release(); }
 
 		void Create(VkInstance instance);
-		void Present() const;
+		void Present();
 		void Resize();
 		constexpr u32 Width() const { return (u32)m_viewport.width; }
 		constexpr u32 Height() const { return (u32)m_viewport.height; }
@@ -84,9 +84,9 @@ namespace Havana::Graphics::Vulkan
 		Platform::Window	m_window{};
 		VkViewport			m_viewport{};
 		VkRect2D			m_scissorRect{};
-		mutable int			m_currentFrame{ 0 };
-		const u32			maxFrameDraws{ 2 }; // this should ideally be one less than the amount of framebuffers
-
+		int					m_currentFrame{ 0 };
+		const u32			m_maxFrameDraws{ 2 }; // this should ideally be one less than the amount of framebuffers
+		bool				m_framebufferResized{ false };
 		// State
 		// Vulkan components
 		// - Main
@@ -147,6 +147,9 @@ namespace Havana::Graphics::Vulkan
 		// -- Create functions
 		VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 		VkShaderModule CreateShaderModule(const Utils::vector<char>& code);
+
+		void RecreateSwapChain();
+		void CleanupSwapChain();
 
 		void Finalize();
 		void Release();

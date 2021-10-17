@@ -39,7 +39,7 @@ namespace Havana::Graphics::Vulkan
 		}
 	}
 
-	void VulkanSurface::Present() const
+	void VulkanSurface::Present()
 	{
 		// Await the fence to signal open
 		vkWaitForFences(m_mainDevice.logicalDevice, 1, &m_drawFences[m_currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
@@ -50,8 +50,17 @@ namespace Havana::Graphics::Vulkan
 		// -- Get next image -- //
 		// ******************** //
 		uint32_t imageIndex;
-		vkAcquireNextImageKHR(m_mainDevice.logicalDevice, m_swapchain, std::numeric_limits<uint64_t>::max(), m_imageAvailable[m_currentFrame], 
-			VK_NULL_HANDLE, &imageIndex);
+		VkResult result{ vkAcquireNextImageKHR(m_mainDevice.logicalDevice, m_swapchain, std::numeric_limits<uint64_t>::max(),
+			m_imageAvailable[m_currentFrame], VK_NULL_HANDLE, &imageIndex) };
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			RecreateSwapChain();
+			return;
+		}
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+		{
+			throw std::runtime_error("Failed to aquire swapchain image!");
+		}
 
 		// ************************************* //
 		// -- Submit Command Buffer to render -- //
@@ -86,10 +95,21 @@ namespace Havana::Graphics::Vulkan
 		presentInfo.pImageIndices = &imageIndex;
 
 		// Present image to screen
-		if (vkQueuePresentKHR(m_presentationQueue, &presentInfo) != VK_SUCCESS) throw std::runtime_error("Failed to present queue to screen!");
+
+		result = vkQueuePresentKHR(m_presentationQueue, &presentInfo);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || m_framebufferResized)
+		{
+			m_framebufferResized = false;
+			RecreateSwapChain();
+			return;
+		}
+		else if (result != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to present Swap Chain image!");
+		}
 
 		// Step to next frame
-		m_currentFrame = (m_currentFrame + 1) % maxFrameDraws;
+		m_currentFrame = (m_currentFrame + 1) % m_maxFrameDraws;
 	}
 
 	void VulkanSurface::Resize()
@@ -365,20 +385,58 @@ namespace Havana::Graphics::Vulkan
 		// Wait until no action pm device and then destroy everything
 		vkDeviceWaitIdle(m_mainDevice.logicalDevice);
 
-		vkDestroyShaderModule(m_mainDevice.logicalDevice, m_vertexShaderModule, nullptr);
-		vkDestroyShaderModule(m_mainDevice.logicalDevice, m_fragmentShaderModule, nullptr);
+		CleanupSwapChain();
 
-		for (size_t i{ 0 }; i < maxFrameDraws; i++)
+		// vkDestroyShaderModule(m_mainDevice.logicalDevice, m_vertexShaderModule, nullptr);
+		// vkDestroyShaderModule(m_mainDevice.logicalDevice, m_fragmentShaderModule, nullptr);
+
+		for (size_t i{ 0 }; i < m_maxFrameDraws; i++)
 		{
 			vkDestroySemaphore(m_mainDevice.logicalDevice, m_renderFinished[i], nullptr);
 			vkDestroySemaphore(m_mainDevice.logicalDevice, m_imageAvailable[i], nullptr);
 			vkDestroyFence(m_mainDevice.logicalDevice, m_drawFences[i], nullptr);
 		}
 		vkDestroyCommandPool(m_mainDevice.logicalDevice, m_graphicsCommandPool, nullptr);
+		// for (const auto& framebuffer : m_swapchainFramebuffers)
+		// {
+		// 	vkDestroyFramebuffer(m_mainDevice.logicalDevice, framebuffer, nullptr);
+		// }
+		// vkDestroyPipeline(m_mainDevice.logicalDevice, m_graphicsPipeline, nullptr);
+		// vkDestroyPipelineLayout(m_mainDevice.logicalDevice, m_pipelineLayout, nullptr);
+		// vkDestroyRenderPass(m_mainDevice.logicalDevice, m_renderPass, nullptr);
+		// for (const auto& image : m_swapchainImages)
+		// {
+		// 	vkDestroyImageView(m_mainDevice.logicalDevice, image.imageView, nullptr);
+		// }
+		// vkDestroySwapchainKHR(m_mainDevice.logicalDevice, m_swapchain, nullptr);
+		vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+		vkDestroyDevice(m_mainDevice.logicalDevice, nullptr);
+	}
+
+	void VulkanSurface::RecreateSwapChain()
+	{
+		vkDeviceWaitIdle(m_mainDevice.logicalDevice);
+
+		CleanupSwapChain();
+
+		CreateSwapChain();
+		CreateRenderPass();
+		CreateGraphicsPipeline();
+		CreateFramebuffers();
+		CreateCommandBuffers();
+	}
+
+	void VulkanSurface::CleanupSwapChain()
+	{
+		vkDestroyShaderModule(m_mainDevice.logicalDevice, m_vertexShaderModule, nullptr);
+		vkDestroyShaderModule(m_mainDevice.logicalDevice, m_fragmentShaderModule, nullptr);
+
 		for (const auto& framebuffer : m_swapchainFramebuffers)
 		{
 			vkDestroyFramebuffer(m_mainDevice.logicalDevice, framebuffer, nullptr);
 		}
+		vkFreeCommandBuffers(m_mainDevice.logicalDevice, m_graphicsCommandPool, 
+			static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
 		vkDestroyPipeline(m_mainDevice.logicalDevice, m_graphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(m_mainDevice.logicalDevice, m_pipelineLayout, nullptr);
 		vkDestroyRenderPass(m_mainDevice.logicalDevice, m_renderPass, nullptr);
@@ -387,8 +445,6 @@ namespace Havana::Graphics::Vulkan
 			vkDestroyImageView(m_mainDevice.logicalDevice, image.imageView, nullptr);
 		}
 		vkDestroySwapchainKHR(m_mainDevice.logicalDevice, m_swapchain, nullptr);
-		vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
-		vkDestroyDevice(m_mainDevice.logicalDevice, nullptr);
 	}
 
 	void VulkanSurface::CreateLogicalDevice()
@@ -827,9 +883,9 @@ namespace Havana::Graphics::Vulkan
 
 	void VulkanSurface::CreateSynchronization()
 	{
-		m_imageAvailable.resize(maxFrameDraws);
-		m_renderFinished.resize(maxFrameDraws);
-		m_drawFences.resize(maxFrameDraws);
+		m_imageAvailable.resize(m_maxFrameDraws);
+		m_renderFinished.resize(m_maxFrameDraws);
+		m_drawFences.resize(m_maxFrameDraws);
 
 		// Semaphore creation information
 		VkSemaphoreCreateInfo semaphoreCreateInfo{};
@@ -840,7 +896,7 @@ namespace Havana::Graphics::Vulkan
 		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;			// Be sure fence starts signaled as open
 
-		for (size_t i{ 0 }; i < maxFrameDraws; i++)
+		for (size_t i{ 0 }; i < m_maxFrameDraws; i++)
 		{
 			if (vkCreateSemaphore(m_mainDevice.logicalDevice, &semaphoreCreateInfo, nullptr, &m_imageAvailable[i]) != VK_SUCCESS ||
 				vkCreateSemaphore(m_mainDevice.logicalDevice, &semaphoreCreateInfo, nullptr, &m_renderFinished[i]) != VK_SUCCESS ||
@@ -860,7 +916,7 @@ namespace Havana::Graphics::Vulkan
 		// Color to clear framebuffer to
 		VkClearValue clearValues[]
 		{
-			{0.8f, 0.6f, 0.7f, 1.0f}
+			{0.0f, 0.0f, 0.0f, 1.0f}
 		};
 
 		// Information about how to begin a render pass (only needed for graphical applications)
