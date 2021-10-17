@@ -95,13 +95,11 @@ namespace Havana::Graphics::Vulkan
 		presentInfo.pImageIndices = &imageIndex;
 
 		// Present image to screen
-
 		result = vkQueuePresentKHR(m_presentationQueue, &presentInfo);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || m_framebufferResized)
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_framebufferResized)
 		{
 			m_framebufferResized = false;
 			RecreateSwapChain();
-			return;
 		}
 		else if (result != VK_SUCCESS)
 		{
@@ -114,7 +112,7 @@ namespace Havana::Graphics::Vulkan
 
 	void VulkanSurface::Resize()
 	{
-		// TODO: implement
+		m_framebufferResized = true;
 	}
 
 	// PRIVATE
@@ -419,11 +417,14 @@ namespace Havana::Graphics::Vulkan
 
 		CleanupSwapChain();
 
+		m_swapchainImages.clear();
+
 		CreateSwapChain();
 		CreateRenderPass();
 		CreateGraphicsPipeline();
 		CreateFramebuffers();
 		CreateCommandBuffers();
+		RecordCommands();
 	}
 
 	void VulkanSurface::CleanupSwapChain()
