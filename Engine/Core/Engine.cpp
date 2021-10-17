@@ -9,7 +9,7 @@
 
 using namespace Havana;
 
-#ifdef _Win64
+#ifdef _WIN64
 
 namespace
 {

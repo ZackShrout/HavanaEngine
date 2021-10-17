@@ -54,5 +54,6 @@ if(FAILED(x)) {									\
 		}}
 #else
 #define NAME_D3D12_OBJECT(x, name)
+#define NAME_D3D12_OBJECT_INDEXED(x, n, name)
 #endif // _DEBUG
 
