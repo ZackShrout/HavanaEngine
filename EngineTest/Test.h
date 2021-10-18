@@ -21,7 +21,7 @@ public:
 	virtual void Shutdown() = 0;
 };
 
-#if _WIN64
+#ifdef _WIN64
 #include <Windows.h>
 class TimeIt
 {
@@ -57,6 +57,43 @@ private:
 	int			m_counter{ 1 };
 	time_stamp	m_start;
 	time_stamp	m_seconds{ clock::now() };
+};
+#else
+#include <iostream>
+class TimeIt
+{
+public:
+	using clock = std::chrono::steady_clock;
+	using time_stamp = std::chrono::steady_clock::time_point;
+
+	void Begin()
+	{
+		m_start = clock::now();
+	}
+
+	void End()
+	{
+		auto dt = clock::now() - m_start;
+		m_msAvg += ((float)std::chrono::duration_cast<std::chrono::milliseconds>(dt).count() - m_msAvg) / (float)m_counter;
+		++m_counter;
+
+		if (std::chrono::duration_cast<std::chrono::seconds>(clock::now() - m_seconds).count() >= 1)
+		{
+			std::cout << "Avg. frame (ms): ";
+			std::cout << std::to_string(m_msAvg).c_str();
+			std::cout << (" " + std::to_string(m_counter)).c_str();
+			std::cout << " fps" << std::endl;
+			m_msAvg = 0.0f;
+			m_counter = 1;
+			m_seconds = clock::now();
+		}
+	}
+private:
+	float		m_msAvg{ 0.0f };
+	int			m_counter{ 1 };
+	time_stamp	m_start;
+	time_stamp	m_seconds{ clock::now() };
+
 };
 #endif // _WIN64
 

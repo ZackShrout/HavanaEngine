@@ -9,9 +9,7 @@ using namespace Havana;
 
 Graphics::RenderSurface surfaces[4];
 
-#ifdef _WIN64
 TimeIt timer{};
-#endif // _WIN64
 
 void DestroyRenderSurface(Graphics::RenderSurface &surface);
 
@@ -163,6 +161,8 @@ bool EngineTest::Initialize(void *disp)
 
 void EngineTest::Run(void *disp)
 {
+	timer.Begin();
+
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 	for (u32 i{0}; i < _countof(surfaces); i++)
@@ -172,6 +172,8 @@ void EngineTest::Run(void *disp)
 			surfaces[i].surface.Render();
 		}
 	}
+
+	timer.End();
 
 	// Cache a casted pointer of the display to save on casting later
 	Display* display{ (Display*)disp };
