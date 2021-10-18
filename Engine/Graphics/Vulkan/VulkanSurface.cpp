@@ -917,7 +917,7 @@ namespace Havana::Graphics::Vulkan
 		// Color to clear framebuffer to
 		VkClearValue clearValues[]
 		{
-			{0.0f, 0.0f, 0.0f, 1.0f}
+			{48.0f / 255, 10.0f / 255, 36.0f / 255, 1.0f}
 		};
 
 		// Information about how to begin a render pass (only needed for graphical applications)
