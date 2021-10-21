@@ -7,6 +7,7 @@ using namespace Havana::Graphics::D3D12::Shaders;
 using namespace Microsoft::WRL;
 #elif __linux__
 
+using namespace Havana::Graphics::Vulkan::Shaders;
 #endif // _WIN64
 #include <glslang/Public/ShaderLang.h>
 #include "ShaderCompilation.h"
@@ -17,7 +18,7 @@ using namespace Microsoft::WRL;
 #include <filesystem>
 
 using namespace Havana;
-using namespace Havana::Graphics::Vulkan::Shaders;
+
 namespace
 {
 	struct ShaderFileInfo
