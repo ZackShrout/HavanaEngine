@@ -1,9 +1,9 @@
 #include "ContentLoader.h"
-#include "../Components/Entity.h"
-#include "../Components/Transform.h"
-#include "../Components/Script.h"
+#include "Components/Entity.h"
+#include "Components/Transform.h"
+#include "Components/Script.h"
+#include "Graphics/Renderer.h"
 
-#ifdef _WIN64
 #ifndef SHIPPING
 #include <fstream>
 #include <filesystem>
@@ -37,13 +37,17 @@ namespace Havana::Content
 			memcpy(&rotation[0], data, sizeof(rotation)); data += sizeof(rotation);
 			memcpy(&transformInfo.scale[0], data, sizeof(transformInfo.scale)); data += sizeof(transformInfo.scale);
 
+#ifdef _WIN64
 			// convert rotation from a vector3 as used in the editor to quaternion as used in engine
 			XMFLOAT3A rot{ &rotation[0] };
 			XMVECTOR quat{ XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3A(&rot)) };
-			XMFLOAT4A rotQuat{};
+			XMFLOAT4A rotQuat {};
 			XMStoreFloat4A(&rotQuat, quat);
 			memcpy(&transformInfo.rotation[0], &rotQuat.x, sizeof(transformInfo.rotation));
-
+#elif __linux__
+			// TODO: implement
+#endif // _WIN64
+			
 			info.transform = &transformInfo;
 
 			return true;
@@ -141,7 +145,13 @@ namespace Havana::Content
 			Entity::RemoveEntity(entity.GetID());
 		}
 	}
+
+	bool LoadEngineShaders(std::unique_ptr<u8[]>& shaders, u64& size)
+	{
+		auto path = Graphics::GetEngineShadersPath();
+		
+		return ReadFile(path, shaders, size);
+	}
 }
 
 #endif // !SHIPPING
-#endif // _Win64

@@ -18,6 +18,8 @@ namespace Havana::Graphics
 			platformInterface.Surface.Width = Core::SurfaceWidth;
 			platformInterface.Surface.Height = Core::SurfaceHeight;
 			platformInterface.Surface.Render = Core::RenderSurface;
+
+			platformInterface.platform = GraphicsPlatform::Direct3D12;
 		}
 	} // D3D12 namespace
 }

@@ -2,6 +2,7 @@
 #include "../Platforms/PlatformTypes.h"
 #include "../Platforms/Platform.h"
 #include "../Graphics/Renderer.h"
+#include "ShaderCompilation.h"
 
 #if TEST_RENDERER
 
@@ -98,11 +99,15 @@ void DestroyRenderSurface(Graphics::RenderSurface &surface)
 bool EngineTest::Initialize()
 {
 	ActivateConsole();
-	
-	bool result{Graphics::Initialize(Graphics::GraphicsPlatform::VulkanAPI)};
 
-	if (!result)
-		return result;
+	while (!CompileShaders())
+	{
+		// Pop up a message box allowing the user to retry compilation.
+		if (MessageBox(nullptr, L"Failed to compile engine shaders.", L"Sjader Compilation Error", MB_RETRYCANCEL) != IDRETRY)
+			return false;
+	}
+	
+	if (!Graphics::Initialize(Graphics::GraphicsPlatform::Direct3D12)) return false;
 
 	Platform::WindowInitInfo info[]{
 		{&WinProc, nullptr, L"Render Window 1", 100, 100, 400, 800},
@@ -116,7 +121,7 @@ bool EngineTest::Initialize()
 	for (u32 i{0}; i < _countof(surfaces); i++)
 		CreateRenderSurface(surfaces[i], info[i], nullptr);
 
-	return result;
+	return true;
 }
 
 void EngineTest::Run()

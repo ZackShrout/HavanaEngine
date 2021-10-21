@@ -8,6 +8,13 @@ namespace Havana::Graphics
 {
 	namespace
 	{
+		// Defines where the compiled engine shaders files is located for each one of the supported APIs.
+		constexpr const char* engineShaderPaths[]
+		{
+			"./Shaders/D3D12/shaders.bin",
+			"./Shaders/Vulkan/shaders.bin"
+		};
+		
 		PlatformInterface gfx{};
 
 		bool SetGraphicsPlatform(GraphicsPlatform platform)
@@ -28,6 +35,7 @@ namespace Havana::Graphics
 			default:
 				return false;
 			}
+			assert(gfx.platform == platform);
 			return true;
 		}
 
@@ -41,6 +49,16 @@ namespace Havana::Graphics
 	void Shutdown()
 	{
 		gfx.Shutdown();
+	}
+
+	const char* GetEngineShadersPath()
+	{
+		return engineShaderPaths[(u32)gfx.platform];
+	}
+
+	const char* GetEngineShadersPath(GraphicsPlatform platform)
+	{
+		return engineShaderPaths[(u32)platform];
 	}
 
 	Surface CreateSurface(Platform::Window window)

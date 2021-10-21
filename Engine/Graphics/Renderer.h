@@ -39,6 +39,12 @@ namespace Havana::Graphics
 	bool Initialize(GraphicsPlatform platform);
 	void Shutdown();
 
+	// Get the location of the compiled engine shaders relative to the executable's path.
+	// The path is for the graphics API that is currently in use.
+	const char* GetEngineShadersPath();
+	// Get the location of the compiled engine shaders, for the specified platform, relative to the executable's path.
+	const char* GetEngineShadersPath(GraphicsPlatform platform);
+
 	Surface CreateSurface(Platform::Window window);
 	void RemoveSurface(surface_id id);
 }

@@ -19,5 +19,7 @@ namespace Havana::Graphics
 			u32(*Height)(surface_id);
 			void(*Render)(surface_id);
 		} Surface;
+
+		GraphicsPlatform platform = (GraphicsPlatform)-1;
 	};
 }

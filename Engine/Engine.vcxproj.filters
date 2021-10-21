@@ -42,6 +42,7 @@
     <ClInclude Include="Graphics\Vulkan\VulkanSurface.h" />
     <ClInclude Include="Graphics\Vulkan\VulkanExtensionLoader.h" />
     <ClInclude Include="Graphics\Vulkan\VulkanValidation.h" />
+    <ClInclude Include="Graphics\Direct3D12\D3D12Shaders.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\Entity.cpp" />
@@ -66,6 +67,7 @@
     <ClCompile Include="Graphics\Vulkan\VulkanInterface.cpp" />
     <ClCompile Include="Graphics\Vulkan\VulkanResources.cpp" />
     <ClCompile Include="Graphics\Vulkan\VulkanSurface.cpp" />
+    <ClCompile Include="Graphics\Direct3D12\D3D12Shaders.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Graphics\Vulkan\Shaders\compile_shaders.bat" />

@@ -2,6 +2,7 @@
 #pragma warning(disable: 4530) // disable exception warning
 
 // C/C++
+// NOTE: don't include any headers that include std::vector or std::deque
 #include <stdint.h>
 #include <assert.h>
 #include <typeinfo>
