@@ -18,16 +18,30 @@ namespace Havana::Transform
 		// transform component into that same slot in the vector of transforms
 		if (positions.size() > entityIndex)
 		{
+#ifdef _WIN64
 			positions[entityIndex] = Math::Vec3(info.position);
 			rotations[entityIndex] = Math::Vec4(info.rotation);
 			scales[entityIndex] = Math::Vec3(info.scale);
+#elif __linux__
+			positions[entityIndex] = Math::Vec3(info.position[0], info.position[1], info.position[2]);
+			rotations[entityIndex] = Math::Vec4(info.rotation[0], info.rotation[1], info.rotation[2], 
+												info.rotation[3]);
+			scales[entityIndex] = Math::Vec3(info.scale[0], info.scale[1], info.scale[2]);
+#endif
 		}
 		else // If not, place it in the back with our entity
 		{
 			assert(positions.size() == entityIndex);
+#ifdef _WIN64
 			positions.emplace_back(info.position);
 			rotations.emplace_back(info.rotation);
 			scales.emplace_back(info.scale);
+#elif __linux__
+			positions.emplace_back(Math::Vec3(info.position[0], info.position[1], info.position[2]));
+			rotations.emplace_back(Math::Vec4(info.rotation[0], info.rotation[1], info.rotation[2], 
+												info.rotation[3]));
+			scales.emplace_back(Math::Vec3(info.scale[0], info.scale[1], info.scale[2]));
+#endif
 		}
 
 		return Component(transform_id{ (Id::id_type)positions.size() - 1 });

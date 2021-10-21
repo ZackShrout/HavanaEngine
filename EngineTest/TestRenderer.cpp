@@ -103,7 +103,7 @@ bool EngineTest::Initialize()
 	while (!CompileShaders())
 	{
 		// Pop up a message box allowing the user to retry compilation.
-		if (MessageBox(nullptr, L"Failed to compile engine shaders.", L"Sjader Compilation Error", MB_RETRYCANCEL) != IDRETRY)
+		if (MessageBox(nullptr, L"Failed to compile engine shaders!", L"Shader Compilation Error", MB_RETRYCANCEL) != IDRETRY)
 			return false;
 	}
 	
@@ -144,6 +144,12 @@ void EngineTest::Run()
 
 bool EngineTest::Initialize(void *disp)
 {
+	if (!CompileShaders())
+	{
+		throw std::runtime_error("Failed to compile engine shaders!");
+		return false;
+	}
+	
 	bool result{Graphics::Initialize(Graphics::GraphicsPlatform::VulkanAPI)};
 
 	if (!result)

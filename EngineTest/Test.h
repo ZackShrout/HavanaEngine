@@ -71,11 +71,3 @@ private:
 	time_stamp	m_start;
 	time_stamp	m_seconds{ clock::now() };
 };
-
-#ifndef _WIN64
-template < typename T, size_t N >
-size_t constexpr _countof( T ( & arr )[ N ] )
-{
-    return std::extent< T[ N ] >::value;
-}
-#endif // !_WIN64

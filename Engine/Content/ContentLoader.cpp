@@ -1,14 +1,17 @@
 #include "ContentLoader.h"
-#include "Components/Entity.h"
-#include "Components/Transform.h"
-#include "Components/Script.h"
-#include "Graphics/Renderer.h"
+#include "../Components/Entity.h"
+#include "../Components/Transform.h"
+#include "../Components/Script.h"
+#include "../Graphics/Renderer.h"
 
 #ifndef SHIPPING
 #include <fstream>
 #include <filesystem>
+#ifdef _WIN64
 #include <Windows.h>
-
+#elif __linux__
+//
+#endif
 
 namespace Havana::Content
 {
@@ -28,7 +31,6 @@ namespace Havana::Content
 
 		bool ReadTransform(const u8*& data, Entity::EntityInfo& info)
 		{
-			using namespace DirectX;
 			f32 rotation[3];
 
 			assert(!info.transform);
@@ -38,6 +40,8 @@ namespace Havana::Content
 			memcpy(&transformInfo.scale[0], data, sizeof(transformInfo.scale)); data += sizeof(transformInfo.scale);
 
 #ifdef _WIN64
+			using namespace DirectX;
+			
 			// convert rotation from a vector3 as used in the editor to quaternion as used in engine
 			XMFLOAT3A rot{ &rotation[0] };
 			XMVECTOR quat{ XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3A(&rot)) };

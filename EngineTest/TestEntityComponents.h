@@ -3,14 +3,15 @@
 #include <iostream>
 #include <ctime>
 #include "Test.h"
-#include "..\Engine\Components\Entity.h"
-#include "..\Engine\Components\Transform.h"
+#include "../Engine/Components/Entity.h"
+#include "../Engine/Components/Transform.h"
 
 using namespace Havana;
 
 class EngineTest : public Test
 {
 public:
+#ifdef _WIN64
 	virtual bool Initialize() override
 	{
 		srand((u32)time(nullptr));
@@ -29,6 +30,28 @@ public:
 			PrintResults();
 		} while (getchar() != 'q');
 	}
+#elif __linux__
+	virtual bool Initialize(void* disp) override
+	{
+		srand((u32)time(nullptr));
+		return true;
+	}
+	
+	virtual void Run(void* disp) override
+	{
+		do
+		{
+			for (u32 i{ 0 }; i < 10000; i++)
+			{
+				CreateRandom();
+				RemoveRandom();
+				m_numEntities = (u32)m_entities.size();
+			}
+			PrintResults();
+		} while (getchar() != 'q');
+	}
+#endif // _WIN64
+
 	virtual void Shutdown() override
 	{
 	}

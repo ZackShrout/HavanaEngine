@@ -1,16 +1,23 @@
+#ifdef _WIN64
 #include <d3d12shader.h>
 #include <dxcapi.h>
-#include "ShaderCompilation.h"
 #include "Graphics/Direct3D12/D3D12Core.h"
 #include "Graphics/Direct3D12/D3D12Shaders.h"
+using namespace Havana::Graphics::D3D12::Shaders;
+using namespace Microsoft::WRL;
+#elif __linux__
+
+#endif // _WIN64
+#include "glslang/Public/ShaderLang.h"
+#include "ShaderCompilation.h"
+#include "../Graphics/Vulkan/VulkanCore.h"
+#include "../Graphics/Vulkan/VulkanShaders.h"
 
 #include <fstream>
 #include <filesystem>
 
 using namespace Havana;
-using namespace Havana::Graphics::D3D12::Shaders;
-using namespace Microsoft::WRL;
-
+using namespace Havana::Graphics::Vulkan::Shaders;
 namespace
 {
 	struct ShaderFileInfo
@@ -65,6 +72,7 @@ namespace
 		return true;
 	}
 
+#ifdef _WIN64
 	bool SaveCompiledShaders(Utils::vector<ComPtr<IDxcBlob>> shaders)
 	{
 		auto engineShadersPath = GetEngineShadersPath();
@@ -87,8 +95,19 @@ namespace
 		file.close();
 		return true;
 	}
+#elif __linux__
+	bool SaveCompiledShaders(Utils::vector<u8*> shaders)
+	{
+		auto engineShadersPath = GetEngineShadersPath();
+
+		// TODO: implement
+
+		return true;
+	}
+#endif // _WIN64
 } // anonymous namespace
 
+#ifdef _WIN64
 bool CompileShaders()
 {
 	if (CompiledShadersAreUpToData()) return true;
@@ -118,3 +137,15 @@ bool CompileShaders()
 
 	return SaveCompiledShaders(shaders);
 }
+#elif __linux__
+bool CompileShaders()
+{
+	if (CompiledShadersAreUpToData()) return true;
+
+	Utils::vector<u8*> shaders;
+
+	// TODO: implement
+
+	return SaveCompiledShaders(shaders);
+}
+#endif // _WIN64
