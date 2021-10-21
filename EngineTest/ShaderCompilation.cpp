@@ -8,7 +8,7 @@ using namespace Microsoft::WRL;
 #elif __linux__
 
 #endif // _WIN64
-#include "glslang/Public/ShaderLang.h"
+#include <glslang/Public/ShaderLang.h>
 #include "ShaderCompilation.h"
 #include "../Graphics/Vulkan/VulkanCore.h"
 #include "../Graphics/Vulkan/VulkanShaders.h"
