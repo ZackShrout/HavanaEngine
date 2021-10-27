@@ -233,6 +233,7 @@ void EngineTest::Run(void *disp)
 						if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
 						{
 							DestroyRenderSurface(surfaces[i]);
+							break;
 						}
 					}
 

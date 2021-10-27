@@ -17,6 +17,9 @@ using namespace Havana::Graphics::Vulkan::Shaders;
 #include <fstream>
 #include <filesystem>
 
+#define D3D12API 0
+#define VULKANAPI 1
+
 using namespace Havana;
 
 namespace
@@ -150,3 +153,9 @@ bool CompileShaders()
 	return SaveCompiledShaders(shaders);
 }
 #endif // _WIN64
+
+#if D3D12API
+// Compile direct3d12 hlsl into bytecode
+#elif VULKANAPI
+// Compile vulkan glsl into SPIR-V
+#endif
