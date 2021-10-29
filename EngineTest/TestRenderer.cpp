@@ -144,11 +144,11 @@ void EngineTest::Run()
 
 bool EngineTest::Initialize(void *disp)
 {
-	if (!CompileShaders())
-	{
-		throw std::runtime_error("Failed to compile engine shaders!");
-		return false;
-	}
+	// if (!CompileShaders())
+	// {
+	// 	throw std::runtime_error("Failed to compile engine shaders!");
+	// 	return false;
+	// }
 	
 	bool result{Graphics::Initialize(Graphics::GraphicsPlatform::VulkanAPI)};
 

@@ -10,12 +10,12 @@ using namespace Havana::Graphics::D3D12::Shaders;
 using namespace Microsoft::WRL;
 #elif __linux__
 
+#include "../Graphics/Vulkan/VulkanShaders.h"
 using namespace Havana::Graphics::Vulkan::Shaders;
 #endif // _WIN64
 #include <glslang/Public/ShaderLang.h>
 #include "ShaderCompilation.h"
 #include "../Graphics/Vulkan/VulkanCore.h"
-#include "../Graphics/Vulkan/VulkanShaders.h"
 
 #include <fstream>
 #include <filesystem>

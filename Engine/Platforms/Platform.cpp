@@ -23,7 +23,6 @@ namespace Havana::Platform
 
 		WindowInfo &GetFromId(window_id id)
 		{
-			assert(id < windows.size());
 			assert(windows[id].hwnd);
 			return windows[id];
 		}
@@ -291,9 +290,7 @@ namespace Havana::Platform
 
 		WindowInfo &GetFromId(window_id id)
 		{
-			assert(id < windows.size());
 			assert(windows[id].window);
-			WindowInfo result = windows[id];
 			return windows[id];
 		}
 
