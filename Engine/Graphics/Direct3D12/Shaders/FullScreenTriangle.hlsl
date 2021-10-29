@@ -4,7 +4,7 @@ struct VSOutput
 	noperspective float2 UV : TEXCOORD;
 };
 
-VSOutput FullScreenTriangle(in uint VertexIdx : SV_VertexID)
+VSOutput FullScreenTriangleVS(in uint VertexIdx : SV_VertexID)
 {
 	VSOutput output;
 

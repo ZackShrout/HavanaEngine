@@ -57,3 +57,5 @@ if(FAILED(x)) {									\
 #define NAME_D3D12_OBJECT_INDEXED(x, n, name)
 #endif // _DEBUG
 
+#include "D3D12Helpers.h"
+#include "D3D12Resources.h"

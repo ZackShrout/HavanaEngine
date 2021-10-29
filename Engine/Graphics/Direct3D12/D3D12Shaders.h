@@ -25,6 +25,7 @@ namespace Havana::Graphics::D3D12::Shaders
 		enum ID : u32
 		{
 			fullscreenTriangleVS = 0,
+			fillColorPS = 1,
 
 			count
 		};

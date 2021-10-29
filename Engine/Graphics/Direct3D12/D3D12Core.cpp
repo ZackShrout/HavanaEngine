@@ -1,7 +1,6 @@
 #include "D3D12Core.h"
-#include "D3D12Resources.h"
 #include "D3D12Surface.h"
-#include "D3D12Helpers.h"
+#include "D3D12Shaders.h"
 
 using namespace Microsoft::WRL;
 
@@ -192,7 +191,6 @@ namespace Havana::Graphics::D3D12::Core
 		std::mutex					deferredReleasesMutex{};
 
 		constexpr D3D_FEATURE_LEVEL minimumFeatureLevel{ D3D_FEATURE_LEVEL_11_0 };
-		constexpr DXGI_FORMAT renderTargetFormat{ DXGI_FORMAT_R8G8B8A8_UNORM_SRGB };
 
 		bool FailedInit()
 		{
@@ -348,6 +346,9 @@ namespace Havana::Graphics::D3D12::Core
 		new (&gfxCommand) D3D12Command(mainDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		if (!gfxCommand.CommandQueue()) return FailedInit();
 
+		// Initialize modules
+		if (!Shaders::Initialize()) return FailedInit();
+
 		NAME_D3D12_OBJECT(mainDevice, L"Main D3D Device");
 		NAME_D3D12_OBJECT(rtvDescHeap.Heap(), L"RTV Descriptor Heap");
 		NAME_D3D12_OBJECT(dsvDescHeap.Heap(), L"DSV Descriptor Heap");
@@ -369,7 +370,17 @@ namespace Havana::Graphics::D3D12::Core
 			ProcessDeferredReleases(i);
 		}
 
+		// Shutdown modules
+		Shaders::Shutdown();
+
 		Release(dxgiFactory);
+
+		// NOTE: Some modules free their descriptors when they shutdown.
+		//		 We process those by calling ProcessDeferredFree once more.
+		rtvDescHeap.ProcessDeferredFree(0);
+		dsvDescHeap.ProcessDeferredFree(0);
+		srvDescHeap.ProcessDeferredFree(0);
+		uavDescHeap.ProcessDeferredFree(0);
 
 		rtvDescHeap.Release();
 		dsvDescHeap.Release();
@@ -431,7 +442,7 @@ namespace Havana::Graphics::D3D12::Core
 	Surface CreateSurface(Platform::Window window)
 	{
 		surface_id id{ surfaces.add(window) };
-		surfaces[id].CreateSwapChain(dxgiFactory, gfxCommand.CommandQueue(), renderTargetFormat);
+		surfaces[id].CreateSwapChain(dxgiFactory, gfxCommand.CommandQueue());
 		return Surface{ id };
 	}
 
