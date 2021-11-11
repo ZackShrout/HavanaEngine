@@ -44,10 +44,10 @@ namespace Havana::Transform
 #endif
 		}
 
-		return Component(transform_id{ (Id::id_type)positions.size() - 1 });
+		return Component{ transform_id{ entity.GetID() } };
 	}
 
-	void Remove(Component component)
+	void Remove([[maybe_unused]]Component component)
 	{
 		assert(component.IsValid());
 	}

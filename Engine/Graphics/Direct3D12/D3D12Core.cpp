@@ -1,6 +1,7 @@
 #include "D3D12Core.h"
 #include "D3D12Surface.h"
 #include "D3D12Shaders.h"
+#include "D3D12GPass.h"
 
 using namespace Microsoft::WRL;
 
@@ -347,7 +348,7 @@ namespace Havana::Graphics::D3D12::Core
 		if (!gfxCommand.CommandQueue()) return FailedInit();
 
 		// Initialize modules
-		if (!Shaders::Initialize()) return FailedInit();
+		if (!(Shaders::Initialize() && GPass::Initialize())) return FailedInit();
 
 		NAME_D3D12_OBJECT(mainDevice, L"Main D3D Device");
 		NAME_D3D12_OBJECT(rtvDescHeap.Heap(), L"RTV Descriptor Heap");
@@ -371,6 +372,7 @@ namespace Havana::Graphics::D3D12::Core
 		}
 
 		// Shutdown modules
+		GPass::Shutdown();
 		Shaders::Shutdown();
 
 		Release(dxgiFactory);
