@@ -1,5 +1,6 @@
 #include "D3D12GPass.h"
 #include "D3D12Core.h"
+#include "D3D12Shaders.h"
 
 namespace Havana::Graphics::D3D12::GPass
 {
@@ -12,6 +13,9 @@ namespace Havana::Graphics::D3D12::GPass
 		D3D12RenderTexture				gpassMainBuffer{};
 		D3D12DepthBuffer				gpassDepthBuffer{};
 		Math::Vec2u32					dimensions{ initialDimensions };
+
+		ID3D12RootSignature*			gpassRootSig{ nullptr };
+		ID3D12PipelineState*			gpassPSO{ nullptr };
 
 #if _DEBUG
 		constexpr f32					clearValue[4]{ 0.5f, 0.5f, 0.5f, 1.0f };
@@ -71,9 +75,46 @@ namespace Havana::Graphics::D3D12::GPass
 		}
 	} // anonymous namespace
 
+	bool CreateGPassPSOandRootSignature()
+	{
+		assert(!gpassRootSig && !gpassPSO);
+
+		// Create GPass root signature
+		D3DX::D3D12_Root_Parameter paramters[1]{};
+		paramters[0].AsConstants(1, D3D12_SHADER_VISIBILITY_PIXEL, 1);
+		const D3DX::D3D12_Root_Signature_Desc rootSignature{ &paramters[0], _countof(paramters) };
+		gpassRootSig = rootSignature.Create();
+		assert(gpassRootSig);
+		NAME_D3D12_OBJECT(gpassRootSig, L"GPass Root Signature");
+
+		// Create GPass Pipeline State Object
+		struct
+		{
+			D3DX::D3D12_Pipeline_State_Subobject_rootSignature			rootSignature{ gpassRootSig };
+			D3DX::D3D12_Pipeline_State_Subobject_vs						vs{ Shaders::GetEngineShader(Shaders::EngineShader::fullscreenTriangleVS) };
+			D3DX::D3D12_Pipeline_State_Subobject_ps						ps{ Shaders::GetEngineShader(Shaders::EngineShader::fillColorPS) };
+			D3DX::D3D12_Pipeline_State_Subobject_primitiveTopology		primitiveTopology{ D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE };
+			D3DX::D3D12_Pipeline_State_Subobject_renderTargetFormats	renderTargetFormats;
+			D3DX::D3D12_Pipeline_State_Subobject_depthStencilFormat		depthStencilFormat{ depthBufferFormat };
+			D3DX::D3D12_Pipeline_State_Subobject_rasterizer				rasterizer{ D3DX::rasterizerState.noCull };
+			D3DX::D3D12_Pipeline_State_Subobject_depthStencil1			depth{ D3DX::depthState.disabled };
+		} stream;
+
+		D3D12_RT_FORMAT_ARRAY rtfArray{};
+		rtfArray.NumRenderTargets = 1;
+		rtfArray.RTFormats[0] = mainBufferFormat;
+
+		stream.renderTargetFormats = rtfArray;
+
+		gpassPSO = D3DX::CreatePipelineState(&stream, sizeof(stream));
+		NAME_D3D12_OBJECT(gpassRootSig, L"GPass PSO");
+
+		return gpassRootSig && gpassPSO;
+	}
+
 	bool Initialize()
 	{
-		return CreateBuffers(initialDimensions);
+		return CreateBuffers(initialDimensions) && CreateGPassPSOandRootSignature();
 	}
 
 	void Shutdown()
@@ -81,6 +122,9 @@ namespace Havana::Graphics::D3D12::GPass
 		gpassMainBuffer.Release();
 		gpassDepthBuffer.Release();
 		dimensions = initialDimensions;
+
+		Core::Release(gpassRootSig);
+		Core::Release(gpassPSO);
 	}
 
 	void SetSize(Math::Vec2u32 size)
@@ -91,5 +135,15 @@ namespace Havana::Graphics::D3D12::GPass
 			d = { std::max(size.x, d.x), std::max(size.y, d.y) };
 			CreateBuffers(d);
 		}
+	}
+	void DepthPrepass(ID3D12GraphicsCommandList* cmdList, const D3D12FrameInfo& info)
+	{
+
+	}
+
+	void Render(ID3D12GraphicsCommandList* cmdList, const D3D12FrameInfo& info)
+	{
+		cmdList->SetGraphicsRootSignature(gpassRootSig);
+		cmdList->SetPipelineState(gpassPSO);
 	}
 }

@@ -8,14 +8,93 @@ namespace Havana::Graphics::D3D12::D3DX
 	{
 		D3D12_HEAP_PROPERTIES defaultHeap
 		{
-			D3D12_HEAP_TYPE_DEFAULT,			// Type;	
-			D3D12_CPU_PAGE_PROPERTY_UNKNOWN,	// CPUPageProperty;
-			D3D12_MEMORY_POOL_UNKNOWN,			// MemoryPoolPreference;
-			0,									// CreationNodeMask;
-			0									// VisibleNodeMask;
+			D3D12_HEAP_TYPE_DEFAULT,					// Type
+			D3D12_CPU_PAGE_PROPERTY_UNKNOWN,			// CPUPageProperty
+			D3D12_MEMORY_POOL_UNKNOWN,					// MemoryPoolPreference
+			0,											// CreationNodeMask
+			0											// VisibleNodeMask
 		};
 
 	} heapProperties;
+
+	constexpr struct
+	{
+		const D3D12_RASTERIZER_DESC noCull
+		{
+			D3D12_FILL_MODE_SOLID,						// FillMode
+			D3D12_CULL_MODE_NONE,						// CullMode
+			0,											// FrontCounterClockwise
+			0,											// DepthBias
+			0,											// DepthBiasClamp
+			0,											// SlopeScaledDepthBias
+			1,											// DepthClipEnable
+			1,											// MultisampleEnable
+			0,											// AntialiasedLineEnable
+			0,											// ForcedSampleCount
+			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster
+		};
+
+		const D3D12_RASTERIZER_DESC backfaceCull
+		{
+			D3D12_FILL_MODE_SOLID,						// FillMode
+			D3D12_CULL_MODE_BACK,						// CullMode
+			0,											// FrontCounterClockwise
+			0,											// DepthBias
+			0,											// DepthBiasClamp
+			0,											// SlopeScaledDepthBias
+			1,											// DepthClipEnable
+			1,											// MultisampleEnable
+			0,											// AntialiasedLineEnable
+			0,											// ForcedSampleCount
+			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster
+		};
+		
+		const D3D12_RASTERIZER_DESC frontfaceCull
+		{
+			D3D12_FILL_MODE_SOLID,						// FillMode
+			D3D12_CULL_MODE_FRONT,						// CullMode
+			0,											// FrontCounterClockwise
+			0,											// DepthBias
+			0,											// DepthBiasClamp
+			0,											// SlopeScaledDepthBias
+			1,											// DepthClipEnable
+			1,											// MultisampleEnable
+			0,											// AntialiasedLineEnable
+			0,											// ForcedSampleCount
+			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster
+		};
+
+		const D3D12_RASTERIZER_DESC wireframe
+		{
+			D3D12_FILL_MODE_WIREFRAME,					// FillMode
+			D3D12_CULL_MODE_NONE,						// CullMode
+			0,											// FrontCounterClockwise
+			0,											// DepthBias
+			0,											// DepthBiasClamp
+			0,											// SlopeScaledDepthBias
+			1,											// DepthClipEnable
+			1,											// MultisampleEnable
+			0,											// AntialiasedLineEnable
+			0,											// ForcedSampleCount
+			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster
+		};
+	} rasterizerState;
+
+	constexpr struct
+	{
+		const D3D12_DEPTH_STENCIL_DESC1 disabled
+		{
+			0,											// DepthEnable
+			D3D12_DEPTH_WRITE_MASK_ZERO,				// DepthWriteMask
+			D3D12_COMPARISON_FUNC_LESS_EQUAL,			// DepthFunc
+			0,											// StencilEnable
+			0,											// StencilReadMask
+			0,											// StencilWriteMask
+			{},											// FrontFace
+			{},											// BackFace
+			0											// DepthBoundsTestEnable
+		};
+	} depthState;
 
 	ID3D12RootSignature* CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC1& desc);
 
@@ -100,6 +179,8 @@ namespace Havana::Graphics::D3D12::D3DX
 		}
 	};
 
+#pragma warning(push)
+#pragma warning(disable : 4324)
 	template<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE type, typename T>
 	class alignas(void*) D3D12_Pipeline_State_Subobject
 	{
@@ -111,6 +192,7 @@ namespace Havana::Graphics::D3D12::D3DX
 		const D3D12_PIPELINE_STATE_SUBOBJECT_TYPE m_type{ type };
 		T m_subobject{};
 	};
+#pragma warning(pop)
 
 // Pipeline State Subobject (PSS) macro
 #define PSS(name, ...) using D3D12_Pipeline_State_Subobject_##name = D3D12_Pipeline_State_Subobject<__VA_ARGS__>;
