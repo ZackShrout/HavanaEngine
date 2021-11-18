@@ -93,11 +93,14 @@ namespace Havana::Graphics::D3D12::Core
 			}
 
 			// Singal the fence with the new fence value
-			void EndFrame()
+			void EndFrame(const D3D12Surface& surface)
 			{
 				DXCall(m_commandList->Close());
 				ID3D12CommandList* const commandLists[]{ m_commandList };
 				m_commandQueue->ExecuteCommandLists(_countof(commandLists), &commandLists[0]);
+
+				// Presenting swap chain buffers happens in lockstep with frame buffers.
+				surface.Present();
 
 				u64& fenceValue{ m_fenceValue };
 				fenceValue++;
@@ -183,6 +186,8 @@ namespace Havana::Graphics::D3D12::Core
 		IDXGIFactory7*				dxgiFactory{ nullptr };
 		D3D12Command				gfxCommand;
 		surface_collection			surfaces;
+		D3DX::ResourceBarrier		resourceBarriers{};
+
 		DescriptorHeap				rtvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
 		DescriptorHeap				dsvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
 		DescriptorHeap				srvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
@@ -476,7 +481,7 @@ namespace Havana::Graphics::D3D12::Core
 		// reset the allocator once the GPU is done with it.
 		// This frees the memory that was used to store commands.
 		gfxCommand.BeginFrame();
-		id3d12GraphicsCommandList* commandList{ gfxCommand.CommandList() };
+		id3d12GraphicsCommandList* cmdList{ gfxCommand.CommandList() };
 
 		// Check to see if there are deferred releases to handle
 		const u32 frameIdx{ CurrentFrameIndex() };
@@ -486,15 +491,48 @@ namespace Havana::Graphics::D3D12::Core
 		}
 		
 		const D3D12Surface& surface{ surfaces[id] };
-		
-		// Presenting swap chain buffers happens in lockstep with frame buffers.
-		surface.Present();
+		ID3D12Resource* const currentBackBuffer{ surface.BackBuffer() };
+
+		D3D12FrameInfo frameInfo
+		{
+			surface.Width(),
+			surface.Height()
+		};
+
+		GPass::SetSize({ frameInfo.surfaceWidth, frameInfo.surfaceHeight });
+		D3DX::ResourceBarrier& barriers{ resourceBarriers };
 
 		// Record commands
-		// ......
-		//
+		cmdList->RSSetViewports(1, &surface.Viewport());
+		cmdList->RSSetScissorRects(1, &surface.ScissorRect());
+		
+		// Depth Prepass
+		GPass::AddTransitionsForDepthPrepass(barriers);
+		barriers.Apply(cmdList);
+		GPass::SetRenderTargetsForDepthPrepass(cmdList);
+		GPass::DepthPrepass(cmdList, frameInfo);
+
+		// Geometry and Lighting Pass
+		GPass::AddTransitionsForGPass(barriers);
+		barriers.Apply(cmdList);
+		GPass::SetRenderTargetsForGPass(cmdList);
+		GPass::Render(cmdList, frameInfo);
+
+		D3DX::TransitionResource(cmdList, currentBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+		// Post-process
+		GPass::AddTransitionsForPostProcess(barriers);
+		barriers.Apply(cmdList);
+		// -- Will write final image to the current back buffer, so the back buffer is a render target
+
+		// After post-process
+		D3DX::TransitionResource(cmdList, currentBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+		// Presenting swap chain buffers happens in lockstep with frame buffers.
+		//surface.Present();
+		
 		// Done recording commands, now execute them,
 		// signal and incriment fence value for next frame.
-		gfxCommand.EndFrame();
+		gfxCommand.EndFrame(surface);
 	}
 }

@@ -3,7 +3,11 @@
 
 namespace Havana::Graphics::D3D12
 {
-	class DescriptorHeap;
+	struct D3D12FrameInfo
+	{
+		u32 surfaceWidth{};
+		u32 surfaceHeight{};
+	};
 }
 
 namespace Havana::Graphics::D3D12::Core

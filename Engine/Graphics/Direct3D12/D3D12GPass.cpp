@@ -145,5 +145,52 @@ namespace Havana::Graphics::D3D12::GPass
 	{
 		cmdList->SetGraphicsRootSignature(gpassRootSig);
 		cmdList->SetPipelineState(gpassPSO);
+
+		static u32 frame{ 0 };
+		frame++;
+		cmdList->SetGraphicsRoot32BitConstant(0, frame, 0);
+
+		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		cmdList->DrawInstanced(3, 1, 0, 0);
+	}
+
+	void AddTransitionsForDepthPrepass(D3DX::ResourceBarrier& barriers)
+	{
+		barriers.Add(gpassDepthBuffer.Resource(),
+			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE);
+	}
+
+	void AddTransitionsForGPass(D3DX::ResourceBarrier& barriers)
+	{
+		barriers.Add(gpassMainBuffer.Resource(),
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_STATE_RENDER_TARGET);
+		barriers.Add(gpassDepthBuffer.Resource(),
+			D3D12_RESOURCE_STATE_DEPTH_WRITE,
+			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	}
+
+	void AddTransitionsForPostProcess(D3DX::ResourceBarrier& barriers)
+	{
+		barriers.Add(gpassMainBuffer.Resource(),
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	}
+
+	void SetRenderTargetsForDepthPrepass(id3d12GraphicsCommandList* cmdList)
+	{
+		const D3D12_CPU_DESCRIPTOR_HANDLE dsv{ gpassDepthBuffer.DSV() };
+		cmdList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 0.0f, 0, 0, nullptr);
+		cmdList->OMSetRenderTargets(0, nullptr, 0, &dsv);
+	}
+
+	void SetRenderTargetsForGPass(id3d12GraphicsCommandList* cmdList)
+	{
+		const D3D12_CPU_DESCRIPTOR_HANDLE rtv{ gpassMainBuffer.RTV(0) };
+		const D3D12_CPU_DESCRIPTOR_HANDLE dsv{ gpassDepthBuffer.DSV() };
+
+		cmdList->ClearRenderTargetView(rtv, clearValue, 0, nullptr);
+		cmdList->OMSetRenderTargets(1, &rtv, 0, &dsv);
 	}
 }

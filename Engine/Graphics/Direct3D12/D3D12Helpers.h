@@ -96,6 +96,83 @@ namespace Havana::Graphics::D3D12::D3DX
 		};
 	} depthState;
 
+	class ResourceBarrier
+	{
+	public:
+		constexpr static u32 maxResourceBarriers{ 32 };
+
+		// Add a transition barrier to the list of barriers
+		constexpr void Add(
+			ID3D12Resource* resource,
+			D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after,
+			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE,
+			u32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
+		{
+			assert(resource);
+			assert(m_offset < maxResourceBarriers);
+			
+			D3D12_RESOURCE_BARRIER& barrier{ m_barriers[m_offset] };
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			barrier.Flags = flags;
+			barrier.Transition.pResource = resource;
+			barrier.Transition.StateBefore = before;
+			barrier.Transition.StateAfter = after;
+			barrier.Transition.Subresource = subresource;
+
+			m_offset++;
+		}
+
+		// Add a UAV barrier to the list of barries
+		constexpr void Add(
+			ID3D12Resource* resource,
+			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE)
+		{
+			assert(resource);
+			assert(m_offset < maxResourceBarriers);
+			
+			D3D12_RESOURCE_BARRIER& barrier{ m_barriers[m_offset] };
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+			barrier.Flags = flags;
+			barrier.UAV.pResource = resource;
+
+			m_offset++;
+		}
+
+		// Add an aliasing barrier to the list of barriers
+		constexpr void Add(
+			ID3D12Resource* before, ID3D12Resource* after,
+			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE)
+		{
+			assert(before && after);
+			assert(m_offset < maxResourceBarriers);
+
+			D3D12_RESOURCE_BARRIER& barrier{ m_barriers[m_offset] };
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_ALIASING;
+			barrier.Flags = flags;
+			barrier.Aliasing.pResourceBefore = before;
+			barrier.Aliasing.pResourceAfter = after;
+
+			m_offset++;
+		}
+
+		void Apply(ID3D12GraphicsCommandList* cmdList)
+		{
+			assert(m_offset);
+			cmdList->ResourceBarrier(m_offset, m_barriers);
+			m_offset = 0;
+		}
+	private:
+		D3D12_RESOURCE_BARRIER	m_barriers[maxResourceBarriers]{};
+		u32						m_offset{ 0 };
+	};
+
+	void TransitionResource(
+		id3d12GraphicsCommandList* cmdList,
+		ID3D12Resource* resource,
+		D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after,
+		D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE,
+		u32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
 	ID3D12RootSignature* CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC1& desc);
 
 	struct D3D12_Descriptor_Range : public D3D12_DESCRIPTOR_RANGE1
