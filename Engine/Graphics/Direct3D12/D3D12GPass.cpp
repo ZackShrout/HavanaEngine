@@ -107,7 +107,7 @@ namespace Havana::Graphics::D3D12::GPass
 		stream.renderTargetFormats = rtfArray;
 
 		gpassPSO = D3DX::CreatePipelineState(&stream, sizeof(stream));
-		NAME_D3D12_OBJECT(gpassRootSig, L"GPass PSO");
+		NAME_D3D12_OBJECT(gpassRootSig, L"GPass Pipeline State Object");
 
 		return gpassRootSig && gpassPSO;
 	}

@@ -185,6 +185,7 @@ namespace Havana::Graphics::D3D12
 	void D3D12RenderTexture::Release()
 	{
 		for (u32 i{ 0 }; i < m_mipCount; i++) Core::RTVHeap().Free(m_rtv[i]);
+		m_texture.Release();
 		m_mipCount = 0;
 	}
 

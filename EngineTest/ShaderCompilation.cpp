@@ -13,6 +13,7 @@ using namespace Microsoft::WRL;
 #include "../Graphics/Vulkan/VulkanShaders.h"
 using namespace Havana::Graphics::Vulkan::Shaders;
 #endif // _WIN64
+
 #include <glslang/Public/ShaderLang.h>
 #include "ShaderCompilation.h"
 #include "../Graphics/Vulkan/VulkanCore.h"
@@ -203,7 +204,7 @@ namespace
 		{
 			const D3D12_SHADER_BYTECODE byteCode{ shader->GetBufferPointer(), shader->GetBufferSize() };
 			file.write((char*)&byteCode.BytecodeLength, sizeof(byteCode.BytecodeLength));
-			file.write((char*)&byteCode.pShaderBytecode, byteCode.BytecodeLength);
+			file.write((char*)byteCode.pShaderBytecode, byteCode.BytecodeLength);
 		}
 
 		file.close();
