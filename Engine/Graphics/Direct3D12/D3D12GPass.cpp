@@ -6,6 +6,16 @@ namespace Havana::Graphics::D3D12::GPass
 {
 	namespace
 	{
+		struct GPassRootParamIndices
+		{
+			enum : u32
+			{
+				rootConstants,
+
+				count
+			};
+		};
+
 		constexpr DXGI_FORMAT			mainBufferFormat{ DXGI_FORMAT_R16G16B16A16_FLOAT };
 		constexpr DXGI_FORMAT			depthBufferFormat{ DXGI_FORMAT_D32_FLOAT };
 		constexpr Math::Vec2u32			initialDimensions{ 100, 100 };
@@ -80,9 +90,10 @@ namespace Havana::Graphics::D3D12::GPass
 		assert(!gpassRootSig && !gpassPSO);
 
 		// Create GPass root signature
-		D3DX::D3D12_Root_Parameter paramters[1]{};
-		paramters[0].AsConstants(1, D3D12_SHADER_VISIBILITY_PIXEL, 1);
-		const D3DX::D3D12_Root_Signature_Desc rootSignature{ &paramters[0], _countof(paramters) };
+		using idx = GPassRootParamIndices;
+		D3DX::D3D12_Root_Parameter paramters[idx::count]{};
+		paramters[0].AsConstants(3, D3D12_SHADER_VISIBILITY_PIXEL, 1);
+		const D3DX::D3D12_Root_Signature_Desc rootSignature{ &paramters[0], idx::count };
 		gpassRootSig = rootSignature.Create();
 		assert(gpassRootSig);
 		NAME_D3D12_OBJECT(gpassRootSig, L"GPass Root Signature");
@@ -127,6 +138,16 @@ namespace Havana::Graphics::D3D12::GPass
 		Core::Release(gpassPSO);
 	}
 
+	const D3D12RenderTexture& MainBuffer()
+	{
+		return gpassMainBuffer;
+	}
+
+	const D3D12DepthBuffer& DepthBuffer()
+	{
+		return gpassDepthBuffer;
+	}
+
 	void SetSize(Math::Vec2u32 size)
 	{
 		Math::Vec2u32& d{ dimensions };
@@ -147,8 +168,15 @@ namespace Havana::Graphics::D3D12::GPass
 		cmdList->SetPipelineState(gpassPSO);
 
 		static u32 frame{ 0 };
-		frame++;
-		cmdList->SetGraphicsRoot32BitConstant(0, frame, 0);
+		struct
+		{
+			f32 width;
+			f32 height;
+			u32 frame;
+		} constants{ (f32)info.surfaceWidth, (f32)info.surfaceHeight, ++frame };
+
+		using idx = GPassRootParamIndices;
+		cmdList->SetGraphicsRoot32BitConstants(idx::rootConstants, 3, &constants, 0);
 
 		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		cmdList->DrawInstanced(3, 1, 0, 0);

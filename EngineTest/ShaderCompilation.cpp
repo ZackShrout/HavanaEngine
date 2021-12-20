@@ -40,6 +40,7 @@ namespace
 	{
 		{"FullScreenTriangle.hlsl", "FullScreenTriangleVS", EngineShader::fullscreenTriangleVS, ShaderType::vertex},
 		{"FillColor.hlsl", "FillColorPS", EngineShader::fillColorPS, ShaderType::pixel},
+		{"PostProcess.hlsl", "PostProcessPS", EngineShader::postProcessPS, ShaderType::pixel},
 	};
 
 	static_assert(_countof(shaderFiles) == EngineShader::count);
@@ -81,12 +82,14 @@ namespace
 			std::wstring file{ ToWString(info.file) };
 			std::wstring func{ ToWString(info.function) };
 			std::wstring prof{ ToWString(m_profileStrings[(u32)info.type]) };
+			std::wstring inc{ ToWString(shadersSourcePath) };
 
 			LPCWSTR args[]
 			{
 				file.c_str(),											// optional shader source file name for error reporting
 				L"-E", func.c_str(),									// entry function
 				L"-T", prof.c_str(),									// target profile
+				L"-I", inc.c_str(),										// include path
 				DXC_ARG_ALL_RESOURCES_BOUND,
 #if _DEBUG
 				DXC_ARG_DEBUG,

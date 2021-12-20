@@ -48,7 +48,7 @@ namespace Havana::Graphics
 
 	void Shutdown()
 	{
-		gfx.Shutdown();
+		if(gfx.platform != (GraphicsPlatform) - 1) gfx.Shutdown();
 	}
 
 	const char* GetEngineShadersPath()

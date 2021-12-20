@@ -26,6 +26,7 @@ namespace Havana::Graphics::D3D12::Shaders
 		{
 			fullscreenTriangleVS = 0,
 			fillColorPS = 1,
+			postProcessPS = 2,
 
 			count
 		};

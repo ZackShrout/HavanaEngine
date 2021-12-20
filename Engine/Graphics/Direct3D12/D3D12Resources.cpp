@@ -89,8 +89,8 @@ namespace Havana::Graphics::D3D12
 			handle.gpu.ptr = m_gpuStart.ptr + offset;
 		}
 
+		handle.index = index;
 		DEBUG_OP(handle.container = this);
-		DEBUG_OP(handle.index = index);
 
 		return handle;
 	}

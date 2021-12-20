@@ -2,6 +2,7 @@
 #include "D3D12Surface.h"
 #include "D3D12Shaders.h"
 #include "D3D12GPass.h"
+#include "D3D12PostProcess.h"
 
 using namespace Microsoft::WRL;
 
@@ -353,7 +354,10 @@ namespace Havana::Graphics::D3D12::Core
 		if (!gfxCommand.CommandQueue()) return FailedInit();
 
 		// Initialize modules
-		if (!(Shaders::Initialize() && GPass::Initialize())) return FailedInit();
+		if (!(Shaders::Initialize() && 
+			  GPass::Initialize() &&
+			  FX::Initialize())) 
+			return FailedInit();
 
 		NAME_D3D12_OBJECT(mainDevice, L"Main D3D Device");
 		NAME_D3D12_OBJECT(rtvDescHeap.Heap(), L"RTV Descriptor Heap");
@@ -377,6 +381,7 @@ namespace Havana::Graphics::D3D12::Core
 		}
 
 		// Shutdown modules
+		FX::Shutdown();
 		GPass::Shutdown();
 		Shaders::Shutdown();
 
@@ -432,7 +437,7 @@ namespace Havana::Graphics::D3D12::Core
 
 	DescriptorHeap& DSVHeap() { return dsvDescHeap; }
 
-	DescriptorHeap& SRVHeap() { return uavDescHeap; }
+	DescriptorHeap& SRVHeap() { return srvDescHeap; }
 
 	DescriptorHeap& UAVHeap() { return uavDescHeap; }
 
@@ -503,6 +508,9 @@ namespace Havana::Graphics::D3D12::Core
 		D3DX::ResourceBarrier& barriers{ resourceBarriers };
 
 		// Record commands
+		ID3D12DescriptorHeap* const heaps[]{ srvDescHeap.Heap() };
+		cmdList->SetDescriptorHeaps(1, &heaps[0]);
+
 		cmdList->RSSetViewports(1, &surface.Viewport());
 		cmdList->RSSetScissorRects(1, &surface.ScissorRect());
 		
@@ -524,7 +532,7 @@ namespace Havana::Graphics::D3D12::Core
 		GPass::AddTransitionsForPostProcess(barriers);
 		barriers.Apply(cmdList);
 		// -- Will write final image to the current back buffer, so the back buffer is a render target
-
+		FX::PostProcess(cmdList, surface.RTV());
 		// After post-process
 		D3DX::TransitionResource(cmdList, currentBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 

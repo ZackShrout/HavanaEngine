@@ -12,7 +12,10 @@ Graphics::RenderSurface surfaces[4];
 
 TimeIt timer{};
 
+bool isRestarting{ false };
 void DestroyRenderSurface(Graphics::RenderSurface &surface);
+bool TestInitialize();
+void TestShutdown();
 
 #ifdef _WIN64
 LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -36,7 +39,7 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				}
 			}
 		}
-		if (allClosed)
+		if (allClosed && !isRestarting)
 		{
 			PostQuitMessage(0);
 			return 0;
@@ -56,6 +59,12 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		{
 			PostMessage(hwnd, WM_CLOSE, 0, 0);
 			return 0;
+		}
+		else if (wparam == VK_F11)
+		{
+			isRestarting = true;
+			TestShutdown();
+			TestInitialize();
 		}
 	default:
 		break;
@@ -95,18 +104,15 @@ void DestroyRenderSurface(Graphics::RenderSurface &surface)
 		Platform::RemoveWindow(temp.window.GetID());
 }
 
-#ifdef _WIN64
-bool EngineTest::Initialize()
+bool TestInitialize()
 {
-	ActivateConsole();
-
 	while (!CompileShaders())
 	{
 		// Pop up a message box allowing the user to retry compilation.
 		if (MessageBox(nullptr, L"Failed to compile engine shaders!", L"Shader Compilation Error", MB_RETRYCANCEL) != IDRETRY)
 			return false;
 	}
-	
+
 	if (!Graphics::Initialize(Graphics::GraphicsPlatform::Direct3D12)) return false;
 
 	Platform::WindowInitInfo info[]{
@@ -118,10 +124,28 @@ bool EngineTest::Initialize()
 
 	static_assert(_countof(info) == _countof(surfaces));
 
-	for (u32 i{0}; i < _countof(surfaces); i++)
+	for (u32 i{ 0 }; i < _countof(surfaces); i++)
 		CreateRenderSurface(surfaces[i], info[i], nullptr);
 
+	isRestarting = false;
 	return true;
+}
+
+void TestShutdown()
+{
+	for (u32 i{ 0 }; i < _countof(surfaces); i++)
+		DestroyRenderSurface(surfaces[i]);
+
+	Graphics::Shutdown();
+}
+
+
+#ifdef _WIN64
+bool EngineTest::Initialize()
+{
+	ActivateConsole();
+
+	return TestInitialize();
 }
 
 void EngineTest::Run()
@@ -289,9 +313,6 @@ void EngineTest::Run(void *disp)
 
 void EngineTest::Shutdown()
 {
-	for (u32 i{0}; i < _countof(surfaces); i++)
-		DestroyRenderSurface(surfaces[i]);
-
-	Graphics::Shutdown();
+	TestShutdown();
 }
 #endif //TEST_RENDERER
