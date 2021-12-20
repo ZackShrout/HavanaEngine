@@ -332,28 +332,26 @@ namespace Havana::Utils
 		// Returns a pointer to the first element of the array - return null when vector is empty
 		[[nodiscard]] constexpr T* begin()
 		{
-			assert(m_data);
 			return std::addressof(m_data[0]);
 		}
 
 		// Returns a constant pointer to the first element of the array - return null when vector is empty
 		[[nodiscard]] constexpr const T* begin() const
 		{
-			assert(m_data);
 			return std::addressof(m_data[0]);
 		}
 
 		// Returns a pointer to the last element of the array - return null when vector is empty
 		[[nodiscard]] constexpr T* end()
 		{
-			assert(m_data);
+			assert(!(m_data == nullptr && m_size > 0));
 			return std::addressof(m_data[m_size]);
 		}
 
 		// Returns a constant pointer to the last element of the array - return null when vector is empty
 		[[nodiscard]] constexpr const T* end() const
 		{
-			assert(m_data);
+			assert(!(m_data == nullptr && m_size > 0));
 			return std::addressof(m_data[m_size]);
 		}
 
