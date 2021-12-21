@@ -38,39 +38,40 @@ namespace Havana::Platform
 			return GetFromId(id).hinstance;
 		}
 
+		bool resized{ false };
+
 		// Callback method for message handling
 		LRESULT CALLBACK internal_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		{
-			WindowInfo *info{nullptr};
-
 			switch (msg)
 			{
+			case WM_NCCREATE:
+			{
+				// Put the window id in the user data field of window's data buffer.
+				DEBUG_OP(SetLastError(0));
+				const window_id id{ windows.add() };
+				windows[id].hwnd = hwnd;
+				// Include the window ID in the window class data structure
+				SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)id);
+				assert(GetLastError() == 0);
+			}
+			break;
 			case WM_DESTROY:
 				GetFromHandle(hwnd).isClosed = true;
 				break;
-			case WM_EXITSIZEMOVE:
-				info = &GetFromHandle(hwnd);
-				break;
 			case WM_SIZE:
-				if (wparam == SIZE_MAXIMIZED)
-				{
-					info = &GetFromHandle(hwnd);
-				}
-				break;
-			case WM_SYSCOMMAND:
-				if (wparam == SC_RESTORE)
-				{
-					info = &GetFromHandle(hwnd);
-				}
+				resized = (wparam != SIZE_MINIMIZED);
 				break;
 			default:
 				break;
 			}
 
-			if (info) // if not null, something changed that needs handling
+			if (resized && GetAsyncKeyState(VK_LBUTTON) >= 0)
 			{
-				assert(info->hwnd);
-				GetClientRect(info->hwnd, info->isFullscreen ? &info->fullScreenArea : &info->clientArea);
+				WindowInfo& info{ GetFromHandle(hwnd) };
+				assert(info.hwnd);
+				GetClientRect(info.hwnd, info.isFullscreen ? &info.fullScreenArea : &info.clientArea);
+				resized = false;
 			}
 
 			// "Extra" bytes for handling windows messages via callback
@@ -239,19 +240,17 @@ namespace Havana::Platform
 
 		if (info.hwnd)
 		{
-			DEBUG_OP(SetLastError(0));
-			const window_id id{windows.add(info)};
-			// Include the window ID in the window class data structure
-			SetWindowLongPtr(info.hwnd, GWLP_USERDATA, (LONG_PTR)id);
-
 			// Set  the pointer to the window callback function which handles messages
 			// for the windows in the "extra" bytes
-			if (callback)
-				SetWindowLongPtr(info.hwnd, 0, (LONG_PTR)callback);
+			DEBUG_OP(SetLastError(0));
+			if (callback) SetWindowLongPtr(info.hwnd, 0, (LONG_PTR)callback);
 			assert(GetLastError() == 0);
-
 			ShowWindow(info.hwnd, SW_SHOWNORMAL);
 			UpdateWindow(info.hwnd);
+
+			window_id id{ (Id::id_type)GetWindowLongPtr(info.hwnd, GWLP_USERDATA) };
+			windows[id] = info;
+
 			return Window{id};
 		}
 

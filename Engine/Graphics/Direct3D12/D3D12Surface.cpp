@@ -67,7 +67,19 @@ namespace Havana::Graphics::D3D12
 
 	void D3D12Surface::Resize()
 	{
-		// TODO: implement
+		assert(m_swapChain);
+		for (u32 i{ 0 }; i < bufferCount; i++)
+		{
+			Core::Release(m_renderTargetData[i].resource);
+		}
+
+		const u32 flags{ m_allowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0ul };
+		DXCall(m_swapChain->ResizeBuffers(bufferCount, 0, 0, DXGI_FORMAT_UNKNOWN, flags));
+		m_currentBBIndex = m_swapChain->GetCurrentBackBufferIndex();
+
+		Finalize();
+
+		DEBUG_OP(OutputDebugString(L"::D3D12 Surface Resized.\n"));
 	}
 
 	// PRIVATE
