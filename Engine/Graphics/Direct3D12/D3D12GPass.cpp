@@ -23,6 +23,7 @@ namespace Havana::Graphics::D3D12::GPass
 		D3D12RenderTexture				gpassMainBuffer{};
 		D3D12DepthBuffer				gpassDepthBuffer{};
 		Math::Vec2u32					dimensions{ initialDimensions };
+		D3D12_RESOURCE_BARRIER_FLAGS	flags{};
 
 		ID3D12RootSignature*			gpassRootSig{ nullptr };
 		ID3D12PipelineState*			gpassPSO{ nullptr };
@@ -80,6 +81,8 @@ namespace Havana::Graphics::D3D12::GPass
 
 			NAME_D3D12_OBJECT(gpassMainBuffer.Resource(), L"GPass Main Buffer");
 			NAME_D3D12_OBJECT(gpassDepthBuffer.Resource(), L"GPass Depth Buffer");
+
+			flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 
 			return gpassMainBuffer.Resource() && gpassDepthBuffer.Resource();
 		}
@@ -184,16 +187,21 @@ namespace Havana::Graphics::D3D12::GPass
 
 	void AddTransitionsForDepthPrepass(D3DX::ResourceBarrier& barriers)
 	{
+		barriers.Add(gpassMainBuffer.Resource(),
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
 		barriers.Add(gpassDepthBuffer.Resource(),
 			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-			D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			D3D12_RESOURCE_STATE_DEPTH_WRITE, flags);
+
+		flags = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;
 	}
 
 	void AddTransitionsForGPass(D3DX::ResourceBarrier& barriers)
 	{
 		barriers.Add(gpassMainBuffer.Resource(),
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			D3D12_RESOURCE_STATE_RENDER_TARGET);
+			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_END_ONLY);
 		barriers.Add(gpassDepthBuffer.Resource(),
 			D3D12_RESOURCE_STATE_DEPTH_WRITE,
 			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -204,6 +212,9 @@ namespace Havana::Graphics::D3D12::GPass
 		barriers.Add(gpassMainBuffer.Resource(),
 			D3D12_RESOURCE_STATE_RENDER_TARGET,
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		barriers.Add(gpassDepthBuffer.Resource(),
+			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
 	}
 
 	void SetRenderTargetsForDepthPrepass(id3d12GraphicsCommandList* cmdList)

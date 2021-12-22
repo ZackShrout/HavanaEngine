@@ -140,9 +140,9 @@ namespace Havana::Graphics::D3D12::Core
 				}
 			}
 
-			constexpr ID3D12CommandQueue* const CommandQueue() const { return m_commandQueue; }
-			constexpr id3d12GraphicsCommandList* const CommandList() const { return m_commandList; }
-			constexpr u32 FrameIndex() const { return m_frameIndex; }
+			[[nodiscard]] constexpr ID3D12CommandQueue* const CommandQueue() const { return m_commandQueue; }
+			[[nodiscard]] constexpr id3d12GraphicsCommandList* const CommandList() const { return m_commandList; }
+			[[nodiscard]] constexpr u32 FrameIndex() const { return m_frameIndex; }
 
 		private:
 			struct CommandFrame
@@ -303,6 +303,10 @@ namespace Havana::Graphics::D3D12::Core
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
 			{
 				debugInterface->EnableDebugLayer();
+#if 0
+#pragma message("WARNING: GPU based validation is enabled. This will considerably slow down the renderer!")
+				debugInterface->SetEnableGPUBasedValidation(1);
+#endif
 			}
 			else
 			{
@@ -515,6 +519,10 @@ namespace Havana::Graphics::D3D12::Core
 		cmdList->RSSetScissorRects(1, &surface.ScissorRect());
 		
 		// Depth Prepass
+		barriers.Add(currentBackBuffer,
+			D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
 		GPass::AddTransitionsForDepthPrepass(barriers);
 		barriers.Apply(cmdList);
 		GPass::SetRenderTargetsForDepthPrepass(cmdList);
@@ -526,9 +534,11 @@ namespace Havana::Graphics::D3D12::Core
 		GPass::SetRenderTargetsForGPass(cmdList);
 		GPass::Render(cmdList, frameInfo);
 
-		D3DX::TransitionResource(cmdList, currentBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
 		// Post-process
+		barriers.Add(currentBackBuffer, 
+					 D3D12_RESOURCE_STATE_PRESENT,
+					 D3D12_RESOURCE_STATE_RENDER_TARGET,
+					 D3D12_RESOURCE_BARRIER_FLAG_END_ONLY);
 		GPass::AddTransitionsForPostProcess(barriers);
 		barriers.Apply(cmdList);
 		// -- Will write final image to the current back buffer, so the back buffer is a render target
