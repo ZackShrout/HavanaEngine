@@ -4,7 +4,8 @@
 #if TEST_ENTITY_COMPONENTS
 #include "TestEntityComponents.h"
 #elif TEST_WINDOW
-#include "TestWindow.h"
+#include "TestWindowWin32.h"
+#include "TestWindowLinux.h"
 #elif TEST_RENDERER
 #include "TestRenderer.h"
 #else
@@ -114,4 +115,4 @@ int main(int argc, char* argv[])
         return 0;
 	}
 }
-#endif // _WIN64
+#endif // platforms

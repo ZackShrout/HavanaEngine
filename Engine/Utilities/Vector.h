@@ -252,8 +252,8 @@ namespace Havana::Utils
 			if (this != std::addressof(o))
 			{
 				auto temp(std::move(o));
-				o.move(*this);
-				move(temp);
+				o.Move(*this);
+				Move(temp);
 			}
 		}
 

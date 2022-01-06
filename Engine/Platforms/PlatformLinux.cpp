@@ -1,9 +1,10 @@
+#ifdef __linux__
+
 #include "Platform.h"
 #include "PlatformTypes.h"
 
 namespace Havana::Platform
 {
-	#ifdef __linux__
 		namespace
 		{
 			// Linux OS specific window info
@@ -186,5 +187,8 @@ namespace Havana::Platform
 			XDestroyWindow(info.display, info.window);
 			windows.remove(id);
 		}
-	#endif
 }
+
+#include "IncludeWindowCpp.h"
+
+#endif // __linux__

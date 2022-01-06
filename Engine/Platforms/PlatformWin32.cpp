@@ -1,4 +1,4 @@
-#ifdef _WIN64 // open window for DirectX context
+#ifdef _WIN64
 
 #include "Platform.h"
 #include "PlatformTypes.h"
@@ -272,4 +272,4 @@ namespace Havana::Platform
 
 #include "IncludeWindowCpp.h"
 
-#endif // _Win64
+#endif // _WIN64

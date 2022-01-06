@@ -16,7 +16,7 @@ namespace Havana::Math
 	{
 		static_assert(bits <= sizeof(u32) * 8);
 		assert(f >= 0.0f && f <= 1.0f);
-	#ifdef _Win64
+	#ifdef _WIN64
 		constexpr u32 intervals{ (u32)((1ui32 << bits) - 1) };
 	#else
 		constexpr u32 intervals{ (u32)((1_ui32 << bits) - 1) };
@@ -29,7 +29,7 @@ namespace Havana::Math
 	constexpr f32 UnpackToUnitFloat(u32 i)
 	{
 		static_assert(bits <= sizeof(u32) * 8);
-	#ifdef _Win64
+	#ifdef _WIN64
 		assert(i < (1ui32 << bits));
 		constexpr u32 intervals{ (u32)((1ui32 << bits) - 1) };
 	#else

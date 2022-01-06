@@ -26,6 +26,7 @@ public:
 #else
 #include <iostream>
 #endif // _WIN64
+
 class TimeIt
 {
 public:
@@ -51,18 +52,15 @@ public:
 			OutputDebugStringA((" " + std::to_string(m_counter)).c_str());
 			OutputDebugStringA(" fps");
 			OutputDebugStringA("\n");
-			m_msAvg = 0.0f;
-			m_counter = 1;
-			m_seconds = clock::now();
 #else
 			std::cout << "Avg. frame (ms): ";
 			std::cout << std::to_string(m_msAvg).c_str();
 			std::cout << (" " + std::to_string(m_counter)).c_str();
 			std::cout << " fps" << std::endl;
+#endif // _WIN64
 			m_msAvg = 0.0f;
 			m_counter = 1;
 			m_seconds = clock::now();
-#endif // _WIN64
 		}
 	}
 private:
