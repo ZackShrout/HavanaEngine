@@ -1,33 +1,83 @@
 ﻿using HavanaEditor.GameProject;
 using HavanaEditor.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Text;
+using System.Threading;
 
 namespace HavanaEditor.GameDev
 {
+    enum BuildConfiguration
+    {
+        Debug,
+        DebugEditor,
+        Release,
+        ReleaseEditor
+    }
+
     static class VisualStudio
     {
         // STATE
-        private static EnvDTE80.DTE2 vsInstance = null;
-        private static readonly string progID = "VisualStudio.DTE.16.0";
+        private static readonly string _progID = "VisualStudio.DTE.16.0";
+        private static readonly object _lock = new object();
+        private static readonly string[] _buildConfigurationNames = new string[] { "Debug", "DebugEditor", "Release", "ReleaseEditor" };
+        private static EnvDTE80.DTE2 _vsInstance = null;
 
         // PROPERTIES
         public static bool BuildSucceeded { get; private set; } = true;
         public static bool BuildDone { get; private set; } = true;
 
+        // EVENTS
+        private static readonly ManualResetEventSlim _resetEvent = new ManualResetEventSlim(false);
+
         // PUBLIC
+        public static void OpenVisualStudio(string solutionPath)
+        {
+            lock (_lock) { OpenVisualStudio_Internal(solutionPath); }
+        }
+
+        public static void CloseVisualStudio()
+        {
+            lock (_lock) { CloseVisualStudio_Internal(); }
+        }
+
+        public static bool AddFilesToSolution(string solution, string projectName, string[] files)
+        {
+            lock (_lock) { return AddFilesToSolution_Internal(solution, projectName, files); }
+        }
+
+        public static void BuildSolution(Project project, BuildConfiguration buildConfig, bool showWindow = true)
+        {
+            lock (_lock) { BuildSolution_Internal(project, buildConfig, showWindow); }
+        }
+
+        public static bool IsDebugging()
+        {
+            lock (_lock) { return IsDebugging_Internal(); }
+        }
+
+        public static void Run(Project project, BuildConfiguration buildConfig, bool debug)
+        {
+            lock (_lock) { Run_Internal(project, buildConfig, debug); }
+        }
+
+        public static void Stop()
+        {
+            lock (_lock) { Stop_Internal(); }
+        }
+
+        public static string GetConfigurationName(BuildConfiguration config) => _buildConfigurationNames[(int)config];
+
+        // PRIVATE
         /// <summary>
         /// Creates an instance of Visual Studio 2019, and opens solution
         /// at specified path.
         /// </summary>
         /// <param name="solutionPath">Path of the Visual Studio solution to open.</param>
-        public static void OpenVisualStudio(string solutionPath)
+        private static void OpenVisualStudio_Internal(string solutionPath)
         {
             IRunningObjectTable rot = null;
             IEnumMoniker monikerTable = null;
@@ -35,7 +85,7 @@ namespace HavanaEditor.GameDev
 
             try
             {
-                if (vsInstance == null)
+                if (_vsInstance == null)
                 {
                     // Find an open instance of Visual Studio and check if it has the
                     // game solution already opened - if so, attach instance to it
@@ -53,33 +103,37 @@ namespace HavanaEditor.GameDev
                     {
                         string name = string.Empty;
                         currentMoniker[0]?.GetDisplayName(bindCtx, null, out name);
-                        if (name.Contains(progID))
+                        if (name.Contains(_progID))
                         {
                             hResult = rot.GetObject(currentMoniker[0], out object obj);
                             if (hResult < 0 || obj == null) throw new COMException($"GetObject() returned HRESULT: {hResult:x8}");
-
                             EnvDTE80.DTE2 dte = obj as EnvDTE80.DTE2;
-                            string solutionName = dte.Solution.FullName;
+                            
+                            string solutionName = string.Empty;
+                            CallOnSTAThread(() =>
+                            {
+                                solutionName = dte.Solution.FullName;
+                            });
+
                             if (solutionName == solutionPath)
                             {
-                                vsInstance = dte;
+                                _vsInstance = dte;
                                 break;
                             }
                         }
                     }
 
-
                     // If we still can't find it, create a new instance of it
-                    if (vsInstance == null)
+                    if (_vsInstance == null)
                     {
-                        Type visualStudioType = Type.GetTypeFromProgID(progID, true);
-                        vsInstance = Activator.CreateInstance(visualStudioType) as EnvDTE80.DTE2;
+                        Type visualStudioType = Type.GetTypeFromProgID(_progID, true);
+                        _vsInstance = Activator.CreateInstance(visualStudioType) as EnvDTE80.DTE2;
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.WriteLine(e.Message);
+                Debug.WriteLine(ex.Message);
                 Logger.Log(MessageType.Error, "Failed to open Visual Studio.");
             }
             finally
@@ -94,14 +148,18 @@ namespace HavanaEditor.GameDev
         /// Close the instance of Visual Studio that has the game solution opened,
         /// saving all files in the solution, as well as the solution itself, first.
         /// </summary>
-        public static void CloseVisualStudio()
+        private static void CloseVisualStudio_Internal()
         {
-            if (vsInstance?.Solution.IsOpen == true)
+            CallOnSTAThread(() =>
             {
-                vsInstance.ExecuteCommand("File.SaveAll");
-                vsInstance.Solution.Close(true);
-            }
-            vsInstance?.Quit();
+                if (_vsInstance?.Solution.IsOpen == true)
+                {
+                    _vsInstance.ExecuteCommand("File.SaveAll");
+                    _vsInstance.Solution.Close(true);
+                }
+                _vsInstance?.Quit();
+                _vsInstance = null;
+            });
         }
 
         /// <summary>
@@ -111,46 +169,49 @@ namespace HavanaEditor.GameDev
         /// <param name="projectName">Name of project in solutio to add files to.</param>
         /// <param name="files">Files to add.</param>
         /// <returns>True if succeeded, false if failed.</returns>
-        public static bool AddFilesToSolution(string solution, string projectName, string[] files)
+        private static bool AddFilesToSolution_Internal(string solution, string projectName, string[] files)
         {
             Debug.Assert(files?.Length > 0);
-            OpenVisualStudio(solution);
+            OpenVisualStudio_Internal(solution);
 
             try
             {
-                if (vsInstance != null)
+                if (_vsInstance != null)
                 {
-                    if (!vsInstance.Solution.IsOpen) vsInstance.Solution.Open(solution);
-                    else vsInstance.ExecuteCommand("File.SaveAll");
-
-                    foreach (EnvDTE.Project project in vsInstance.Solution.Projects)
+                    CallOnSTAThread(() =>
                     {
-                        if (project.UniqueName.Contains(projectName))
+                        if (!_vsInstance.Solution.IsOpen) _vsInstance.Solution.Open(solution);
+                        else _vsInstance.ExecuteCommand("File.SaveAll");
+
+                        foreach (EnvDTE.Project project in _vsInstance.Solution.Projects)
                         {
-                            foreach (string file in files)
+                            if (project.UniqueName.Contains(projectName))
                             {
-                                project.ProjectItems.AddFromFile(file);
+                                foreach (string file in files)
+                                {
+                                    project.ProjectItems.AddFromFile(file);
+                                }
                             }
                         }
-                    }
 
-                    var cpp = files.FirstOrDefault(x => Path.GetExtension(x) == ".cpp");
-                    if (!string.IsNullOrEmpty(cpp))
-                    {
-                        vsInstance.ItemOperations.OpenFile(cpp, EnvDTE.Constants.vsViewKindTextView).Visible = true;
-                    }
+                        var cpp = files.FirstOrDefault(x => Path.GetExtension(x) == ".cpp");
+                        if (!string.IsNullOrEmpty(cpp))
+                        {
+                            _vsInstance.ItemOperations.OpenFile(cpp, EnvDTE.Constants.vsViewKindTextView).Visible = true;
+                        }
 
-                    vsInstance.MainWindow.Activate();
-                    vsInstance.MainWindow.Visible = true;
+                        _vsInstance.MainWindow.Activate();
+                        _vsInstance.MainWindow.Visible = true;
+                    });
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.WriteLine(e.Message);
+                Debug.WriteLine(ex.Message);
                 Logger.Log(MessageType.Error, "Could not add files to solution.");
                 return false;
             }
-            
+
             return true;
         }
 
@@ -159,98 +220,107 @@ namespace HavanaEditor.GameDev
         /// </summary>
         /// <param name="project">Havana Project which contains the solution to build.</param>
         /// <param name="v">Build Configuration mode.</param>
-        public static void BuildSolution(Project project, string buildConfig, bool showWindow = true)
+        private static void BuildSolution_Internal(Project project, BuildConfiguration buildConfig, bool showWindow = true)
         {
-            if (IsDebugging())
+            if (IsDebugging_Internal())
             {
                 Logger.Log(MessageType.Error, "Visual Studio is currently running a process.");
                 return;
             }
 
-            OpenVisualStudio(project.Solution);
+            OpenVisualStudio_Internal(project.Solution);
             BuildDone = BuildSucceeded = false;
 
-            for (int i = 0; i < 3 && !BuildDone; i++)
+            CallOnSTAThread(() =>
             {
-                try
+                if (!_vsInstance.Solution.IsOpen) _vsInstance.Solution.Open(project.Solution);
+                _vsInstance.MainWindow.Visible = showWindow;
+                _vsInstance.Events.BuildEvents.OnBuildProjConfigBegin += OnBuildSolutionBegin;
+                _vsInstance.Events.BuildEvents.OnBuildProjConfigDone += OnBuildSolutionDone;
+            });
+
+            var configName = GetConfigurationName(buildConfig);
+
+            try
+            {
+                foreach (var pdbFile in Directory.GetFiles(Path.Combine($"{project.Path}", $@"x64\{buildConfig}"), "*.pdb"))
                 {
-                    if (!vsInstance.Solution.IsOpen) vsInstance.Solution.Open(project.Solution);
-                    vsInstance.MainWindow.Visible = showWindow;
-
-                    vsInstance.Events.BuildEvents.OnBuildProjConfigBegin += OnBuildSolutionBegin;
-                    vsInstance.Events.BuildEvents.OnBuildProjConfigDone += OnBuildSolutionDone;
-
-                    try
-                    {
-                        foreach (var pdbFile in Directory.GetFiles(Path.Combine($"{project.Path}", $@"x64\{buildConfig}"), "*.pdb"))
-                        {
-                            File.Delete(pdbFile);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(ex.Message);
-                    }
-
-                    vsInstance.Solution.SolutionBuild.SolutionConfigurations.Item(buildConfig).Activate();
-                    vsInstance.ExecuteCommand("Build.BuildSolution");
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message);
-                    Debug.WriteLine($"Attempt {i}: failed to buil {project.Name}.");
-                    System.Threading.Thread.Sleep(1000);
+                    File.Delete(pdbFile);
                 }
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+            CallOnSTAThread(() =>
+            {
+                _vsInstance.Solution.SolutionBuild.SolutionConfigurations.Item(buildConfig).Activate();
+                _vsInstance.ExecuteCommand("Build.BuildSolution");
+                _resetEvent.Wait();
+                _resetEvent.Reset();
+            });
         }
 
-        public static bool IsDebugging()
+        private static bool IsDebugging_Internal()
         {
             bool result = false;
-            bool tryAgain = true;
-
-            for (int i = 0; i < 3 && tryAgain; i++)
+            CallOnSTAThread(() =>
             {
-                try
-                {
-                    result = vsInstance != null &&
-                        (vsInstance.Debugger.CurrentProgram != null || vsInstance.Debugger.CurrentMode == EnvDTE.dbgDebugMode.dbgRunMode);
-                    tryAgain = false;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message);
-                    System.Threading.Thread.Sleep(1000);
-                }
-            }
+                result = _vsInstance != null &&
+                    (_vsInstance.Debugger.CurrentProgram != null || _vsInstance.Debugger.CurrentMode == EnvDTE.dbgDebugMode.dbgRunMode);
+            });
+              
             return result;
         }
 
-        public static void Run(Project project, string configName, bool debug)
+        private static void Run_Internal(Project project, BuildConfiguration buildConfig, bool debug)
         {
-            if (vsInstance != null && !IsDebugging() && BuildDone && BuildSucceeded)
+            CallOnSTAThread(() =>
             {
-                vsInstance.ExecuteCommand(debug ? "Debug.Start" : "Debug.StartWithoutDebugging");
-            }
+                if (_vsInstance != null && !IsDebugging_Internal() && BuildDone && BuildSucceeded)
+                {
+                    _vsInstance.ExecuteCommand(debug ? "Debug.Start" : "Debug.StartWithoutDebugging");
+                }
+            });
         }
 
-        public static void Stop()
+        private static void Stop_Internal()
         {
-            if (vsInstance != null && IsDebugging())
+            CallOnSTAThread(() =>
             {
-                vsInstance.ExecuteCommand("Debug.StopDebugging");
-            }
+                if (_vsInstance != null && IsDebugging_Internal())
+                {
+                    _vsInstance.ExecuteCommand("Debug.StopDebugging");
+                }
+            });
         }
 
-        // PRIVATE
         [DllImport("ole32.dll")]
         private static extern int GetRunningObjectTable(uint reserved, out IRunningObjectTable pprot);
 
         [DllImport("ole32.dll")]
         private static extern int CreateBindCtx(uint reserved, out IBindCtx ppbc);
-        
+
+        private static void CallOnSTAThread(Action action)
+        {
+            Debug.Assert(action != null);
+            var thread = new Thread(() =>
+            {
+                MessageFilter.Register();
+                try { action(); }
+                catch (Exception ex) { Logger.Log(MessageType.Warning, ex.Message); }
+                finally { MessageFilter.Revoke(); }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
         private static void OnBuildSolutionBegin(string project, string projectConfig, string platform, string solutionConfig)
         {
+            if (BuildDone) return;
             Logger.Log(MessageType.Info, $"Building: {project}, {projectConfig}, {platform}, {solutionConfig}");
         }
 
@@ -263,6 +333,72 @@ namespace HavanaEditor.GameDev
 
             BuildDone = true;
             BuildSucceeded = success;
+            _resetEvent.Set();
         }
+    }
+
+    // Class containing the IOleMessageFilter thread error-handling function
+    public class MessageFilter : IOleMessageFilter
+    {
+        private const int SERVERCALL_ISHANDLED = 0;
+        private const int PENDINGMSG_WAITDEFPROCESS = 2;
+        private const int SERVERCALL_RETRYLATER = 2;
+
+        [DllImport("Ole32.dll")]
+        private static extern int CoRegisterMessageFilter(IOleMessageFilter newFilter, out IOleMessageFilter oldFilter);
+
+        public static void Register()
+        {
+            IOleMessageFilter newFilter = new MessageFilter();
+            int hr = CoRegisterMessageFilter(newFilter, out var oldFilter);
+            Debug.Assert(hr >= 0, "Registring COM IMessageFilter failed.");
+        }
+
+        public static void Revoke()
+        {
+            int hr = CoRegisterMessageFilter(null, out var oldFilter);
+            Debug.Assert(hr >= 0, "Unregistring COM IMessageFilter failed.");
+        }
+
+        int IOleMessageFilter.HandleInComingCall(int dwCallType, System.IntPtr hTaskCaller, int dwTickCount, System.IntPtr lpInterfaceInfo)
+        {
+            //returns the flag SERVERCALL_ISHANDLED. 
+            return SERVERCALL_ISHANDLED;
+        }
+
+        int IOleMessageFilter.RetryRejectedCall(System.IntPtr hTaskCallee, int dwTickCount, int dwRejectType)
+        {
+            // Thread call was refused, try again. 
+            if (dwRejectType == SERVERCALL_RETRYLATER)
+            {
+                // retry thread call at once, if return value >=0 & <=500.
+                Debug.WriteLine("COM server busy. Retrying call to EnvDTE interface.");
+                return 500;
+            }
+            // Too busy. Cancel call.
+            return -1;
+        }
+
+        int IOleMessageFilter.MessagePending(System.IntPtr hTaskCallee, int dwTickCount, int dwPendingType)
+        {
+            return PENDINGMSG_WAITDEFPROCESS;
+        }
+    }
+
+    [ComImport(), Guid("00000016-0000-0000-C000-000000000046"),
+    InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    interface IOleMessageFilter
+    {
+
+        [PreserveSig]
+        int HandleInComingCall(int dwCallType, IntPtr hTaskCaller, int dwTickCount, IntPtr lpInterfaceInfo);
+
+
+        [PreserveSig]
+        int RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType);
+
+
+        [PreserveSig]
+        int MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType);
     }
 }

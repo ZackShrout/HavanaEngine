@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace HavanaEditor.GameProject
 {
@@ -39,22 +40,22 @@ namespace HavanaEditor.GameProject
     class NewProject : ViewModelBase
     {
         // STATE
-        private readonly string templatePath = @"..\..\HavanaEditor\ProjectTemplates"; // TODO: get path from install location
-        private string projectName = "NewProject";
-        private string projectPath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\HavanaProjects\";
-        private ObservableCollection<ProjectTemplate> projectTemplates = new ObservableCollection<ProjectTemplate>();
-        private bool isValid;
-        private string errorMessage;
+        private readonly string _templatePath = @"..\..\HavanaEditor\ProjectTemplates"; // TODO: get path from install location
+        private string _projectName = "NewProject";
+        private string _projectPath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\HavanaProjects\";
+        private readonly ObservableCollection<ProjectTemplate> _projectTemplates = new ObservableCollection<ProjectTemplate>();
+        private bool _isValid;
+        private string _errorMessage;
 
         // PROPERTIES
         public string ProjectName
         {
-            get => projectName;
+            get => _projectName;
             set
             {
-                if (projectName != value)
+                if (_projectName != value)
                 {
-                    projectName = value;
+                    _projectName = value;
                     ValidateProjectPath();
                     OnPropertyChanged(nameof(ProjectName));
                 }
@@ -62,12 +63,12 @@ namespace HavanaEditor.GameProject
         }
         public string ProjectPath
         {
-            get => projectPath;
+            get => _projectPath;
             set
             {
-                if (projectPath != value)
+                if (_projectPath != value)
                 {
-                    projectPath = value;
+                    _projectPath = value;
                     ValidateProjectPath();
                     OnPropertyChanged(nameof(ProjectPath));
                 }
@@ -76,24 +77,24 @@ namespace HavanaEditor.GameProject
         public ReadOnlyObservableCollection<ProjectTemplate> ProjectTemplates { get; }
         public bool IsValid
         {
-            get => isValid;
+            get => _isValid;
             set
             {
-                if (isValid != value)
+                if (_isValid != value)
                 {
-                    isValid = value;
+                    _isValid = value;
                     OnPropertyChanged(nameof(IsValid));
                 }
             }
         }
         public string ErrorMessage
         {
-            get => errorMessage;
+            get => _errorMessage;
             set
             {
-                if (errorMessage != value)
+                if (_errorMessage != value)
                 {
-                    errorMessage = value;
+                    _errorMessage = value;
                     OnPropertyChanged(nameof(ErrorMessage));
                 }
             }
@@ -102,10 +103,10 @@ namespace HavanaEditor.GameProject
         // PUBLIC
         public NewProject()
         {
-            ProjectTemplates = new ReadOnlyObservableCollection<ProjectTemplate>(projectTemplates);
+            ProjectTemplates = new ReadOnlyObservableCollection<ProjectTemplate>(_projectTemplates);
             try
             {
-                string[] templateFiles = Directory.GetFiles(templatePath, "template.xml", SearchOption.AllDirectories);
+                string[] templateFiles = Directory.GetFiles(_templatePath, "template.xml", SearchOption.AllDirectories);
                 Debug.Assert(templateFiles.Any());
                 foreach (string file in templateFiles)
                 {
@@ -116,7 +117,7 @@ namespace HavanaEditor.GameProject
                     template.ScreenShotFilePath = Path.GetFullPath(Path.Combine(template.TemplatePath, "ScreenShot.png"));
                     template.ScreenShot = File.ReadAllBytes(template.ScreenShotFilePath);
                     template.ProjectFilePath = Path.GetFullPath(Path.Combine(template.TemplatePath, template.ProjectFile));
-                    projectTemplates.Add(template);
+                    _projectTemplates.Add(template);
                 }
                 ValidateProjectPath();
             }
@@ -185,7 +186,7 @@ namespace HavanaEditor.GameProject
             Debug.Assert(File.Exists(Path.Combine(template.TemplatePath, "MSVCSolution")));
             Debug.Assert(File.Exists(Path.Combine(template.TemplatePath, "MSVCProject")));
 
-            string engineAPIPath = Path.Combine(MainWindow.HavanaPath, @"Engine\EngineAPI\");
+            string engineAPIPath = @"$(HAVANA_ENGINE)Engine\EngineAPI\";
             Debug.Assert(Directory.Exists(engineAPIPath));
 
             string projectName = ProjectName;
@@ -198,7 +199,7 @@ namespace HavanaEditor.GameProject
 
             // Create the Visual Studio project file
             string project = File.ReadAllText(Path.Combine(template.TemplatePath, "MSVCProject"));
-            project = string.Format(project, projectName, projectGUID, engineAPIPath, MainWindow.HavanaPath);
+            project = string.Format(project, projectName, projectGUID, engineAPIPath, "$(HAVANA_ENGINE)");
             File.WriteAllText(Path.GetFullPath(Path.Combine(projectPath, $@"Scripts\{projectName}.vcxproj")), project);
         }
 
@@ -210,13 +211,14 @@ namespace HavanaEditor.GameProject
                 path += @"\";
             }
             path += $@"{ProjectName}\";
+            var nameRegex = new Regex(@"^[A-Za-z_][A-Za-z0-9_]*$");
 
             IsValid = false;
             if (string.IsNullOrWhiteSpace(ProjectName.Trim()))
             {
                 ErrorMessage = "Please type in a project name.";
             }
-            else if (ProjectName.IndexOfAny(Path.GetInvalidFileNameChars()) != -1)
+            else if (!nameRegex.IsMatch(ProjectName))
             {
                 ErrorMessage = "Invalid character(s) in project name.";
             }

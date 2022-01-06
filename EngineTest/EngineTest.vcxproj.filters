@@ -11,5 +11,6 @@
     <ClInclude Include="TestWindow.h" />
     <ClInclude Include="TestRenderer.h" />
     <ClInclude Include="ShaderCompilation.h" />
+    <ClInclude Include="TestWindowLinux.h" />
   </ItemGroup>
 </Project>

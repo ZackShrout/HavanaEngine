@@ -46,6 +46,7 @@
     <ClInclude Include="Graphics\Vulkan\VulkanShaders.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12GPass.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12PostProcess.h" />
+    <ClInclude Include="Platforms\IncludeWindowCpp.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\Entity.cpp" />
@@ -54,7 +55,7 @@
     <ClCompile Include="Core\Main.cpp" />
     <ClCompile Include="Core\Engine.cpp" />
     <ClCompile Include="Content\ContentLoader.cpp" />
-    <ClCompile Include="Platforms\Platform.cpp" />
+    <ClCompile Include="Platforms\PlatformWin32.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Interface.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Core.cpp" />
@@ -74,6 +75,8 @@
     <ClCompile Include="Graphics\Vulkan\VulkanShaders.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12GPass.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12PostProcess.cpp" />
+    <ClCompile Include="Platforms\PlatformLinux.cpp" />
+    <ClCompile Include="Platforms\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Graphics\Vulkan\Shaders\compile_shaders.bat" />

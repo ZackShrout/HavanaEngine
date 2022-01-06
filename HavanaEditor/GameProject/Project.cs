@@ -16,14 +16,6 @@ using System.Windows.Input;
 
 namespace HavanaEditor.GameProject
 {
-    enum BuildConfiguration
-    {
-        Debug,
-        DebugEditor,
-        Release,
-        ReleaseEditor
-    }
-    
     /// <summary>
     /// Describes a Havana Project.
     /// </summary>
@@ -31,15 +23,14 @@ namespace HavanaEditor.GameProject
     class Project : ViewModelBase
     {
         // STATE
-        [DataMember(Name = "Scenes")]
-        private ObservableCollection<Scene> scenes = new ObservableCollection<Scene>();
-        private Scene activeScene;
-        private static readonly string[] buildConfigurationNames = new string[] { "Debug", "DebugEditor", "Release", "ReleaseEditor" };
-        private int buildConfig;
-        private string[] availableScripts;
+        [DataMember(Name = nameof(Scenes))]
+        private readonly ObservableCollection<Scene> _scenes = new ObservableCollection<Scene>();
+        private Scene _activeScene;
+        private int _buildConfig;
+        private string[] _availableScripts;
 
         // PROPERTIES
-        public static string Extention { get; } = ".hvproj";
+        public static string Extention => ".hvproj";
         [DataMember]
         public string Name { get; private set; } = "New Project";
         [DataMember]
@@ -47,16 +38,16 @@ namespace HavanaEditor.GameProject
         public string FullPath => $@"{Path}{Name}{Extention}";
         public string Solution => $@"{Path}{Name}.sln";
         public string ContentPath => $@"{Path}Assets\";
-        public static Project Current => Application.Current.MainWindow.DataContext as Project;
+        public static Project Current => Application.Current.MainWindow?.DataContext as Project;
         public ReadOnlyObservableCollection<Scene> Scenes { get; private set;  }
         public Scene ActiveScene
         {
-            get => activeScene;
+            get => _activeScene;
             set
             {
-                if (activeScene != value)
+                if (_activeScene != value)
                 {
-                    activeScene = value;
+                    _activeScene = value;
                     OnPropertyChanged(nameof(ActiveScene));
                 }
             }
@@ -64,12 +55,12 @@ namespace HavanaEditor.GameProject
         [DataMember]
         public int BuildConfig
         {
-            get => buildConfig;
+            get => _buildConfig;
             set
             {
-                if (buildConfig != value)
+                if (_buildConfig != value)
                 {
-                    buildConfig = value;
+                    _buildConfig = value;
                     OnPropertyChanged(nameof(BuildConfig));
                 }
             }
@@ -85,15 +76,15 @@ namespace HavanaEditor.GameProject
         public ICommand DebugStopCommand { get; private set; }
         public static UndoRedo UndoRedo { get; } = new UndoRedo();
         public BuildConfiguration StandAloneBuildConfig => BuildConfig == 0 ? BuildConfiguration.Debug : BuildConfiguration.Release;
-        public BuildConfiguration DllBuildConfig => BuildConfig == 0 ? BuildConfiguration.DebugEditor : BuildConfiguration.ReleaseEditor;
+        public BuildConfiguration DLLBuildConfig => BuildConfig == 0 ? BuildConfiguration.DebugEditor : BuildConfiguration.ReleaseEditor;
         public string[] AvailableScripts
         {
-            get => availableScripts;
-            set
+            get => _availableScripts;
+            private set
             {
-                if (availableScripts != value)
+                if (_availableScripts != value)
                 {
-                    availableScripts = value;
+                    _availableScripts = value;
                     OnPropertyChanged(nameof(AvailableScripts));
                 }
             }
@@ -105,19 +96,10 @@ namespace HavanaEditor.GameProject
             Name = name;
             Path = path;
 
+            Debug.Assert(File.Exists((Path + Name + Extention).ToLower()));
             OnDeserialized(new StreamingContext());
         }        
-
-        /// <summary>
-        /// Save specified project.
-        /// </summary>
-        /// <param name="project">Project to save.</param>
-        public static void Save(Project project)
-        {
-            Serializer.ToFile<Project>(project, project.FullPath);
-            Logger.Log(MessageType.Info, $"Project saved to {project.FullPath}");
-        }
-
+        
         /// <summary>
         /// Load project from specified file path.
         /// </summary>
@@ -134,31 +116,43 @@ namespace HavanaEditor.GameProject
         /// </summary>
         public void Unload()
         {
-            UnloadGameCodeDll();
+            UnloadGameCodeDLL();
             VisualStudio.CloseVisualStudio();
             UndoRedo.Reset();
+            Logger.Clear();
         }
 
         // PRIVATE
         [OnDeserialized]
         private async void OnDeserialized(StreamingContext context)
         {
-            if (scenes != null)
+            if (_scenes != null)
             {
-                Scenes = new ReadOnlyObservableCollection<Scene>(scenes);
+                Scenes = new ReadOnlyObservableCollection<Scene>(_scenes);
                 OnPropertyChanged(nameof(Scenes));
             }
-            ActiveScene = Scenes.FirstOrDefault(x => x.IsActive);
+            ActiveScene = _scenes.FirstOrDefault(x => x.IsActive);
             Debug.Assert(ActiveScene != null);
 
-            await BuildGameCodeDll();
+            await BuildGameCodeDLL();
 
             SetCommands();
         }
 
+        /// <summary>
+        /// Save specified project.
+        /// </summary>
+        /// <param name="project">Project to save.</param>
+        private static void Save(Project project)
+        {
+            Serializer.ToFile<Project>(project, project.FullPath);
+            Logger.Log(MessageType.Info, $"Project saved to {project.FullPath}");
+        }
+
+
         private void SaveToBinary()
         {
-            string configName = GetConfigurationName(StandAloneBuildConfig);
+            string configName = VisualStudio.GetConfigurationName(StandAloneBuildConfig);
             string bin = $@"{Path}x64\{configName}\game.bin";
 
             using (BinaryWriter bw = new BinaryWriter(File.Open(bin, FileMode.Create, FileAccess.Write)))
@@ -178,15 +172,15 @@ namespace HavanaEditor.GameProject
 
         }
 
-        private async Task BuildGameCodeDll(bool showWindow = true)
+        private async Task BuildGameCodeDLL(bool showWindow = true)
         {
             try
             {
-                UnloadGameCodeDll();
-                await Task.Run(() => VisualStudio.BuildSolution(this, GetConfigurationName(DllBuildConfig), showWindow));
+                UnloadGameCodeDLL();
+                await Task.Run(() => VisualStudio.BuildSolution(this, DLLBuildConfig, showWindow));
                 if (VisualStudio.BuildSucceeded)
                 {
-                    LoadGameCodeDll();
+                    LoadGameCodeDLL();
                 }
             }
             catch (Exception ex)
@@ -199,20 +193,19 @@ namespace HavanaEditor.GameProject
 
         private async Task RunGame(bool debug)
         {
-            string configName = GetConfigurationName(StandAloneBuildConfig);
-            await Task.Run(() => VisualStudio.BuildSolution(this, configName, debug));
+            await Task.Run(() => VisualStudio.BuildSolution(this, StandAloneBuildConfig, debug));
             if (VisualStudio.BuildSucceeded)
             {
                 SaveToBinary();
-                await Task.Run(() => VisualStudio.Run(this, configName, debug));
+                await Task.Run(() => VisualStudio.Run(this, StandAloneBuildConfig, debug));
             }
         }
 
         private async Task StopGame() => await Task.Run(() => VisualStudio.Stop());
 
-        private void LoadGameCodeDll()
+        private void LoadGameCodeDLL()
         {
-            string configName = GetConfigurationName(DllBuildConfig);
+            string configName = VisualStudio.GetConfigurationName(DLLBuildConfig);
             string dll = $@"{Path}x64\{configName}\{Name}.dll";
             AvailableScripts = null;
             if (File.Exists(dll) && EngineAPI.LoadGameCodeDll(dll) != 0)
@@ -228,7 +221,7 @@ namespace HavanaEditor.GameProject
 
         }
 
-        private void UnloadGameCodeDll()
+        private void UnloadGameCodeDLL()
         {
             // Deactive any entities that have script components on them before unload game DLL
             ActiveScene.GameEntities.Where(x => x.GetComponent<Script>() != null).ToList().ForEach(x => x.IsActive = false);
@@ -242,35 +235,33 @@ namespace HavanaEditor.GameProject
         private void AddScene(string sceneName)
         {
             Debug.Assert(!string.IsNullOrEmpty(sceneName.Trim()));
-            scenes.Add(new Scene(this, sceneName));
+            _scenes.Add(new Scene(this, sceneName));
         }
 
         private void RemoveScene(Scene scene)
         {
-            Debug.Assert(scenes.Contains(scene));
-            scenes.Remove(scene);
+            Debug.Assert(_scenes.Contains(scene));
+            _scenes.Remove(scene);
         }
-
-        private static string GetConfigurationName(BuildConfiguration config) => buildConfigurationNames[(int)config];
 
         private void SetCommands()
         {
             AddSceneCommand = new RelayCommand<object>(x =>
             {
-                AddScene($"New Scene {scenes.Count()}");
-                Scene newScene = scenes.Last();
-                int sceneIndex = scenes.Count - 1;
+                AddScene($"New Scene {_scenes.Count()}");
+                Scene newScene = _scenes.Last();
+                int sceneIndex = _scenes.Count - 1;
                 UndoRedo.Add(new UndoRedoAction(
                     () => RemoveScene(newScene),
-                    () => scenes.Insert(sceneIndex, newScene),
+                    () => _scenes.Insert(sceneIndex, newScene),
                     $"Add {newScene.Name}"));
             });
 
             RemoveSceneCommand = new RelayCommand<Scene>(x => {
-                int sceneIndex = scenes.IndexOf(x);
+                int sceneIndex = _scenes.IndexOf(x);
                 RemoveScene(x);
                 UndoRedo.Add(new UndoRedoAction(
-                    () => scenes.Insert(sceneIndex, x),
+                    () => _scenes.Insert(sceneIndex, x),
                     () => RemoveScene(x),
                     $"Remove {x.Name}"));
             }, x => !x.IsActive);
@@ -278,7 +269,7 @@ namespace HavanaEditor.GameProject
             UndoCommand = new RelayCommand<object>(x => UndoRedo.Undo(), x => UndoRedo.UndoList.Any());
             RedoCommand = new RelayCommand<object>(x => UndoRedo.Redo(), x => UndoRedo.RedoList.Any());
             SaveCommand = new RelayCommand<object>(x => Save(this));
-            BuildCommand = new RelayCommand<bool>(async x => await BuildGameCodeDll(false), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
+            BuildCommand = new RelayCommand<bool>(async x => await BuildGameCodeDLL(false), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
             DebugStartCommand = new RelayCommand<object>(async x => await RunGame(true), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
             DebugStartWithoutDebuggingCommand = new RelayCommand<object>(async x => await RunGame(false), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
             DebugStopCommand = new RelayCommand<object>(async x => await StopGame(), x => VisualStudio.IsDebugging());

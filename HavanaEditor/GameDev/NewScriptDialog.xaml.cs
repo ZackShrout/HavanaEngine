@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -71,12 +72,13 @@ namespace {1}
             string name = scriptName.Text.Trim();
             string path = scriptPath.Text.Trim();
             string errorMessage = string.Empty;
+            var nameRegex = new Regex(@"^[A-Za-z_][A-Za-z0-9_]*$");
             
             if (string.IsNullOrEmpty(name))
             {
                 errorMessage = "Please enter a script name.";
             }
-            else if (name.IndexOfAny(Path.GetInvalidFileNameChars()) != -1 || name.Any(x => char.IsWhiteSpace(x)))
+            else if (!nameRegex.IsMatch(name))
             {
                 errorMessage = "One or more invalid characters or white spaces in script name.";
             }
@@ -197,8 +199,10 @@ namespace {1}
 
         private static string GetNamespaceFromProjectName()
         {
-            string projectName = Project.Current.Name;
-            projectName = string.Concat(projectName.Where(c => !char.IsWhiteSpace(c)));
+            string projectName = Project.Current.Name.Trim();
+            if (string.IsNullOrEmpty(projectName)) return string.Empty;
+            projectName = Regex.Replace(projectName, @"[^A-Za-z0-9_]", "");
+
             return projectName;
         }
     }

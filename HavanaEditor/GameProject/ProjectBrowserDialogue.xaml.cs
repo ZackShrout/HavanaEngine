@@ -21,7 +21,10 @@ namespace HavanaEditor.GameProject
     {
         // STATE
         private readonly CubicEase easing = new CubicEase() { EasingMode = EasingMode.EaseInOut };
-        
+
+        // PROPERTIES
+        public static bool GotoNewProjectTab { get; set; }
+
         // PUBLIC
         public ProjectBrowserDialogue()
         {
@@ -32,12 +35,18 @@ namespace HavanaEditor.GameProject
         private void OnProjectBrowserDialogueLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= OnProjectBrowserDialogueLoaded;
-            if (!OpenProject.Projects.Any())
+            if (!OpenProject.Projects.Any() || GotoNewProjectTab)
             {
-                openProjectButton.IsEnabled = false;
-                openProjectView.Visibility = Visibility.Hidden;
+                if (!GotoNewProjectTab)
+                {
+                    openProjectButton.IsEnabled = false;
+                    openProjectView.Visibility = Visibility.Hidden;
+                }
+
                 OnToggleButton_Click(newProjectButton, new RoutedEventArgs());
             }
+
+            GotoNewProjectTab = false;
         }
 
         // PRIVATE
