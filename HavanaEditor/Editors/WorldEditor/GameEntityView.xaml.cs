@@ -44,8 +44,8 @@ namespace HavanaEditor.Editors
     public partial class GameEntityView : UserControl
     {
         // STATE
-        Action undoAction;
-        string propertyName;
+        Action _undoAction;
+        string _propertyName;
         
         // PROPERTIES
         public static GameEntityView Instance { get; private set; }
@@ -60,7 +60,7 @@ namespace HavanaEditor.Editors
             {
                 if (DataContext != null)
                 {
-                    (DataContext as MSEntity).PropertyChanged += (s, e) => propertyName = e.PropertyName;
+                    (DataContext as MSEntity).PropertyChanged += (s, e) => _propertyName = e.PropertyName;
                 }
             };
         }
@@ -68,19 +68,19 @@ namespace HavanaEditor.Editors
         // PRIVATE
         private void OnName_TextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            propertyName = string.Empty;
-            undoAction = GetRenameAction();
+            _propertyName = string.Empty;
+            _undoAction = GetRenameAction();
         }
 
         private void OnName_TextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            if (propertyName == nameof(MSEntity.Name) && undoAction != null)
+            if (_propertyName == nameof(MSEntity.Name) && _undoAction != null)
             {
                 Action redoAction = GetRenameAction();
-                Project.UndoRedo.Add(new UndoRedoAction(undoAction, redoAction, "Rename game entity"));
-                propertyName = null;
+                Project.UndoRedo.Add(new UndoRedoAction(_undoAction, redoAction, "Rename game entity"));
+                _propertyName = null;
             }
-            undoAction = null;
+            _undoAction = null;
         }
 
         private void OnIsEnabled_CheckBox_Click(object sender, RoutedEventArgs e)

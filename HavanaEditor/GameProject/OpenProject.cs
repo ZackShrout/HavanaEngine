@@ -48,9 +48,9 @@ namespace HavanaEditor.GameProject
     class OpenProject
     {
         // STATE
-        private static readonly string applicationDataPath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\HavanaEditor\";
-        private static readonly string projectDataPath;
-        private static readonly ObservableCollection<ProjectData> projects = new ObservableCollection<ProjectData>();
+        private static readonly string _applicationDataPath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\HavanaEditor\";
+        private static readonly string _projectDataPath;
+        private static readonly ObservableCollection<ProjectData> _projects = new ObservableCollection<ProjectData>();
 
         // PROPERTIES
         public static ReadOnlyObservableCollection<ProjectData> Projects { get; }
@@ -60,17 +60,17 @@ namespace HavanaEditor.GameProject
         {
             try
             {
-                if(!Directory.Exists(applicationDataPath))
+                if(!Directory.Exists(_applicationDataPath))
                 {
-                    Directory.CreateDirectory(applicationDataPath);
+                    Directory.CreateDirectory(_applicationDataPath);
                 }
-                projectDataPath = $@"{applicationDataPath}ProjectData.xml";
-                Projects = new ReadOnlyObservableCollection<ProjectData>(projects);
+                _projectDataPath = $@"{_applicationDataPath}ProjectData.xml";
+                Projects = new ReadOnlyObservableCollection<ProjectData>(_projects);
                 ReadProjectData();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.WriteLine(e.Message);
+                Debug.WriteLine(ex.Message);
                 Logger.Log(MessageType.Error, $"Failed to open read project data.");
                 throw;
             }
@@ -95,7 +95,7 @@ namespace HavanaEditor.GameProject
             {
                 project = data;
                 project.Date = DateTime.Now;
-                projects.Add(project);
+                _projects.Add(project);
             }
             WriteProjectData();
 
@@ -105,17 +105,17 @@ namespace HavanaEditor.GameProject
         // PRIVATE
         private static void ReadProjectData()
         {
-            if (File.Exists(projectDataPath))
+            if (File.Exists(_projectDataPath))
             {
-                var newProjects = Serializer.FromFile<ProjectDataList>(projectDataPath).Projects.OrderByDescending(x => x.Date);
-                projects.Clear();
+                var newProjects = Serializer.FromFile<ProjectDataList>(_projectDataPath).Projects.OrderByDescending(x => x.Date);
+                _projects.Clear();
                 foreach (var project in newProjects)
                 {
                     if (File.Exists(project.FullPath))
                     {
                         project.Icon = File.ReadAllBytes($@"{project.ProjectPath}\.havana\Icon.png");
                         project.ScreenShot = File.ReadAllBytes($@"{project.ProjectPath}\.havana\ScreenShot.png");
-                        projects.Add(project);
+                        _projects.Add(project);
                     }
                 }
             }
@@ -123,8 +123,8 @@ namespace HavanaEditor.GameProject
 
         private static void WriteProjectData()
         {
-            List<ProjectData> newProjects = projects.OrderBy(x => x.Date).ToList();
-            Serializer.ToFile(new ProjectDataList() { Projects = newProjects }, projectDataPath);
+            List<ProjectData> newProjects = _projects.OrderBy(x => x.Date).ToList();
+            Serializer.ToFile(new ProjectDataList() { Projects = newProjects }, _projectDataPath);
         }
     }
 }

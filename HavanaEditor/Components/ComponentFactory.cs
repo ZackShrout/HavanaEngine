@@ -14,7 +14,7 @@ namespace HavanaEditor.Components
     static class ComponentFactory
     {
         // STATE
-        private static readonly Func<GameEntity, object, Component>[] function = new Func<GameEntity, object, Component>[]
+        private static readonly Func<GameEntity, object, Component>[] _function = new Func<GameEntity, object, Component>[]
         {
             (entity, data) => new Transform(entity),
             (entity, data) => new Script(entity) { Name = (string)data }
@@ -23,8 +23,8 @@ namespace HavanaEditor.Components
         // PUBLIC
         public static Func<GameEntity, object, Component> GetCreationFunction(ComponentType componentType)
         {
-            Debug.Assert((int)componentType < function.Length);
-            return function[(int)componentType];
+            Debug.Assert((int)componentType < _function.Length);
+            return _function[(int)componentType];
         }
 
         public static ComponentType ToEnumType(this Component component)

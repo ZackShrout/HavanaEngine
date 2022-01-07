@@ -42,7 +42,7 @@ namespace HavanaEditor.Components
     abstract class MSComponent<T> : ViewModelBase, IMSComponent where T : Component
     {
         // STATE
-        private bool enableUpdates = true;
+        private bool _enableUpdates = true;
         
         // PROPERTIES
         public List<T> SelectedComponents { get; }
@@ -52,14 +52,14 @@ namespace HavanaEditor.Components
         {
             Debug.Assert(msEntity?.SelectedEntities?.Any() == true);
             SelectedComponents = msEntity.SelectedEntities.Select(entity => entity.GetComponent<T>()).ToList();
-            PropertyChanged += (s, e) => { if (enableUpdates) UpdateComponents(e.PropertyName); };
+            PropertyChanged += (s, e) => { if (_enableUpdates) UpdateComponents(e.PropertyName); };
         }
 
         public void Refresh()
         {
-            enableUpdates = false;
+            _enableUpdates = false;
             UpdateMSComponent();
-            enableUpdates = true;
+            _enableUpdates = true;
         }
 
         // PROTECTED

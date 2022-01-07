@@ -27,7 +27,7 @@ namespace HavanaEditor.GameDev
     {
         // STATE
         private static readonly string _namespace = GetNamespaceFromProjectName();
-        private static readonly string cppCode = @"#include ""{0}.h""
+        private static readonly string _cppCode = @"#include ""{0}.h""
 
 namespace {1}
 {{
@@ -43,7 +43,7 @@ namespace {1}
     }}
 }} // namespace {1}";
 
-        private static readonly string hCode = @"#pragma once
+        private static readonly string _hCode = @"#pragma once
 
 namespace {1}
 {{
@@ -178,12 +178,12 @@ namespace {1}
 
             using (StreamWriter streamWriter = File.CreateText(cpp))
             {
-                streamWriter.Write(string.Format(cppCode, name, _namespace));
+                streamWriter.Write(string.Format(_cppCode, name, _namespace));
             }
 
             using (StreamWriter streamWriter = File.CreateText(h))
             {
-                streamWriter.Write(string.Format(hCode, name, _namespace));
+                streamWriter.Write(string.Format(_hCode, name, _namespace));
             }
 
             string[] files = new string[] { cpp, h };

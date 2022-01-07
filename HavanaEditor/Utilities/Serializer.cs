@@ -26,9 +26,9 @@ namespace HavanaEditor.Utilities
                 var serializer = new DataContractSerializer(typeof(T));
                 serializer.WriteObject(fileStream, instance);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.WriteLine(e.Message);
+                Debug.WriteLine(ex.Message);
                 Logger.Log(MessageType.Error, $"Failed to serialize {instance} to {path}");
                 throw;
             }
@@ -49,9 +49,9 @@ namespace HavanaEditor.Utilities
                 T instance = (T)serializer.ReadObject(fileStream);
                 return instance;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.WriteLine(e.Message);
+                Debug.WriteLine(ex.Message);
                 Logger.Log(MessageType.Error, $"Failed to deserialize from {path}");
                 return default(T);
             }

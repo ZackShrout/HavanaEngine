@@ -10,18 +10,18 @@ namespace HavanaEditor.Components
     class Script : Component
     {
         // STATE
-        private string name;
+        private string _name;
         
         // PROPERTIES
         [DataMember]
         public string Name
         {
-            get => name;
+            get => _name;
             set
             {
-                if (name != value)
+                if (_name != value)
                 {
-                    name = value;
+                    _name = value;
                     OnPropertyChanged(nameof(Name));
                 }
             }
@@ -43,19 +43,19 @@ namespace HavanaEditor.Components
     sealed class MSScript : MSComponent<Script>
     {
         // STATE
-        private string name;
+        private string _name;
 
         
 
         // PROPERTIES
         public string Name
         {
-            get => name;
+            get => _name;
             set
             {
-                if (name != value)
+                if (_name != value)
                 {
-                    name = value;
+                    _name = value;
                     OnPropertyChanged(nameof(Name));
                 }
             }
@@ -72,7 +72,7 @@ namespace HavanaEditor.Components
         {
             if (propertyName == nameof(Name))
             {
-                SelectedComponents.ForEach(c => c.Name = name);
+                SelectedComponents.ForEach(c => c.Name = _name);
                 return true;
             }
             return false;

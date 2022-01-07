@@ -18,29 +18,29 @@ namespace HavanaEditor.Editors
     class MeshRendererVertexData : ViewModelBase
     {
 
-        private Brush specular = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ff111111"));
+        private Brush _specular = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ff111111"));
         public Brush Specular
         {
-            get => specular;
+            get => _specular;
             set
             {
-                if (specular != value)
+                if (_specular != value)
                 {
-                    specular = value;
+                    _specular = value;
                     OnPropertyChanged(nameof(Specular));
                 }
             }
         }
 
-        private Brush diffuse = Brushes.White;
+        private Brush _diffuse = Brushes.White;
         public Brush Diffuse
         {
-            get => diffuse;
+            get => _diffuse;
             set
             {
-                if (diffuse != value)
+                if (_diffuse != value)
                 {
-                    diffuse = value;
+                    _diffuse = value;
                     OnPropertyChanged(nameof(Diffuse));
                 }
             }
@@ -60,29 +60,29 @@ namespace HavanaEditor.Editors
     {
         public ObservableCollection<MeshRendererVertexData> Meshes { get; } = new ObservableCollection<MeshRendererVertexData>();
 
-        private Vector3D cameraDirection = new Vector3D(0, 0, -10);
+        private Vector3D _cameraDirection = new Vector3D(0, 0, -10);
         public Vector3D CameraDirection
         {
-            get => cameraDirection;
+            get => _cameraDirection;
             set
             {
-                if (cameraDirection != value)
+                if (_cameraDirection != value)
                 {
-                    cameraDirection = value;
+                    _cameraDirection = value;
                     OnPropertyChanged(nameof(CameraDirection));
                 }
             }
         }
 
-        private Point3D cameraPosition = new Point3D(0, 0, 10);
+        private Point3D _cameraPosition = new Point3D(0, 0, 10);
         public Point3D CameraPosition
         {
-            get => cameraPosition;
+            get => _cameraPosition;
             set
             {
-                if (cameraPosition != value)
+                if (_cameraPosition != value)
                 {
-                    cameraPosition = value;
+                    _cameraPosition = value;
                     CameraDirection = new Vector3D(-value.X, -value.Y, -value.Z);
                     OnPropertyChanged(nameof(CameraPosition));
                     OnPropertyChanged(nameof(OffsetCameraPosition));
@@ -90,15 +90,15 @@ namespace HavanaEditor.Editors
             }
         }
 
-        private Point3D cameraTarget = new Point3D(0, 0, 0);
+        private Point3D _cameraTarget = new Point3D(0, 0, 0);
         public Point3D CameraTarget
         {
-            get => cameraTarget;
+            get => _cameraTarget;
             set
             {
-                if (cameraTarget != value)
+                if (_cameraTarget != value)
                 {
-                    cameraTarget = value;
+                    _cameraTarget = value;
                     OnPropertyChanged(nameof(CameraTarget));
                     OnPropertyChanged(nameof(OffsetCameraPosition));
                 }
@@ -108,57 +108,57 @@ namespace HavanaEditor.Editors
         public Point3D OffsetCameraPosition => 
             new Point3D(CameraPosition.X + CameraTarget.X, CameraPosition.Y + CameraTarget.Y, CameraPosition.Z + CameraTarget.Z);
 
-        private Color keyLight = (Color)ColorConverter.ConvertFromString("#ffaeaeae");
+        private Color _keyLight = (Color)ColorConverter.ConvertFromString("#ffaeaeae");
         public Color KeyLight
         {
-            get => keyLight;
+            get => _keyLight;
             set
             {
-                if (keyLight != value)
+                if (_keyLight != value)
                 {
-                    keyLight = value;
+                    _keyLight = value;
                     OnPropertyChanged(nameof(KeyLight));
                 }
             }
         }
 
-        private Color skyLight = (Color)ColorConverter.ConvertFromString("#ff111b30");
+        private Color _skyLight = (Color)ColorConverter.ConvertFromString("#ff111b30");
         public Color SkyLight
         {
-            get => skyLight;
+            get => _skyLight;
             set
             {
-                if (skyLight != value)
+                if (_skyLight != value)
                 {
-                    skyLight = value;
+                    _skyLight = value;
                     OnPropertyChanged(nameof(SkyLight));
                 }
             }
         }
 
-        private Color groundLight = (Color)ColorConverter.ConvertFromString("#ff3f2f1e");
+        private Color _groundLight = (Color)ColorConverter.ConvertFromString("#ff3f2f1e");
         public Color GroundLight
         {
-            get => groundLight;
+            get => _groundLight;
             set
             {
-                if (groundLight != value)
+                if (_groundLight != value)
                 {
-                    groundLight = value;
+                    _groundLight = value;
                     OnPropertyChanged(nameof(GroundLight));
                 }
             }
         }
 
-        private Color ambientLight = (Color)ColorConverter.ConvertFromString("#ff3b3b3b");
+        private Color _ambientLight = (Color)ColorConverter.ConvertFromString("#ff3b3b3b");
         public Color AmbientLight
         {
-            get => ambientLight;
+            get => _ambientLight;
             set
             {
-                if (ambientLight != value)
+                if (_ambientLight != value)
                 {
-                    ambientLight = value;
+                    _ambientLight = value;
                     OnPropertyChanged(nameof(AmbientLight));
                 }
             }
@@ -257,31 +257,31 @@ namespace HavanaEditor.Editors
     class GeometryEditor : ViewModelBase, IAssetEditor
     {
         // STATE
-        private Content.Geometry geometry;
-        private MeshRenderer meshRenderer;
+        private Content.Geometry _geometry;
+        private MeshRenderer _meshRenderer;
 
         // PROPERTIES
         public Content.Asset Asset => Geometry;
         public Content.Geometry Geometry
         {
-            get => geometry;
+            get => _geometry;
             set
             {
-                if (geometry != value)
+                if (_geometry != value)
                 {
-                    geometry = value;
+                    _geometry = value;
                     OnPropertyChanged(nameof(Geometry));
                 }
             }
         }
         public MeshRenderer MeshRenderer
         {
-            get => meshRenderer;
+            get => _meshRenderer;
             set
             {
-                if (meshRenderer != value)
+                if (_meshRenderer != value)
                 {
-                    meshRenderer = value;
+                    _meshRenderer = value;
                     OnPropertyChanged(nameof(MeshRenderer));
                 }
             }

@@ -8,14 +8,14 @@ namespace HavanaEditor
     class RelayCommand<T> : ICommand
     {
         // STATE
-        private readonly Action<T> execute;
-        private readonly Predicate<T> canExecute;
+        private readonly Action<T> _execute;
+        private readonly Predicate<T> _canExecute;
 
         // PUBLIC
         public RelayCommand(Action<T> execute, Predicate<T> canExecute = null)
         {
-            this.execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            this.canExecute = canExecute;
+            this._execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            this._canExecute = canExecute;
         }
         
         public event EventHandler CanExecuteChanged
@@ -26,12 +26,12 @@ namespace HavanaEditor
 
         public bool CanExecute(object parameter)
         {
-            return canExecute?.Invoke((T)parameter) ?? true;
+            return _canExecute?.Invoke((T)parameter) ?? true;
         }
 
         public void Execute(object parameter)
         {
-            execute((T)parameter);
+            _execute((T)parameter);
         }
     }
 }

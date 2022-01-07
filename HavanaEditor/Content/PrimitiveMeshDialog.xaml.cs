@@ -26,7 +26,7 @@ namespace HavanaEditor.Content
     public partial class PrimitiveMeshDialog : Window
     {
         // STATE
-        private static readonly List<ImageBrush> textures = new List<ImageBrush>();
+        private static readonly List<ImageBrush> _textures = new List<ImageBrush>();
         
         // PUBLIC
         public PrimitiveMeshDialog()
@@ -50,7 +50,7 @@ namespace HavanaEditor.Content
                 new Uri("pack://application:,,,/Resources/PrimitiveMeshView/Checkermap.png"),
             };
 
-            textures.Clear();
+            _textures.Clear();
 
             foreach (var uri in uris)
             {
@@ -65,7 +65,7 @@ namespace HavanaEditor.Content
                     ViewportUnits = BrushMappingMode.Absolute
                 };
                 brush.Freeze();
-                textures.Add(brush);
+                _textures.Add(brush);
             }
         }
 
@@ -130,7 +130,7 @@ namespace HavanaEditor.Content
 
             if ((sender as CheckBox).IsChecked == true)
             {
-                brush = textures[(int)primTypeComboBox.SelectedItem];
+                brush = _textures[(int)primTypeComboBox.SelectedItem];
             }
 
             GeometryEditor viewModel = DataContext as GeometryEditor;

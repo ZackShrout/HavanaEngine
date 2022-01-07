@@ -149,7 +149,6 @@ namespace HavanaEditor.GameProject
             Logger.Log(MessageType.Info, $"Project saved to {project.FullPath}");
         }
 
-
         private void SaveToBinary()
         {
             string configName = VisualStudio.GetConfigurationName(StandAloneBuildConfig);

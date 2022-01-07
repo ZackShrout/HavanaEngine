@@ -17,21 +17,21 @@ namespace HavanaEditor.GameProject
     class Scene : ViewModelBase
     {
         // STATE
-        private string name;
-        private bool isActive;
+        private string _name;
+        private bool _isActive;
         [DataMember(Name = nameof(GameEntities))]
-        private readonly ObservableCollection<GameEntity> gameEntities = new ObservableCollection<GameEntity>();
+        private readonly ObservableCollection<GameEntity> _gameEntities = new ObservableCollection<GameEntity>();
         
         // PROPERTIES
         [DataMember]
         public string Name
         {
-            get => name;
+            get => _name;
             set
             {
-                if (name != value)
+                if (_name != value)
                 {
-                    name = value;
+                    _name = value;
                     OnPropertyChanged(nameof(Name));
                 }
             }
@@ -41,12 +41,12 @@ namespace HavanaEditor.GameProject
         [DataMember]
         public bool IsActive
         {
-            get => isActive;
+            get => _isActive;
             set
             {
-                if (isActive != value)
+                if (_isActive != value)
                 {
-                    isActive = value;
+                    _isActive = value;
                     OnPropertyChanged(nameof(IsActive));
                 }
             }
@@ -68,12 +68,12 @@ namespace HavanaEditor.GameProject
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            if (gameEntities != null)
+            if (_gameEntities != null)
             {
-                GameEntities = new ReadOnlyObservableCollection<GameEntity>(gameEntities);
+                GameEntities = new ReadOnlyObservableCollection<GameEntity>(_gameEntities);
                 OnPropertyChanged(nameof(GameEntities));
             }
-            foreach (var entity in gameEntities)
+            foreach (var entity in _gameEntities)
             {
                 entity.IsActive = IsActive;
             }
@@ -81,7 +81,7 @@ namespace HavanaEditor.GameProject
             AddGameEntityCommand = new RelayCommand<GameEntity>(x =>
             {
                 AddGameEntity(x);
-                int entityIndex = gameEntities.Count - 1;
+                int entityIndex = _gameEntities.Count - 1;
                 Project.UndoRedo.Add(new UndoRedoAction(
                     () => RemoveGameEntity(x),
                     () => AddGameEntity(x, entityIndex),
@@ -89,7 +89,7 @@ namespace HavanaEditor.GameProject
             });
 
             RemoveGameEntityCommand = new RelayCommand<GameEntity>(x => {
-                int entityIndex = gameEntities.IndexOf(x);
+                int entityIndex = _gameEntities.IndexOf(x);
                 RemoveGameEntity(x);
                 Project.UndoRedo.Add(new UndoRedoAction(
                     () => AddGameEntity(x, entityIndex),
@@ -100,24 +100,24 @@ namespace HavanaEditor.GameProject
 
         private void AddGameEntity(GameEntity entity, int index = -1)
         {
-            Debug.Assert(!gameEntities.Contains(entity));
+            Debug.Assert(!_gameEntities.Contains(entity));
             entity.IsActive = IsActive;
             if (index == -1)
             {
                 // This must be a new entity - add it to the list
-                gameEntities.Add(entity);
+                _gameEntities.Add(entity);
             }
             else
             {
-                gameEntities.Insert(index, entity);
+                _gameEntities.Insert(index, entity);
             }
         }
 
         private void RemoveGameEntity(GameEntity entity)
         {
-            Debug.Assert(gameEntities.Contains(entity));
+            Debug.Assert(_gameEntities.Contains(entity));
             entity.IsActive = false;
-            gameEntities.Remove(entity);
+            _gameEntities.Remove(entity);
         }
     }
 }

@@ -211,7 +211,7 @@ namespace HavanaEditor.GameProject
                 path += @"\";
             }
             path += $@"{ProjectName}\";
-            var nameRegex = new Regex(@"^[A-Za-z_][A-Za-z0-9_]*$");
+            Regex nameRegex = new Regex(@"^[A-Za-z_][A-Za-z0-9_]*$");
 
             IsValid = false;
             if (string.IsNullOrWhiteSpace(ProjectName.Trim()))

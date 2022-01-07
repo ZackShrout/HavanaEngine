@@ -59,10 +59,10 @@ namespace HavanaEditor.Utilities
     class DelayEventTimer
     {
         // STATE
-        private readonly DispatcherTimer timer;
-        private readonly TimeSpan delay;
-        private DateTime lastEventTime = DateTime.Now;
-        private object data;
+        private readonly DispatcherTimer _timer;
+        private readonly TimeSpan _delay;
+        private DateTime _lastEventTime = DateTime.Now;
+        private object _data;
 
         // EVENT HANDLERS
         public event EventHandler<DelayEventTimerArgs> Triggered;
@@ -70,34 +70,34 @@ namespace HavanaEditor.Utilities
         // PUBLIC
         public DelayEventTimer(TimeSpan delay, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            this.delay = delay;
-            timer = new DispatcherTimer(priority)
+            _delay = delay;
+            _timer = new DispatcherTimer(priority)
             {
                 Interval = TimeSpan.FromMilliseconds(delay.TotalMilliseconds * 0.5)
             };
-            timer.Tick += OnTimerTick;
+            _timer.Tick += OnTimerTick;
         }
 
         public void Trigger (object data = null)
         {
-            this.data = data;
-            lastEventTime = DateTime.Now;
-            timer.IsEnabled = true;
+            _data = data;
+            _lastEventTime = DateTime.Now;
+            _timer.IsEnabled = true;
         }
 
         public void Disable()
         {
-            timer.IsEnabled = false;
+            _timer.IsEnabled = false;
         }
 
         // PRIVATE
         private void OnTimerTick(object sender, EventArgs e)
         {
-            if ((DateTime.Now - lastEventTime) < delay) return;
+            if ((DateTime.Now - _lastEventTime) < _delay) return;
 
-            var eventArgs = new DelayEventTimerArgs(data);
+            var eventArgs = new DelayEventTimerArgs(_data);
             Triggered?.Invoke(this, eventArgs);
-            timer.IsEnabled = eventArgs.RepeatEvent;
+            _timer.IsEnabled = eventArgs.RepeatEvent;
         }
     }
 }

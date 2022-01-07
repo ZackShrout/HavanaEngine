@@ -24,8 +24,8 @@ namespace HavanaEditor.Editors
     public partial class TransformView : UserControl
     {
         // STATE
-        private Action undoAction = null;
-        private bool propertyChanged = false;
+        private Action _undoAction = null;
+        private bool _propertyChanged = false;
 
         // PUBLIC
         public TransformView()
@@ -38,13 +38,13 @@ namespace HavanaEditor.Editors
         private void OnTransformViewLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= OnTransformViewLoaded;
-            (DataContext as MSTransform).PropertyChanged += (s, e) => propertyChanged = true;
+            (DataContext as MSTransform).PropertyChanged += (s, e) => _propertyChanged = true;
         }
 
         private void OnPosition_VectorBox_PreviewMouse_LBD(object sender, MouseButtonEventArgs e)
         {
-            propertyChanged = false;
-            undoAction = GetPositionAction();
+            _propertyChanged = false;
+            _undoAction = GetPositionAction();
         }
 
         private void OnPosition_VectorBox_PreviewMouse_LBU(object sender, MouseButtonEventArgs e)
@@ -54,8 +54,8 @@ namespace HavanaEditor.Editors
 
         private void OnRotation_VectorBox_PreviewMouse_LBD(object sender, MouseButtonEventArgs e)
         {
-            propertyChanged = false;
-            undoAction = GetRotationAction();
+            _propertyChanged = false;
+            _undoAction = GetRotationAction();
         }
 
         private void OnRotation_VectorBox_PreviewMouse_LBU(object sender, MouseButtonEventArgs e)
@@ -65,8 +65,8 @@ namespace HavanaEditor.Editors
 
         private void OnScale_VectorBox_PreviewMouse_LBD(object sender, MouseButtonEventArgs e)
         {
-            propertyChanged = false;
-            undoAction = GetScaleAction();
+            _propertyChanged = false;
+            _undoAction = GetScaleAction();
         }
 
         private void OnScale_VectorBox_PreviewMouse_LBU(object sender, MouseButtonEventArgs e)
@@ -76,7 +76,7 @@ namespace HavanaEditor.Editors
 
         private void OnPosition_VectorBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            if (propertyChanged && undoAction != null)
+            if (_propertyChanged && _undoAction != null)
             {
                 OnPosition_VectorBox_PreviewMouse_LBU(sender, null);
             }
@@ -84,7 +84,7 @@ namespace HavanaEditor.Editors
 
         private void OnRotation_VectorBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            if (propertyChanged && undoAction != null)
+            if (_propertyChanged && _undoAction != null)
             {
                 OnRotation_VectorBox_PreviewMouse_LBU(sender, null);
             }
@@ -92,7 +92,7 @@ namespace HavanaEditor.Editors
 
         private void OnScale_VectorBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            if (propertyChanged && undoAction != null)
+            if (_propertyChanged && _undoAction != null)
             {
                 OnScale_VectorBox_PreviewMouse_LBU(sender, null);
             }
@@ -103,8 +103,8 @@ namespace HavanaEditor.Editors
         {
             if (!(DataContext is MSTransform viewmodel))
             {
-                undoAction = null;
-                propertyChanged = false;
+                _undoAction = null;
+                _propertyChanged = false;
                 return null;
             }
 
@@ -118,12 +118,12 @@ namespace HavanaEditor.Editors
 
         private void RecordActions(Action redoAction, string name)
         {
-            if (propertyChanged)
+            if (_propertyChanged)
             {
-                Debug.Assert(undoAction != null);
-                propertyChanged = false;
+                Debug.Assert(_undoAction != null);
+                _propertyChanged = false;
                 
-                Project.UndoRedo.Add(new UndoRedoAction(undoAction, redoAction, name));
+                Project.UndoRedo.Add(new UndoRedoAction(_undoAction, redoAction, name));
             }
         }
 

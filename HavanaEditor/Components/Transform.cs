@@ -12,20 +12,20 @@ namespace HavanaEditor.Components
     class Transform : Component
     {
         // STATE
-        private Vector3 position;
-        private Vector3 rotation;
-        private Vector3 scale;
+        private Vector3 _position;
+        private Vector3 _rotation;
+        private Vector3 _scale;
 
         // PROPERTIES
         [DataMember]
         public Vector3 Position
         {
-            get => position;
+            get => _position;
             set
             {
-                if (position != value)
+                if (_position != value)
                 {
-                    position = value;
+                    _position = value;
                     OnPropertyChanged(nameof(Position));
                 }
             }
@@ -33,12 +33,12 @@ namespace HavanaEditor.Components
         [DataMember]
         public Vector3 Rotation
         {
-            get => rotation;
+            get => _rotation;
             set
             {
-                if (rotation != value)
+                if (_rotation != value)
                 {
-                    rotation = value;
+                    _rotation = value;
                     OnPropertyChanged(nameof(Rotation));
                 }
             }
@@ -46,12 +46,12 @@ namespace HavanaEditor.Components
         [DataMember]
         public Vector3 Scale
         {
-            get => scale;
+            get => _scale;
             set
             {
-                if (scale != value)
+                if (_scale != value)
                 {
-                    scale = value;
+                    _scale = value;
                     OnPropertyChanged(nameof(Scale));
                 }
             }
@@ -64,130 +64,130 @@ namespace HavanaEditor.Components
 
         public override void WriteToBinary(BinaryWriter bw)
         {
-            bw.Write(position.X); bw.Write(position.Y); bw.Write(position.Z);
-            bw.Write(rotation.X); bw.Write(rotation.Y); bw.Write(rotation.Z);
-            bw.Write(scale.X); bw.Write(scale.Y); bw.Write(scale.Z);
+            bw.Write(_position.X); bw.Write(_position.Y); bw.Write(_position.Z);
+            bw.Write(_rotation.X); bw.Write(_rotation.Y); bw.Write(_rotation.Z);
+            bw.Write(_scale.X); bw.Write(_scale.Y); bw.Write(_scale.Z);
         }
     }
 
     sealed class MSTransform : MSComponent<Transform>
     {
         // STATE
-        private float? posX;
-        private float? posY;
-        private float? posZ;
-        private float? rotX;
-        private float? rotY;
-        private float? rotZ;
-        private float? scaleX;
-        private float? scaleY;
-        private float? scaleZ;
+        private float? _posX;
+        private float? _posY;
+        private float? _posZ;
+        private float? _rotX;
+        private float? _rotY;
+        private float? _rotZ;
+        private float? _scaleX;
+        private float? _scaleY;
+        private float? _scaleZ;
 
         // PROPERTIES
         public float? PosX
         {
-            get => posX;
+            get => _posX;
             set
             {
-                if (!posX.IsTheSameAs(value))
+                if (!_posX.IsTheSameAs(value))
                 {
-                    posX = value;
+                    _posX = value;
                     OnPropertyChanged(nameof(PosX));
                 }
             }
         }
         public float? PosY
         {
-            get => posY;
+            get => _posY;
             set
             {
-                if (!posY.IsTheSameAs(value))
+                if (!_posY.IsTheSameAs(value))
                 {
-                    posY = value;
+                    _posY = value;
                     OnPropertyChanged(nameof(PosY));
                 }
             }
         }
         public float? PosZ
         {
-            get => posZ;
+            get => _posZ;
             set
             {
-                if (!posZ.IsTheSameAs(value))
+                if (!_posZ.IsTheSameAs(value))
                 {
-                    posZ = value;
+                    _posZ = value;
                     OnPropertyChanged(nameof(PosZ));
                 }
             }
         }
         public float? RotX
         {
-            get => rotX;
+            get => _rotX;
             set
             {
-                if (!rotX.IsTheSameAs(value))
+                if (!_rotX.IsTheSameAs(value))
                 {
-                    rotX = value;
+                    _rotX = value;
                     OnPropertyChanged(nameof(RotX));
                 }
             }
         }
         public float? RotY
         {
-            get => rotY;
+            get => _rotY;
             set
             {
-                if (!rotY.IsTheSameAs(value))
+                if (!_rotY.IsTheSameAs(value))
                 {
-                    rotY = value;
+                    _rotY = value;
                     OnPropertyChanged(nameof(RotY));
                 }
             }
         }
         public float? RotZ
         {
-            get => rotZ;
+            get => _rotZ;
             set
             {
-                if (!rotZ.IsTheSameAs(value))
+                if (!_rotZ.IsTheSameAs(value))
                 {
-                    rotZ = value;
+                    _rotZ = value;
                     OnPropertyChanged(nameof(RotZ));
                 }
             }
         }
         public float? ScaleX
         {
-            get => scaleX;
+            get => _scaleX;
             set
             {
-                if (!scaleX.IsTheSameAs(value))
+                if (!_scaleX.IsTheSameAs(value))
                 {
-                    scaleX = value;
+                    _scaleX = value;
                     OnPropertyChanged(nameof(ScaleX));
                 }
             }
         }
         public float? ScaleY
         {
-            get => scaleY;
+            get => _scaleY;
             set
             {
-                if (!scaleY.IsTheSameAs(value))
+                if (!_scaleY.IsTheSameAs(value))
                 {
-                    scaleY = value;
+                    _scaleY = value;
                     OnPropertyChanged(nameof(ScaleY));
                 }
             }
         }
         public float? ScaleZ
         {
-            get => scaleZ;
+            get => _scaleZ;
             set
             {
-                if (!scaleZ.IsTheSameAs(value))
+                if (!_scaleZ.IsTheSameAs(value))
                 {
-                    scaleZ = value;
+                    _scaleZ = value;
                     OnPropertyChanged(nameof(ScaleZ));
                 }
             }
@@ -207,19 +207,19 @@ namespace HavanaEditor.Components
                 case nameof(PosX):
                 case nameof(PosY):
                 case nameof(PosZ):
-                    SelectedComponents.ForEach(c => c.Position = new Vector3(posX ?? c.Position.X, posY ?? c.Position.Y, posZ ?? c.Position.Z));
+                    SelectedComponents.ForEach(c => c.Position = new Vector3(_posX ?? c.Position.X, _posY ?? c.Position.Y, _posZ ?? c.Position.Z));
                     return true;
 
                 case nameof(RotX):
                 case nameof(RotY):
                 case nameof(RotZ):
-                    SelectedComponents.ForEach(c => c.Rotation = new Vector3(rotX ?? c.Rotation.X, rotY ?? c.Rotation.Y, rotZ ?? c.Rotation.Z));
+                    SelectedComponents.ForEach(c => c.Rotation = new Vector3(_rotX ?? c.Rotation.X, _rotY ?? c.Rotation.Y, _rotZ ?? c.Rotation.Z));
                     return true;
 
                 case nameof(ScaleX):
                 case nameof(ScaleY):
                 case nameof(ScaleZ):
-                    SelectedComponents.ForEach(c => c.Scale = new Vector3(scaleX ?? c.Scale.X, scaleY ?? c.Scale.Y, scaleZ ?? c.Scale.Z));
+                    SelectedComponents.ForEach(c => c.Scale = new Vector3(_scaleX ?? c.Scale.X, _scaleY ?? c.Scale.Y, _scaleZ ?? c.Scale.Z));
                     return true;
             }
             return false;

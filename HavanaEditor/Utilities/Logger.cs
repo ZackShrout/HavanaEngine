@@ -51,12 +51,12 @@ namespace HavanaEditor.Utilities
     static class Logger
     {
         // STATE
-        private static int messageFilter = (int)(MessageType.Info | MessageType.Warning | MessageType.Error);
-        private static readonly ObservableCollection<LogMessage> messages = new ObservableCollection<LogMessage>();
+        private static int _messageFilter = (int)(MessageType.Info | MessageType.Warning | MessageType.Error);
+        private static readonly ObservableCollection<LogMessage> _messages = new ObservableCollection<LogMessage>();
 
         // PROPERTIES
-        public static ReadOnlyObservableCollection<LogMessage> Messages { get; } = new ReadOnlyObservableCollection<LogMessage>(messages);
-        public static CollectionViewSource FilteredMessages { get; } = new CollectionViewSource() { Source = messages };
+        public static ReadOnlyObservableCollection<LogMessage> Messages { get; } = new ReadOnlyObservableCollection<LogMessage>(_messages);
+        public static CollectionViewSource FilteredMessages { get; } = new CollectionViewSource() { Source = _messages };
 
         // PUBLIC
         static Logger()
@@ -64,7 +64,7 @@ namespace HavanaEditor.Utilities
             FilteredMessages.Filter += (s, e) =>
             {
                 int type = (int)(e.Item as LogMessage).MessageType;
-                e.Accepted = (type & messageFilter) != 0;
+                e.Accepted = (type & _messageFilter) != 0;
             };
         }
 
@@ -81,7 +81,7 @@ namespace HavanaEditor.Utilities
         {
             await Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                messages.Add(new LogMessage(type, message, file, caller, line));
+                _messages.Add(new LogMessage(type, message, file, caller, line));
             }));
         }
 
@@ -92,7 +92,7 @@ namespace HavanaEditor.Utilities
         {
             await Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                messages.Clear();
+                _messages.Clear();
             }));
         }
 
@@ -102,7 +102,7 @@ namespace HavanaEditor.Utilities
         /// <param name="mask">Mask made by logically oring MessageTypes together.</param>
         public static void SetFilter(int mask)
         {
-            messageFilter = mask;
+            _messageFilter = mask;
             FilteredMessages.View.Refresh();
         }
     }

@@ -22,7 +22,7 @@ namespace HavanaEditor.Utilities
     public partial class RenderSurfaceView : UserControl, IDisposable
     {
         // STATE
-        private RenderSurfaceHost host = null;
+        private RenderSurfaceHost _host = null;
 
         private enum Win32Msg
         {
@@ -44,9 +44,9 @@ namespace HavanaEditor.Utilities
         {
             Loaded -= OnRenderSurfaceViewLoaded;
 
-            host = new RenderSurfaceHost(ActualWidth, ActualHeight);
-            host.MessageHook += new HwndSourceHook(HostMsgFilter);
-            Content = host;
+            _host = new RenderSurfaceHost(ActualWidth, ActualHeight);
+            _host.MessageHook += new HwndSourceHook(HostMsgFilter);
+            Content = _host;
         }
 
         private IntPtr HostMsgFilter(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -76,7 +76,7 @@ namespace HavanaEditor.Utilities
             {
                 if (disposing)
                 {
-                    host.Dispose();
+                    _host.Dispose();
                 }
                 disposedValue = true;
             }

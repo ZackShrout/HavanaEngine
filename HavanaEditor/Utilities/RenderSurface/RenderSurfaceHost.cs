@@ -13,10 +13,10 @@ namespace HavanaEditor.Utilities
     {
         // STATE
         private readonly int VK_LBUTTON = 0x01;
-        private readonly int width = 800;
-        private readonly int height = 600;
-        private IntPtr renderWindowHandle = IntPtr.Zero;
-        private DelayEventTimer resizeTimer;
+        private readonly int _width = 800;
+        private readonly int _height = 600;
+        private IntPtr _renderWindowHandle = IntPtr.Zero;
+        private DelayEventTimer _resizeTimer;
 
         // PROPERTIES
         public int SurfaceId { get; private set; } = ID.INVALID_ID;
@@ -24,23 +24,23 @@ namespace HavanaEditor.Utilities
         // PUBLIC
         public RenderSurfaceHost(double width, double height)
         {
-            this.width = (int)width;
-            this.height = (int)height;
-            resizeTimer = new DelayEventTimer(TimeSpan.FromMilliseconds(250));
-            resizeTimer.Triggered += Resize;
-            SizeChanged += (s, e) => resizeTimer.Trigger();
+            _width = (int)width;
+            _height = (int)height;
+            _resizeTimer = new DelayEventTimer(TimeSpan.FromMilliseconds(250));
+            _resizeTimer.Triggered += Resize;
+            SizeChanged += (s, e) => _resizeTimer.Trigger();
         }
 
         // PROTECTED
         protected override HandleRef BuildWindowCore(HandleRef hwndParent)
         {
             // Create in instance of the window to host
-            SurfaceId = EngineAPI.CreateRenderSurface(hwndParent.Handle, width, height);
+            SurfaceId = EngineAPI.CreateRenderSurface(hwndParent.Handle, _width, _height);
             Debug.Assert(ID.IsValid(SurfaceId));
-            renderWindowHandle = EngineAPI.GetWindowHandle(SurfaceId);
-            Debug.Assert(renderWindowHandle != IntPtr.Zero);
+            _renderWindowHandle = EngineAPI.GetWindowHandle(SurfaceId);
+            Debug.Assert(_renderWindowHandle != IntPtr.Zero);
             
-            return new HandleRef(this, renderWindowHandle);
+            return new HandleRef(this, _renderWindowHandle);
         }
 
         protected override void DestroyWindowCore(HandleRef hwnd)
@@ -48,7 +48,7 @@ namespace HavanaEditor.Utilities
             // Destroy instance of window currently being hosted
             EngineAPI.RemoveRenderSurface(SurfaceId);
             SurfaceId = ID.INVALID_ID;
-            renderWindowHandle = IntPtr.Zero;
+            _renderWindowHandle = IntPtr.Zero;
         }
 
         // PRIVATE

@@ -26,56 +26,56 @@ namespace HavanaEditor.Content
     class Mesh : ViewModelBase
     {
         // STATE
-        private int vertexSize;
-        private int vertexCount;
-        private int indexSize;
-        private int indexCount;
+        private int _vertexSize;
+        private int _vertexCount;
+        private int _indexSize;
+        private int _indexCount;
 
         // PROPERTIES
         public int VertexSize
         {
-            get => vertexSize;
+            get => _vertexSize;
             set
             {
-                if (vertexSize != value)
+                if (_vertexSize != value)
                 {
-                    vertexSize = value;
+                    _vertexSize = value;
                     OnPropertyChanged(nameof(VertexSize));
                 }
             }
         }
         public int VertexCount
         {
-            get => vertexCount;
+            get => _vertexCount;
             set
             {
-                if (vertexCount != value)
+                if (_vertexCount != value)
                 {
-                    vertexCount = value;
+                    _vertexCount = value;
                     OnPropertyChanged(nameof(VertexCount));
                 }
             }
         }
         public int IndexSize
         {
-            get => indexSize;
+            get => _indexSize;
             set
             {
-                if (indexSize != value)
+                if (_indexSize != value)
                 {
-                    indexSize = value;
+                    _indexSize = value;
                     OnPropertyChanged(nameof(IndexSize));
                 }
             }
         }
         public int IndexCount
         {
-            get => indexCount;
+            get => _indexCount;
             set
             {
-                if (indexCount != value)
+                if (_indexCount != value)
                 {
-                    indexCount = value;
+                    _indexCount = value;
                     OnPropertyChanged(nameof(IndexCount));
                 }
             }
@@ -87,30 +87,30 @@ namespace HavanaEditor.Content
     class MeshLoD : ViewModelBase
     {
         // STATE
-        private string name;
-        private float lodThreshold;
+        private string _name;
+        private float _lodThreshold;
 
         // PROPERTIES
         public string Name
         {
-            get => name;
+            get => _name;
             set
             {
-                if (name != value)
+                if (_name != value)
                 {
-                    name = value;
+                    _name = value;
                     OnPropertyChanged(nameof(Name));
                 }
             }
         }
         public float LoDThreshold
         {
-            get => lodThreshold;
+            get => _lodThreshold;
             set
             {
-                if (lodThreshold != value)
+                if (_lodThreshold != value)
                 {
-                    lodThreshold = value;
+                    _lodThreshold = value;
                     OnPropertyChanged(nameof(LoDThreshold));
                 }
             }
@@ -122,17 +122,17 @@ namespace HavanaEditor.Content
     class LoDGroup : ViewModelBase
     {
         // STATE
-        private string name;
+        private string _name;
 
         // PROPERTIES
         public string Name
         {
-            get => name;
+            get => _name;
             set
             {
-                if (name != value)
+                if (_name != value)
                 {
-                    name = value;
+                    _name = value;
                     OnPropertyChanged(nameof(Name));
                 }
             }
@@ -143,82 +143,82 @@ namespace HavanaEditor.Content
     class GeometryImportSettings : ViewModelBase
     {
         // STATE
-        private float smoothingAngle;
-        private bool calculateNormals;
-        private bool calculateTangents;
-        private bool reverseHandedness;
-        private bool importEmbededTextures;
-        private bool importAnimations;
+        private float _smoothingAngle;
+        private bool _calculateNormals;
+        private bool _calculateTangents;
+        private bool _reverseHandedness;
+        private bool _importEmbededTextures;
+        private bool _importAnimations;
         
         // PROPERTIES
         public float SmoothingAngle
         {
-            get => smoothingAngle;
+            get => _smoothingAngle;
             set
             {
-                if (smoothingAngle != value)
+                if (_smoothingAngle != value)
                 {
-                    smoothingAngle = value;
+                    _smoothingAngle = value;
                     OnPropertyChanged(nameof(SmoothingAngle));
                 }
             }
         }
         public bool CalculateNormals
         {
-            get => calculateNormals;
+            get => _calculateNormals;
             set
             {
-                if (calculateNormals != value)
+                if (_calculateNormals != value)
                 {
-                    calculateNormals = value;
+                    _calculateNormals = value;
                     OnPropertyChanged(nameof(CalculateNormals));
                 }
             }
         }
         public bool CalculateTangents
         {
-            get => calculateTangents;
+            get => _calculateTangents;
             set
             {
-                if (calculateTangents != value)
+                if (_calculateTangents != value)
                 {
-                    calculateTangents = value;
+                    _calculateTangents = value;
                     OnPropertyChanged(nameof(CalculateTangents));
                 }
             }
         }
         public bool ReverseHandedness
         {
-            get => reverseHandedness;
+            get => _reverseHandedness;
             set
             {
-                if (reverseHandedness != value)
+                if (_reverseHandedness != value)
                 {
-                    reverseHandedness = value;
+                    _reverseHandedness = value;
                     OnPropertyChanged(nameof(ReverseHandedness));
                 }
             }
         }
         public bool ImportEmbededTextures
         {
-            get => importEmbededTextures;
+            get => _importEmbededTextures;
             set
             {
-                if (importEmbededTextures != value)
+                if (_importEmbededTextures != value)
                 {
-                    importEmbededTextures = value;
+                    _importEmbededTextures = value;
                     OnPropertyChanged(nameof(ImportEmbededTextures));
                 }
             }
         }
         public bool ImportAnimations
         {
-            get => importAnimations;
+            get => _importAnimations;
             set
             {
-                if (importAnimations != value)
+                if (_importAnimations != value)
                 {
-                    importAnimations = value;
+                    _importAnimations = value;
                     OnPropertyChanged(nameof(ImportAnimations));
                 }
             }
@@ -249,7 +249,7 @@ namespace HavanaEditor.Content
     class Geometry : Asset
     {
         // STATE
-        private readonly List<LoDGroup> lodGroups = new List<LoDGroup>();
+        private readonly List<LoDGroup> _lodGroups = new List<LoDGroup>();
 
         // PROPERTIES
         public GeometryImportSettings ImportSettings { get; } = new GeometryImportSettings();
@@ -263,7 +263,7 @@ namespace HavanaEditor.Content
         {
             Debug.Assert(data?.Length > 0);
 
-            lodGroups.Clear();
+            _lodGroups.Clear();
 
             using BinaryReader reader = new BinaryReader(new MemoryStream(data));
             // Skip scene name string
@@ -296,31 +296,31 @@ namespace HavanaEditor.Content
 
                 LoDGroup lodGroup = new LoDGroup() { Name = lodGroupName };
                 lods.ForEach(l => lodGroup.LoDs.Add(l));
-                lodGroups.Add(lodGroup);
+                _lodGroups.Add(lodGroup);
             }
         }
 
         public LoDGroup GetLoDGroup(int lodGroup = 0)
         {
-            Debug.Assert(lodGroup >= 0 && lodGroup < lodGroups.Count);
+            Debug.Assert(lodGroup >= 0 && lodGroup < _lodGroups.Count);
 
-            return lodGroups.Any() ? lodGroups[lodGroup] : null;
+            return _lodGroups.Any() ? _lodGroups[lodGroup] : null;
         }
 
         public override IEnumerable<string> Save(string file)
         {
-            Debug.Assert(lodGroups.Any());
+            Debug.Assert(_lodGroups.Any());
             
             List<string> savedFiles = new List<string>();
             
-            if (!lodGroups.Any()) return savedFiles;
+            if (!_lodGroups.Any()) return savedFiles;
 
             string path = Path.GetDirectoryName(file) + Path.DirectorySeparatorChar;
             string fileName = Path.GetFileNameWithoutExtension(file);
             
             try
             {
-                foreach (var lodGroup in lodGroups)
+                foreach (var lodGroup in _lodGroups)
                 {
                     Debug.Assert(lodGroup.LoDs.Any());
                     

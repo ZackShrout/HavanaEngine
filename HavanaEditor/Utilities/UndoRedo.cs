@@ -33,8 +33,8 @@ namespace HavanaEditor.Utilities
         public string Name { get; }
 
         // ACTIONS
-        private Action undoAction;
-        private Action redoAction;
+        private Action _undoAction;
+        private Action _redoAction;
 
         // PUBLIC
         public UndoRedoAction(string name)
@@ -45,8 +45,8 @@ namespace HavanaEditor.Utilities
         public UndoRedoAction(Action undo, Action redo, string name) : this(name)
         {
             Debug.Assert(undo != null && redo != null);
-            undoAction = undo;
-            redoAction = redo;
+            _undoAction = undo;
+            _redoAction = redo;
         }
 
         public UndoRedoAction(string property, object instance, object undoValue, object redoValue, string name)
@@ -59,12 +59,12 @@ namespace HavanaEditor.Utilities
         /// <summary>
         /// Invokes redo action.
         /// </summary>
-        public void Redo() => redoAction();
+        public void Redo() => _redoAction();
 
         /// <summary>
         /// Invokes undo action.
         /// </summary>
-        public void Undo() => undoAction();
+        public void Undo() => _undoAction();
     }
 
 

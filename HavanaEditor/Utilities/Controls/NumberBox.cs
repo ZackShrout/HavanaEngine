@@ -13,11 +13,11 @@ namespace HavanaEditor.Utilities.Controls
     class NumberBox : Control
     {
         // STATE
-        private double originalValue = 0.0;
-        private double mouseXStart = 0.0;
-        private double multiplier = 0.01;
-        private bool captured = false;
-        private bool valueChanged = false;
+        private double _originalValue = 0.0;
+        private double _mouseXStart = 0.0;
+        private double _multiplier = 0.01;
+        private bool _captured = false;
+        private bool _valueChanged = false;
 
         // PROPERTIES
         public string Value 
@@ -71,30 +71,30 @@ namespace HavanaEditor.Utilities.Controls
         // PRIVATE
         private void OnTextBlock_Mouse_Move(object sender, MouseEventArgs e)
         {
-            if (captured)
+            if (_captured)
             {
                 double mouseX = e.GetPosition(this).X;
-                double difference = mouseX - mouseXStart;
+                double difference = mouseX - _mouseXStart;
                 if (Math.Abs(difference) > SystemParameters.MinimumHorizontalDragDistance)
                 {
-                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) multiplier = 0.001;
-                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) multiplier = 0.1;
-                    else multiplier = 0.01;
-                    double newValue = originalValue + (difference * multiplier * Multiplier);
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) _multiplier = 0.001;
+                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) _multiplier = 0.1;
+                    else _multiplier = 0.01;
+                    double newValue = _originalValue + (difference * _multiplier * Multiplier);
                     Value = newValue.ToString("G5");
-                    valueChanged = true;
+                    _valueChanged = true;
                 }
             }
         }
 
         private void OnTextBlock_Mouse_LBU(object sender, MouseButtonEventArgs e)
         {
-            if (captured)
+            if (_captured)
             {
                 Mouse.Capture(null);
-                captured = false;
+                _captured = false;
                 e.Handled = true;
-                if (!valueChanged && GetTemplateChild("PART_textBox") is TextBox textBox)
+                if (!_valueChanged && GetTemplateChild("PART_textBox") is TextBox textBox)
                 {
                     textBox.Visibility = Visibility.Visible;
                     textBox.Focus();
@@ -105,14 +105,14 @@ namespace HavanaEditor.Utilities.Controls
 
         private void OnTextBlock_Mouse_LBD(object sender, MouseButtonEventArgs e)
         {
-            double.TryParse(Value, out originalValue);
+            double.TryParse(Value, out _originalValue);
 
             Mouse.Capture(sender as UIElement);
-            captured = true;
-            valueChanged = false;
+            _captured = true;
+            _valueChanged = false;
             e.Handled = true;
-            multiplier = 0.01;
-            mouseXStart = e.GetPosition(this).X;
+            _multiplier = 0.01;
+            _mouseXStart = e.GetPosition(this).X;
             Focus();
         }
         

@@ -38,7 +38,7 @@ namespace HavanaEditor.DllWrapper
     static class EngineAPI
     {
         // CONST
-        private const string engineDll = "EngineDLL.dll";
+        private const string _engineDll = "EngineDLL.dll";
 
         /// <summary>
         /// Class to handle the coordination of game entity creation and destruction
@@ -96,10 +96,10 @@ namespace HavanaEditor.DllWrapper
             }
 
             // PRIVATE
-            [DllImport(engineDll)]
+            [DllImport(_engineDll)]
             private static extern int CreateGameEntity(GameEntityDescriptor descriptor);
 
-            [DllImport(engineDll)]
+            [DllImport(_engineDll)]
             private static extern void RemoveGameEntity(int id);
         }
 
@@ -109,21 +109,21 @@ namespace HavanaEditor.DllWrapper
         /// </summary>
         /// <param name="dllPath">Path to the DLL file.</param>
         /// <returns>1 if successful, 0 if unsuccessful</returns>
-        [DllImport(engineDll, CharSet = CharSet.Ansi)]
+        [DllImport(_engineDll, CharSet = CharSet.Ansi)]
         public static extern int LoadGameCodeDll(string dllPath);
 
         /// <summary>
         /// Unload the game code DLL from the Havana Editor.
         /// </summary>
         /// <returns>1 if successful, 0 if unsuccessful</returns>
-        [DllImport(engineDll)]
+        [DllImport(_engineDll)]
         public static extern int UnloadGameCodeDll();
 
         /// <summary>
         /// Gets an array of script names.
         /// </summary>
         /// <returns>Array of script names.</returns>
-        [DllImport(engineDll)]
+        [DllImport(_engineDll)]
         [return: MarshalAs(UnmanagedType.SafeArray)]
         public static extern string[] GetScriptNames();
 
@@ -132,19 +132,19 @@ namespace HavanaEditor.DllWrapper
         /// </summary>
         /// <param name="name">Name of script.</param>
         /// <returns>Pointer to script creator.</returns>
-        [DllImport(engineDll)]
+        [DllImport(_engineDll)]
         public static extern IntPtr GetScriptCreator(string name);
 
-        [DllImport(engineDll)]
+        [DllImport(_engineDll)]
         public static extern int CreateRenderSurface(IntPtr host, int width, int height);
 
-        [DllImport(engineDll)]
+        [DllImport(_engineDll)]
         public static extern void RemoveRenderSurface(int surfaceId);
 
-        [DllImport(engineDll)]
+        [DllImport(_engineDll)]
         public static extern IntPtr GetWindowHandle(int surfaceId);
 
-        [DllImport(engineDll)]
+        [DllImport(_engineDll)]
         public static extern void ResizeRenderSurface(int surfaceId);
     }
 }

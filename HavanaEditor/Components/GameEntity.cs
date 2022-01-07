@@ -18,23 +18,23 @@ namespace HavanaEditor.Components
     class GameEntity : ViewModelBase
     {
         // STATE
-        private bool isEnabled = true;
-        private string name;
+        private bool _isEnabled = true;
+        private string _name;
         [DataMember(Name = nameof(Components))]
-        private readonly ObservableCollection<Component> components = new ObservableCollection<Component>();
-        private int entityID = ID.INVALID_ID;
-        private bool isActive;
+        private readonly ObservableCollection<Component> _components = new ObservableCollection<Component>();
+        private int _entityID = ID.INVALID_ID;
+        private bool _isActive;
 
         // PROPERTIES
         [DataMember]
         public bool IsEnabled
         {
-            get => isEnabled;
+            get => _isEnabled;
             set
             {
-                if (isEnabled != value)
+                if (_isEnabled != value)
                 {
-                    isEnabled = value;
+                    _isEnabled = value;
                     OnPropertyChanged(nameof(IsEnabled));
                 }
             }
@@ -42,12 +42,12 @@ namespace HavanaEditor.Components
         [DataMember]
         public string Name
         {
-            get => name;
+            get => _name;
             set
             {
-                if (name != value)
+                if (_name != value)
                 {
-                    name = value;
+                    _name = value;
                     OnPropertyChanged(nameof(Name));
                 }
             }
@@ -57,28 +57,28 @@ namespace HavanaEditor.Components
         public ReadOnlyObservableCollection<Component> Components { get; private set; }
         public int EntityID
         {
-            get => entityID;
+            get => _entityID;
             set
             {
-                if (entityID != value)
+                if (_entityID != value)
                 {
-                    entityID = value;
+                    _entityID = value;
                     OnPropertyChanged(nameof(EntityID));
                 }
             }
         }
         public bool IsActive
         {
-            get => isActive;
+            get => _isActive;
             set
             {
-                if (isActive != value)
+                if (_isActive != value)
                 {
-                    isActive = value;
-                    if (isActive) // Add to engine if active
+                    _isActive = value;
+                    if (_isActive) // Add to engine if active
                     {
                         EntityID = EngineAPI.EntityAPI.CreateGameEntity(this);
-                        Debug.Assert(ID.IsValid(entityID));
+                        Debug.Assert(ID.IsValid(_entityID));
                     }
                     else if (ID.IsValid(EntityID)) // Remove from engine if not
                     {
@@ -96,7 +96,7 @@ namespace HavanaEditor.Components
         {
             Debug.Assert(scene != null);
             ParentScene = scene;
-            components.Add(new Transform(this));
+            _components.Add(new Transform(this));
             OnDeserialized(new StreamingContext());
         }
 
@@ -125,7 +125,7 @@ namespace HavanaEditor.Components
             if (!Components.Any(x => x.GetType() == component.GetType()))
             {
                 IsActive = false;
-                components.Add(component);
+                _components.Add(component);
                 IsActive = true;
                 return true;
             }
@@ -142,10 +142,10 @@ namespace HavanaEditor.Components
             Debug.Assert(component != null);
             if (component is Transform) return; // Transform components cannot be removed
 
-            if (components.Contains(component))
+            if (_components.Contains(component))
             {
                 IsActive = false;
-                components.Remove(component);
+                _components.Remove(component);
                 IsActive = true;
             }
         }
@@ -154,9 +154,9 @@ namespace HavanaEditor.Components
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            if (components != null)
+            if (_components != null)
             {
-                Components = new ReadOnlyObservableCollection<Component>(components);
+                Components = new ReadOnlyObservableCollection<Component>(_components);
                 OnPropertyChanged(nameof(Components));
             }
         }
@@ -165,32 +165,32 @@ namespace HavanaEditor.Components
     abstract class MSEntity : ViewModelBase
     {
         // STATE
-        private bool enableUpdates = true;
-        private bool? isEnabled = true;
-        private string name;
-        private readonly ObservableCollection<IMSComponent> components = new ObservableCollection<IMSComponent>();
+        private bool _enableUpdates = true;
+        private bool? _isEnabled = true;
+        private string _name;
+        private readonly ObservableCollection<IMSComponent> _components = new ObservableCollection<IMSComponent>();
 
         // PROPERTIES
         public bool? IsEnabled
         {
-            get => isEnabled;
+            get => _isEnabled;
             set
             {
-                if (isEnabled != value)
+                if (_isEnabled != value)
                 {
-                    isEnabled = value;
+                    _isEnabled = value;
                     OnPropertyChanged(nameof(IsEnabled));
                 }
             }
         }
         public string Name
         {
-            get => name;
+            get => _name;
             set
             {
-                if (name != value)
+                if (_name != value)
                 {
-                    name = value;
+                    _name = value;
                     OnPropertyChanged(nameof(Name));
                 }
             }
@@ -202,9 +202,9 @@ namespace HavanaEditor.Components
         public MSEntity(List<GameEntity> entities)
         {
             Debug.Assert(entities?.Any() == true);
-            Components = new ReadOnlyObservableCollection<IMSComponent>(components);
+            Components = new ReadOnlyObservableCollection<IMSComponent>(_components);
             SelectedEntities = entities;
-            PropertyChanged += (s, e) => { if (enableUpdates) UpdateGameEntities(e.PropertyName); };
+            PropertyChanged += (s, e) => { if (_enableUpdates) UpdateGameEntities(e.PropertyName); };
         }
 
         /// <summary>
@@ -212,10 +212,10 @@ namespace HavanaEditor.Components
         /// </summary>
         public void Refresh()
         {
-            enableUpdates = false;
+            _enableUpdates = false;
             UpdateMSGameEntities();
             MakeComponentList();
-            enableUpdates = true;
+            _enableUpdates = true;
         }
 
         /// <summary>
@@ -296,7 +296,7 @@ namespace HavanaEditor.Components
         // PRIVATE
         private void MakeComponentList()
         {
-            components.Clear();
+            _components.Clear();
             GameEntity firstEntity = SelectedEntities.FirstOrDefault();
             if (firstEntity == null) return;
 
@@ -306,7 +306,7 @@ namespace HavanaEditor.Components
                 if (!SelectedEntities.Skip(1).Any(entity => entity.GetComponent(type) == null))
                 {
                     Debug.Assert(Components.FirstOrDefault(x => x.GetType() == type) == null);
-                    components.Add(component.GetMSComponent(this));
+                    _components.Add(component.GetMSComponent(this));
                 }
             }
         }
