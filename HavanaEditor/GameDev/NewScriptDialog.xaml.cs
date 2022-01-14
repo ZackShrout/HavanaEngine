@@ -188,20 +188,13 @@ namespace {1}
 
             string[] files = new string[] { cpp, h };
             
-            for (int i = 0; i < 3; i++)
-            {
-                // try to add files to Visual Studio solution up to three times every second, in case VS is still opening,
-                // or there is some other issue.
-                if (!VisualStudio.AddFilesToSolution(solution, projectName, files)) System.Threading.Thread.Sleep(1000);
-                else break;
-            }
+            VisualStudio.AddFilesToSolution(solution, projectName, files);
         }
 
         private static string GetNamespaceFromProjectName()
         {
             string projectName = Project.Current.Name.Trim();
             if (string.IsNullOrEmpty(projectName)) return string.Empty;
-            projectName = Regex.Replace(projectName, @"[^A-Za-z0-9_]", "");
 
             return projectName;
         }

@@ -47,10 +47,10 @@ namespace HavanaEditor.Utilities
     {
         // PROPERTIES
         public bool RepeatEvent { get; set; }
-        public object Data { get; set; }
+        public IEnumerable<object> Data { get; set; }
 
         // PUBLIC
-        public DelayEventTimerArgs(object data)
+        public DelayEventTimerArgs(IEnumerable<object> data)
         {
             Data = data;
         }
@@ -61,8 +61,8 @@ namespace HavanaEditor.Utilities
         // STATE
         private readonly DispatcherTimer _timer;
         private readonly TimeSpan _delay;
+        private readonly List<object> _data = new List<object>();
         private DateTime _lastEventTime = DateTime.Now;
-        private object _data;
 
         // EVENT HANDLERS
         public event EventHandler<DelayEventTimerArgs> Triggered;
@@ -80,7 +80,11 @@ namespace HavanaEditor.Utilities
 
         public void Trigger (object data = null)
         {
-            _data = data;
+            if (data != null)
+            {
+                _data.Add(data);
+            }
+
             _lastEventTime = DateTime.Now;
             _timer.IsEnabled = true;
         }
@@ -97,6 +101,10 @@ namespace HavanaEditor.Utilities
 
             var eventArgs = new DelayEventTimerArgs(_data);
             Triggered?.Invoke(this, eventArgs);
+            if (!eventArgs.RepeatEvent)
+            {
+                _data.Clear();
+            }
             _timer.IsEnabled = eventArgs.RepeatEvent;
         }
     }
