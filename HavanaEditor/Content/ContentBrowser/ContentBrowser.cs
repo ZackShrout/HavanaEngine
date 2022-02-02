@@ -58,7 +58,7 @@ namespace HavanaEditor.Content
 
         // PROPERTIES
         public string ContentFolder { get; }
-        public ReadOnlyCollection<ContentInfo> FolderContent { get; }
+        public ReadOnlyObservableCollection<ContentInfo> FolderContent { get; }
         public string SelectedFolder
         {
             get => _selectedFolder;
@@ -85,7 +85,7 @@ namespace HavanaEditor.Content
             contentFolder = Path.TrimEndingDirectorySeparator(contentFolder);
             ContentFolder = contentFolder;
             SelectedFolder = contentFolder;
-            FolderContent = new ReadOnlyCollection<ContentInfo>(_folderContent);
+            FolderContent = new ReadOnlyObservableCollection<ContentInfo>(_folderContent);
 
             if (string.IsNullOrEmpty(_cacheFilePath))
             {
