@@ -15,6 +15,7 @@
     <Color x:Key="Editor.BlueColor">#ff80deff</Color>
     <Color x:Key="Editor.OrangeColor">#ffffd067</Color>
     <Color x:Key="Editor.Selected.BackgroundColor">#ff68217a</Color>
+    <Color x:Key="Editor.MouseOver.BorderColor">#ff9370db</Color>
     <!-- <Color x:Key="Editor.Selected.BackgroundColor">#ff3c67b6</Color> /-->
     
 
@@ -31,4 +32,5 @@
     <SolidColorBrush Color="{StaticResource Editor.BlueColor}" x:Key="Editor.BlueBrush"/>
     <SolidColorBrush Color="{StaticResource Editor.OrangeColor}" x:Key="Editor.OrangeBrush"/>
     <SolidColorBrush Color="{StaticResource Editor.Selected.BackgroundColor}" x:Key="Editor.Selected.BackgroundBrush"/>
+    <SolidColorBrush Color="{StaticResource Editor.MouseOver.BorderColor}" x:Key="Editor.MouseOver.BorderColorBrush"/>
 </ResourceDictionary>
