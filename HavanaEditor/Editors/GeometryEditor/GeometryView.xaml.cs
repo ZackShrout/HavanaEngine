@@ -21,11 +21,11 @@ namespace HavanaEditor.Editors
     public partial class GeometryView : UserControl
     {
         // STATE
-        private Point clickedPosition;
-        private bool capturedLeft;
-        private bool capturedRight;
+        private Point _clickedPosition;
+        private bool _capturedLeft;
+        private bool _capturedRight;
         // NOTE: used for capturing the mesh as an icon for it's asset file
-        private static readonly GeometryView geometryView = new GeometryView() { Background = (Brush)Application.Current.FindResource("Editor.Window.GreyBrush4") };
+        private static readonly GeometryView _geometryView = new GeometryView() { Background = (Brush)Application.Current.FindResource("Editor.Window.GreyBrush4") };
 
         // PUBLIC
         public GeometryView()
@@ -88,37 +88,38 @@ namespace HavanaEditor.Editors
         internal static BitmapSource RenderToBitmap(MeshRenderer mesh, int width, int height)
         {
             RenderTargetBitmap bmp = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Default);
-            geometryView.DataContext = mesh;
-            geometryView.Width = width;
-            geometryView.Height = height;
-            geometryView.Measure(new Size(width, height));
-            geometryView.Arrange(new Rect(0, 0, width, height));
-            geometryView.UpdateLayout();
-            bmp.Render(geometryView);
 
+            _geometryView.DataContext = mesh;
+            _geometryView.Width = width;
+            _geometryView.Height = height;
+            _geometryView.Measure(new Size(width, height));
+            _geometryView.Arrange(new Rect(0, 0, width, height));
+            _geometryView.UpdateLayout();
+
+            bmp.Render(_geometryView);
             return bmp;
         }
 
         // PRIVATE
         private void OnGrid_Mouse_LBD(object sender, MouseButtonEventArgs e)
         {
-            clickedPosition = e.GetPosition(this);
-            capturedLeft = true;
+            _clickedPosition = e.GetPosition(this);
+            _capturedLeft = true;
             Mouse.Capture(sender as UIElement);
         }
 
         private void OnGrid_Mouse_Move(object sender, MouseEventArgs e)
         {
-            if (!capturedLeft && !capturedRight) return;
+            if (!_capturedLeft && !_capturedRight) return;
 
             Point position = e.GetPosition(this);
-            Vector difference = position - clickedPosition;
+            Vector difference = position - _clickedPosition;
 
-            if (capturedLeft && !capturedRight)
+            if (_capturedLeft && !_capturedRight)
             {
                 MoveCamera(difference.X, difference.Y, 0);
             }
-            else if (!capturedLeft && capturedRight)
+            else if (!_capturedLeft && _capturedRight)
             {
                 MeshRenderer viewModel = DataContext as MeshRenderer;
                 Point3D cameraPosition = viewModel.CameraPosition;
@@ -126,14 +127,14 @@ namespace HavanaEditor.Editors
                 viewModel.CameraTarget = new Point3D(viewModel.CameraTarget.X, viewModel.CameraTarget.Y + yOffset, viewModel.CameraTarget.Z);
             }
 
-            clickedPosition = position;
+            _clickedPosition = position;
         }
 
         private void OnGrid_Mouse_LBU(object sender, MouseButtonEventArgs e)
         {
-            capturedLeft = false;
+            _capturedLeft = false;
 
-            if (!capturedRight) Mouse.Capture(null);
+            if (!_capturedRight) Mouse.Capture(null);
         }
 
         private void OnGrid_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -143,16 +144,16 @@ namespace HavanaEditor.Editors
 
         private void OnGrid_Mouse_RBD(object sender, MouseButtonEventArgs e)
         {
-            clickedPosition = e.GetPosition(this);
-            capturedRight = true;
+            _clickedPosition = e.GetPosition(this);
+            _capturedRight = true;
             Mouse.Capture(sender as UIElement);
         }
 
         private void OnGrid_Mouse_RBU(object sender, MouseButtonEventArgs e)
         {
-            capturedRight = false;
+            _capturedRight = false;
 
-            if (!capturedLeft) Mouse.Capture(null);
+            if (!_capturedLeft) Mouse.Capture(null);
         }
         
         private void MoveCamera(double dx, double dy, int dz)

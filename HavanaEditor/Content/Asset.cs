@@ -109,6 +109,7 @@ namespace HavanaEditor.Content
             }
 
             writer.Write(SourcePath ?? "");
+            writer.Write(Icon.Length);
             writer.Write(Icon);
         }
 

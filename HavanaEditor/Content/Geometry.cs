@@ -385,6 +385,7 @@ namespace HavanaEditor.Content
 
             using MemoryStream memStream = new MemoryStream();
             memStream.SetLength(0);
+
             PngBitmapEncoder encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(bmp));
             encoder.Save(memStream);
