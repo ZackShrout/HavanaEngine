@@ -145,18 +145,15 @@ namespace HavanaEditor.Content
             if (!Directory.Exists(Project.Current.ContentPath))
                 Directory.CreateDirectory(Project.Current.ContentPath);
 
-            SaveFileDialog dlg = new SaveFileDialog()
-            {
-                InitialDirectory = Project.Current.ContentPath,
-                Filter = "Asset Files (*.asset)|*.asset"
-            };
-
+            SaveDialog dlg = new SaveDialog();
             if (dlg.ShowDialog() == true)
             {
-                Debug.Assert(!string.IsNullOrEmpty(dlg.FileName));
+                Debug.Assert(!string.IsNullOrEmpty(dlg.SaveFilePath));
                 Asset asset = (DataContext as IAssetEditor).Asset;
                 Debug.Assert(asset != null);
-                asset.Save(dlg.FileName);
+                asset.Save(dlg.SaveFilePath);
+
+                // NOTE: you can chose to close this window after saving
             }
         }
     }

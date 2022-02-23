@@ -325,7 +325,9 @@ namespace HavanaEditor.Content
                     Debug.Assert(lodGroup.LoDs.Any());
                     
                     // Use name of most detailed LoD for file name
-                    string meshFileName = ContentHelper.SanitizeFileName(path + fileName + "_" + lodGroup.LoDs[0].Name + AssetFileExtension);
+                    string meshFileName = ContentHelper.SanitizeFileName(_lodGroups.Count > 1 ?
+                        path + fileName + "_" + lodGroup.LoDs[0].Name + AssetFileExtension :
+                        path + fileName + AssetFileExtension);
                     // Different id for each asset file
                     Guid = Guid.NewGuid();
                     byte[] data = null;

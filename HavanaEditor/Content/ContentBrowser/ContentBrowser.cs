@@ -40,7 +40,7 @@ namespace HavanaEditor.Content
     class ContentBrowser : ViewModelBase, IDisposable
     {
         // STATE
-        private static readonly DelayEventTimer _refreshTimer = new DelayEventTimer(TimeSpan.FromMilliseconds(250));
+        private readonly DelayEventTimer _refreshTimer = new DelayEventTimer(TimeSpan.FromMilliseconds(250));
         private readonly ObservableCollection<ContentInfo> _folderContent = new ObservableCollection<ContentInfo>();
         private string _selectedFolder;
 
