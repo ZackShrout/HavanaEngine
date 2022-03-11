@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HavanaEditor.Content"
-        mc:Ignorable="d" Foreground="{StaticResource Editor.Disabled.FontBrush}"
+        mc:Ignorable="d" Foreground="{StaticResource Editor.FontBrush}"
         WindowStartupLocation="CenterScreen" UseLayoutRounding="True"
         Title="Save" Height="600" Width="800" MinHeight="400" MinWidth="600"
         Style="{StaticResource HavanaDialogStyle}">
