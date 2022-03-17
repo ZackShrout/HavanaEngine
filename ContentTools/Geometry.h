@@ -32,6 +32,8 @@ namespace Havana::Tools
 		Utils::vector<Math::Vec4>					tangents;
 		Utils::vector<Utils::vector<Math::Vec2>>	uvSets;
 		Utils::vector<u32>							rawIndices;
+		Utils::vector<u32>							materialIndices;
+		Utils::vector<u32>							materialUsed;
 
 		// Intermediate data
 		Utils::vector<Vertex>						vertices;

@@ -285,10 +285,98 @@ namespace Havana::Tools
 
 			return size;
 		}
+
+		bool SplitMeshesByMaterial(u32 materialIdx, const Mesh& m, Mesh& submesh)
+		{
+			submesh.name = m.name;
+			submesh.lodThreshold = m.lodThreshold;
+			submesh.lodID = m.lodID;
+			submesh.materialUsed.emplace_back(materialIdx);
+			submesh.uvSets.resize(m.uvSets.size());
+
+			const u32 numPolys{ (u32)m.rawIndices.size() / 3 };
+			Utils::vector<u32> vertexRef(m.positions.size(), U32_INVALID_ID);
+
+			for (u32 i{ 0 }; i < numPolys; i++)
+			{
+				const u32 mtlIdx{ m.materialIndices[i] };
+				if (mtlIdx != materialIdx) continue;
+
+				const u32 index{ i * 3 };
+				for (u32 j = index; j < index + 3; j++)
+				{
+					const u32 vIdx{ m.rawIndices[j] };
+					if (vertexRef[vIdx] != U32_INVALID_ID)
+					{
+						submesh.rawIndices.emplace_back(vertexRef[vIdx]);
+					}
+					else
+					{
+						submesh.rawIndices.emplace_back((u32)submesh.positions.size());
+						vertexRef[vIdx] = submesh.rawIndices.back();
+						submesh.positions.emplace_back(m.positions[vIdx]);
+					}
+
+					if (m.normals.size())
+					{
+						submesh.normals.emplace_back(m.normals[j]);
+					}
+
+					if (m.tangents.size())
+					{
+						submesh.tangents.emplace_back(m.tangents[j]);
+					}
+
+					for (u32 k{ 0 }; k < m.uvSets.size(); k++)
+					{
+						if (m.uvSets[k].size())
+						{
+							submesh.uvSets[k].emplace_back(m.uvSets[k][j]);
+						}
+					}
+				}
+			}
+
+			assert((submesh.rawIndices.size() % 3) == 0);
+			return !submesh.rawIndices.empty();
+		}
+
+		void SplitMeshesByMaterial(Scene& scene)
+		{
+			for (auto& lod : scene.lodGroups)
+			{
+				Utils::vector<Mesh> newMeshes;
+				for (auto& m : lod.meshes)
+				{
+					// If moew than one material is used in this mesh
+					// then split it into submeshes
+					const u32 numMaterials{ (u32)m.materialUsed.size() };
+					if (numMaterials > 1)
+					{
+						for (u32 i{ 0 }; i < numMaterials; i++)
+						{
+							Mesh submesh{};
+							if (SplitMeshesByMaterial(m.materialUsed[i], m, submesh))
+							{
+								newMeshes.emplace_back(submesh);
+							}
+						}
+					}
+					else
+					{
+						newMeshes.emplace_back(m);
+					}
+				}
+
+				newMeshes.swap(lod.meshes);
+			}
+		}
 	} // anonymous namespace
 
 	void ProcessScene(Scene& scene, const GeometryImportSettings& settings)
 	{
+		SplitMeshesByMaterial(scene);
+		
 		for (auto& lod : scene.lodGroups)
 		{
 			for (auto& m : lod.meshes)

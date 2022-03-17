@@ -35,6 +35,7 @@ namespace Havana::Tools
 		void LoadFbxFile(const char* file);
 		void GetMesh(FbxNode* node, Utils::vector<Mesh>& meshes);
 		void GetLoDGroup(FbxNode* node);
+		bool GetMeshData(FbxMesh* fbxMesh, Mesh& m);
 
 		Scene*			m_scene{ nullptr };
 		SceneData*		m_sceneData{ nullptr };
