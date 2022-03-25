@@ -33,11 +33,19 @@ namespace HavanaEditor.GameProject
         public static string Extention => ".hvproj";
         [DataMember]
         public string Name { get; private set; } = "New Project";
+        /// <summary>
+        /// Gets the root folder that contains the current project.
+        /// </summary>
         [DataMember]
         public string Path { get; private set; }
+        /// <summary>
+        /// Gets the full path of the current Havana project file, including it's file name and extension.
+        /// </summary>
         public string FullPath => $@"{Path}{Name}{Extention}";
         public string Solution => $@"{Path}{Name}.sln";
         public string ContentPath => $@"{Path}Assets\";
+        public string TempFolder => $@"{Path}.Primal\Temp\";
+
         public static Project Current => Application.Current.MainWindow?.DataContext as Project;
         public ReadOnlyObservableCollection<Scene> Scenes { get; private set;  }
         public Scene ActiveScene
@@ -120,9 +128,18 @@ namespace HavanaEditor.GameProject
             VisualStudio.CloseVisualStudio();
             UndoRedo.Reset();
             Logger.Clear();
+            DeleteTempFolder();
         }
 
         // PRIVATE
+        private void DeleteTempFolder()
+        {
+            if (Directory.Exists(TempFolder))
+            {
+                Directory.Delete(TempFolder, true);
+            }
+        }
+
         [OnDeserialized]
         private async void OnDeserialized(StreamingContext context)
         {

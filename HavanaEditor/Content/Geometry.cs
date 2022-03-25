@@ -1,4 +1,6 @@
 ﻿using HavanaEditor.Common;
+using HavanaEditor.DllWrapper;
+using HavanaEditor.GameProject;
 using HavanaEditor.Utilities;
 using System;
 using System.Collections.Generic;
@@ -250,6 +252,7 @@ namespace HavanaEditor.Content
     {
         // STATE
         private readonly List<LoDGroup> _lodGroups = new List<LoDGroup>();
+        private readonly object _lock = new object();
 
         // PROPERTIES
         public GeometryImportSettings ImportSettings { get; } = new GeometryImportSettings();
@@ -305,6 +308,44 @@ namespace HavanaEditor.Content
             Debug.Assert(lodGroup >= 0 && lodGroup < _lodGroups.Count);
 
             return _lodGroups.Any() ? _lodGroups[lodGroup] : null;
+        }
+
+        public override void Import(string file)
+        {
+            Debug.Assert(File.Exists(file));
+            Debug.Assert(!string.IsNullOrEmpty(FullPath));
+            var ext = Path.GetExtension(file).ToLower();
+
+            SourcePath = file;
+
+            try
+            {
+                if (ext == ".fbx")
+                {
+                    ImportFbx(file);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                var msg = $"Failed to read {file} for import.";
+                Debug.WriteLine(msg);
+                Logger.Log(MessageType.Error, msg);
+            }
+        }
+
+        private void ImportFbx(string file)
+        {
+            Logger.Log(MessageType.Info, $"Importing FBX file {file}");
+            var tempPath = Application.Current.Dispatcher.Invoke(() => Project.Current.TempFolder);
+            if (string.IsNullOrEmpty(tempPath)) return;
+
+            lock(_lock)
+                if (!Directory.Exists(tempPath)) Directory.CreateDirectory(tempPath);
+
+            var tempFile = $"{tempPath}{ContentHelper.GetRandomString()}.fbx";
+            File.Copy(file, tempFile, true);
+            ContentToolsAPI.ImportFbx(tempFile, this);
         }
 
         public override IEnumerable<string> Save(string file)
@@ -373,9 +414,10 @@ namespace HavanaEditor.Content
         // PRIVATE
         private byte[] GenerateIcon(MeshLoD lod)
         {
-            int width = 90 * 4;
-            BitmapSource bmp = null;
+            int width = ContentInfo.IconWidth * 4;
 
+            using var memStream = new MemoryStream();
+            BitmapSource bmp = null;
             // NOTE: it's not good practice to use a WPF control (view) in the ViewModel.
             //       But an exception must be made in this case until we have a graphics
             //       renderer to handle screenshots
@@ -383,14 +425,13 @@ namespace HavanaEditor.Content
             {
                 bmp = Editors.GeometryView.RenderToBitmap(new Editors.MeshRenderer(lod, null), width, width);
                 bmp = new TransformedBitmap(bmp, new ScaleTransform(0.25, 0.25, 0.5, 0.5));
+
+                memStream.SetLength(0);
+
+                PngBitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(bmp));
+                encoder.Save(memStream);
             });
-
-            using MemoryStream memStream = new MemoryStream();
-            memStream.SetLength(0);
-
-            PngBitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(bmp));
-            encoder.Save(memStream);
 
             return memStream.ToArray();
         }

@@ -1,4 +1,5 @@
-﻿using HavanaEditor.GameProject;
+﻿using HavanaEditor.Common;
+using HavanaEditor.GameProject;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -134,6 +135,18 @@ namespace HavanaEditor.Content
             DataContext = null;
             InitializeComponent();
             Loaded += OnContentBrowserLoaded;
+            AllowDrop = true;
+        }
+
+        public void Dispose()
+        {
+            if (Application.Current?.MainWindow != null)
+            {
+                Application.Current.MainWindow.DataContextChanged -= OnProjectChanged;
+            }
+
+            (DataContext as ContentBrowser)?.Dispose();
+            DataContext = null;
         }
 
         // PRIVATE
@@ -278,15 +291,20 @@ namespace HavanaEditor.Content
             SelectedItem = item?.IsDirectory == true ? null : item;
         }
 
-        public void Dispose()
-        {
-            if (Application.Current?.MainWindow != null)
-            {
-                Application.Current.MainWindow.DataContextChanged -= OnProjectChanged;
-            }
+        
 
-            (DataContext as ContentBrowser)?.Dispose();
-            DataContext = null;
+        private void OnFolderContent_ListView_Drop(object sender, DragEventArgs e)
+        {
+            var vm = DataContext as ContentBrowser;
+            if (vm.SelectedFolder != null && e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files?.Length > 0 && Directory.Exists(vm.SelectedFolder))
+                {
+                    _ = ContentHelper.ImportFilesAsync(files, vm.SelectedFolder);
+                    e.Handled = true;
+                }
+            }
         }
     }
 }

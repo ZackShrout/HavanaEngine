@@ -269,7 +269,7 @@ namespace Havana::Tools
 			scene.lodGroups.emplace_back(lod);
 		}
 
-		void CreateCube(Scene& scene, const PrimitiveInitInfo& info)
+		void CreateCube(Scene&, const PrimitiveInitInfo&)
 		{}
 
 		void CreateUVSphere(Scene& scene, const PrimitiveInitInfo& info)
@@ -280,13 +280,13 @@ namespace Havana::Tools
 			scene.lodGroups.emplace_back(lod);
 		}
 
-		void CreateICOSphere(Scene& scene, const PrimitiveInitInfo& info)
+		void CreateICOSphere(Scene&, const PrimitiveInitInfo&)
 		{}
 
-		void CreateCylinder(Scene& scene, const PrimitiveInitInfo& info)
+		void CreateCylinder(Scene&, const PrimitiveInitInfo&)
 		{}
 
-		void CreateCapsule(Scene& scene, const PrimitiveInitInfo& info)
+		void CreateCapsule(Scene&, const PrimitiveInitInfo&)
 		{}
 
 	} // anonymous namespace

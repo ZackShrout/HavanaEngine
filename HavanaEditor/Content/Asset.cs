@@ -66,6 +66,8 @@ namespace HavanaEditor.Content
             Type = type;
         }
 
+        public abstract void Import(string file);
+
         public abstract IEnumerable<string> Save(string file);
 
         public static AssetInfo GetAssetInfo(string file)

@@ -125,6 +125,9 @@ namespace Havana::Tools
 				meshes.emplace_back(m);
 			}
 		}
+
+		// See if there is a mesh somewhere further down the hierarchy
+		GetScene(node);
 	}
 
 	void FbxContext::GetLoDGroup(FbxNode* node)
