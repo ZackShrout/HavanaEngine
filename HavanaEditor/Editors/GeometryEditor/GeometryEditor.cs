@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
@@ -259,9 +260,11 @@ namespace HavanaEditor.Editors
         // STATE
         private Content.Geometry _geometry;
         private MeshRenderer _meshRenderer;
+        private bool _autoLOD = true;
+        private int _lodIndex;
 
         // PROPERTIES
-        public Content.Asset Asset => Geometry;
+        Asset IAssetEditor.Asset => Geometry;
         public Content.Geometry Geometry
         {
             get => _geometry;
@@ -283,11 +286,67 @@ namespace HavanaEditor.Editors
                 {
                     _meshRenderer = value;
                     OnPropertyChanged(nameof(MeshRenderer));
+                    var lods = Geometry.GetLoDGroup().LoDs;
+                    MaxLODIndex = (lods.Count > 0) ? lods.Count - 1 : 0;
+                    OnPropertyChanged(nameof(MaxLODIndex));
+                    if (lods.Count > 1)
+                    {
+                        MeshRenderer.PropertyChanged += (s, e) =>
+                        {
+                            if (e.PropertyName == nameof(MeshRenderer.OffsetCameraPosition) && AutoLOD) ComputeLOD(lods);
+                        };
+
+                        ComputeLOD(lods);
+                    }
+                }
+            }
+        }
+        public bool AutoLOD
+        {
+            get => _autoLOD;
+            set
+            {
+                if (_autoLOD != value)
+                {
+                    _autoLOD = value;
+                    OnPropertyChanged(nameof(AutoLOD));
+                }
+            }
+        }
+        public int MaxLODIndex { get; private set; }
+        public int LODIndex
+        {
+            get => _lodIndex;
+            set
+            {
+                var lods = Geometry.GetLoDGroup().LoDs;
+                value = Math.Clamp(value, 0, lods.Count - 1);
+                if (_lodIndex != value)
+                {
+                    _lodIndex = value;
+                    OnPropertyChanged(nameof(LODIndex));
+                    MeshRenderer = new MeshRenderer(lods[value], MeshRenderer);
                 }
             }
         }
 
         // PUBLIC
+        private void ComputeLOD(IList<MeshLoD> lods)
+        {
+            if (!AutoLOD) return;
+
+            var p = MeshRenderer.OffsetCameraPosition;
+            var distance = new Vector3D(p.X, p.Y, p.Z).Length;
+            for (int i = MaxLODIndex; i >= 0; i--)
+            {
+                if (lods[i].LoDThreshold < distance)
+                {
+                    LODIndex = i;
+                    break;
+                }
+            }
+        }
+
         public void SetAsset(Content.Asset asset)
         {
             Debug.Assert(asset is Content.Geometry);
@@ -295,7 +354,34 @@ namespace HavanaEditor.Editors
             if (asset is Content.Geometry geometry)
             {
                 Geometry = geometry;
-                MeshRenderer = new MeshRenderer(Geometry.GetLoDGroup().LoDs[0], MeshRenderer);
+                var numLods = geometry.GetLoDGroup().LoDs.Count;
+                if (LODIndex >= numLods)
+                {
+                    LODIndex = numLods - 1;
+                }
+                else
+                {
+                    MeshRenderer = new MeshRenderer(Geometry.GetLoDGroup().LoDs[0], MeshRenderer);
+                }
+            }
+        }
+
+        public async void SetAsset(AssetInfo info)
+        {
+            try
+            {
+                Debug.Assert(info != null && File.Exists(info.FullPath));
+                var geometry = new Content.Geometry();
+                await Task.Run(() =>
+                {
+                    geometry.Load(info.FullPath);
+                });
+
+                SetAsset(geometry);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
             }
         }
     }

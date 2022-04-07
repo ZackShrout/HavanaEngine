@@ -67,7 +67,7 @@ namespace HavanaEditor.Content
         }
 
         public abstract void Import(string file);
-
+        public abstract void Load(string file);
         public abstract IEnumerable<string> Save(string file);
 
         public static AssetInfo GetAssetInfo(string file)
@@ -84,6 +84,9 @@ namespace HavanaEditor.Content
 
             return null;
         }
+
+        public static AssetInfo TryGetAssetInfo(string file) =>
+            File.Exists(file) && Path.GetExtension(file) == AssetFileExtension ? AssetRegistry.GetAssetInfo(file) ?? GetAssetInfo(file) : null;
 
         // PROTECTED
         protected void WriteAssetFileHeader(BinaryWriter writer)
