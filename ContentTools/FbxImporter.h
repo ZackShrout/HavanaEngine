@@ -33,8 +33,9 @@ namespace Havana::Tools
 	private:
 		bool InitializeFbx();
 		void LoadFbxFile(const char* file);
-		void GetMesh(FbxNode* node, Utils::vector<Mesh>& meshes);
-		void GetLoDGroup(FbxNode* node);
+		void GetMeshes(FbxNode* node, Utils::vector<Mesh>& meshes, u32 lodID, f32 lodThreshold);
+		void GetMesh(FbxNodeAttribute* attribute, Utils::vector<Mesh>& meshes, u32 lodID, f32 lodThreshold);
+		void GetLoDGroup(FbxNodeAttribute* attribute);
 		bool GetMeshData(FbxMesh* fbxMesh, Mesh& m);
 
 		Scene*			m_scene{ nullptr };

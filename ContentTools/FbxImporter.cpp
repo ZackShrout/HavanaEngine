@@ -80,88 +80,120 @@ namespace Havana::Tools
 			FbxNode* node{ root->GetChild(i) };
 			if (!node) continue;
 
-			if (node->GetMesh())
+			LoDGroup lod{};
+			GetMeshes(node, lod.meshes, 0, -1.0f);
+			if (lod.meshes.size())
 			{
-				LoDGroup lod{};
-				GetMesh(node, lod.meshes);
-				if (lod.meshes.size())
-				{
-					lod.name = lod.meshes[0].name;
-					m_scene->lodGroups.emplace_back(lod);
-				}
-			}
-			else if (node->GetLodGroup())
-			{
-				GetLoDGroup(node);
-			}
-			else
-			{
-				// See if there is a mesh somewhere further down the hierarchy
-				GetScene(node);
+				lod.name = lod.meshes[0].name;
+				m_scene->lodGroups.emplace_back(lod);
 			}
 		}
 	}
 
-	void FbxContext::GetMesh(FbxNode* node, Utils::vector<Mesh>& meshes)
+	void FbxContext::GetMeshes(FbxNode* node, Utils::vector<Mesh>& meshes, u32 lodID, f32 lodThreshold)
 	{
-		assert(node);
+		assert(node && lodID != U32_INVALID_ID);
+		bool isLODGroup{ false };
 
-		if (FbxMesh* fbxMesh{ node->GetMesh() })
+		if (const s32 numAttributes{ node->GetNodeAttributeCount() })
 		{
-			if (fbxMesh->RemoveBadPolygons() < 0) return;
-
-			// Triangulate the mesh if needed
-			FbxGeometryConverter gc{ m_fbxManager };
-			fbxMesh = static_cast<FbxMesh*>(gc.Triangulate(fbxMesh, true));
-			if (!fbxMesh || fbxMesh->RemoveBadPolygons() < 0) return;
-
-			Mesh m;
-			m.lodID = (u32)meshes.size();
-			m.lodThreshold = -1.0f;
-			m.name = (node->GetName()[0] != '\0') ? node->GetName() : fbxMesh->GetName();
-
-			if (GetMeshData(fbxMesh, m))
+			for (s32 i{ 0 }; i < numAttributes; i++)
 			{
-				meshes.emplace_back(m);
+				FbxNodeAttribute* attribute{ node->GetNodeAttributeByIndex(i) };
+				const FbxNodeAttribute::EType attributeType{ attribute->GetAttributeType() };
+				if (attributeType == FbxNodeAttribute::eMesh)
+				{
+					GetMesh(attribute, meshes, lodID, lodThreshold);
+				}
+				else if (attributeType == FbxNodeAttribute::eLODGroup)
+				{
+					GetLoDGroup(attribute);
+					isLODGroup = true;
+				}
 			}
+		}
+
+		if (!isLODGroup)
+		{
+			if (const s32 numChildren{ node->GetChildCount() })
+			{
+				for (s32 i{ 0 }; i < numChildren; i++)
+				{
+					GetMeshes(node->GetChild(i), meshes, lodID, lodThreshold);
+				}
+			}
+		}
+	}
+
+	void FbxContext::GetMesh(FbxNodeAttribute* attribute, Utils::vector<Mesh>& meshes, u32 lodID, f32 lodThreshold)
+	{
+		assert(attribute);
+
+		FbxMesh* fbxMesh{ (FbxMesh*)attribute };
+		if (fbxMesh->RemoveBadPolygons() < 0) return;
+
+		// Triangulate the mesh if needed
+		FbxGeometryConverter gc{ m_fbxManager };
+		fbxMesh = (FbxMesh*)gc.Triangulate(fbxMesh, true);
+		if (!fbxMesh || fbxMesh->RemoveBadPolygons() < 0) return;
+
+		FbxNode* const node{ fbxMesh->GetNode() };
+
+		Mesh m;
+		m.lodID = lodID;
+		m.lodThreshold = lodThreshold;
+		m.name = (node->GetName()[0] != '\0') ? node->GetName() : fbxMesh->GetName();
+
+		if (GetMeshData(fbxMesh, m))
+		{
+			meshes.emplace_back(m);
 		}
 
 		// See if there is a mesh somewhere further down the hierarchy
 		GetScene(node);
 	}
 
-	void FbxContext::GetLoDGroup(FbxNode* node)
+	void FbxContext::GetLoDGroup(FbxNodeAttribute* attribute)
 	{
-		assert(node);
+		assert(attribute);
 
-		if (FbxLODGroup* lodGrp{ node->GetLodGroup() })
+		FbxLODGroup* lodGrp{ (FbxLODGroup*)attribute };
+		FbxNode* const node{ lodGrp->GetNode() };
+		LoDGroup lod{};
+		lod.name = (node->GetName()[0] != '\0' ? node->GetName() : lodGrp->GetName());
+		// NOTE: number of LODs is exlusive the base mesh (LOD 0)
+		const s32 numNodes{ node->GetChildCount() };
+		assert(numNodes > 0 && lodGrp->GetNumThresholds() == (numNodes - 1));
+
+		for (s32 i{ 0 }; i < numNodes; i++)
 		{
-			LoDGroup lod{};
-			lod.name = (node->GetName()[0] != '\0' ? node->GetName() : lodGrp->GetName());
-			// NOTE: number of LODs is exlusive the base mesh (LOD 0)
-			const s32 numLoDs{ lodGrp->GetNumThresholds() };
-			const s32 numNodes{ node->GetChildCount() };
-			assert(numLoDs > 0 && numNodes > 0);
-
-			for (s32 i{ 0 }; i < numNodes; i++)
+			f32 lodThreshold{ -1.0f };
+			if (i > 0)
 			{
-				GetMesh(node->GetChild(i), lod.meshes);
-
-				if (lod.meshes.size() > 1 && lod.meshes.size() <= numLoDs + 1 && lod.meshes.back().lodThreshold < 0.0f)
-				{
-					FbxDistance threshold;
-					lodGrp->GetThreshold((u32)lod.meshes.size() - 2, threshold);
-					lod.meshes.back().lodThreshold = threshold.value() * m_sceneScale;
-				}
+				FbxDistance threshold;
+				lodGrp->GetThreshold(i - 1, threshold);
+				lodThreshold = threshold.value() * m_sceneScale;
 			}
-
-			if (lod.meshes.size()) m_scene->lodGroups.emplace_back(lod);
+			
+			GetMeshes(node->GetChild(i), lod.meshes, (u32)lod.meshes.size(), lodThreshold);
 		}
+
+		if (lod.meshes.size()) m_scene->lodGroups.emplace_back(lod);
 	}
 
 	bool FbxContext::GetMeshData(FbxMesh* fbxMesh, Mesh& m)
 	{
 		assert(fbxMesh);
+
+		FbxNode* const node{ fbxMesh->GetNode() };
+		FbxAMatrix geometricTransform;
+
+		geometricTransform.SetT(node->GetGeometricTranslation(FbxNode::eSourcePivot));
+		geometricTransform.SetR(node->GetGeometricRotation(FbxNode::eSourcePivot));
+		geometricTransform.SetS(node->GetGeometricScaling(FbxNode::eSourcePivot));
+
+		FbxAMatrix transform{ node->EvaluateGlobalTransform() * geometricTransform };
+		FbxAMatrix inverseTranspose{ transform.Inverse().Transpose() };
 
 		const s32 numPolys{ fbxMesh->GetPolygonCount() };
 		if (numPolys <= 0) return false;
@@ -189,7 +221,7 @@ namespace Havana::Tools
 			}
 			else
 			{
-				FbxVector4 v = vertices[vIdx] * m_sceneScale;
+				FbxVector4 v = transform.MultT(vertices[vIdx]) * m_sceneScale;
 				m.rawIndices[i] = (u32)m.positions.size();
 				vertexRef[vIdx] = m.rawIndices[i];
 				m.positions.emplace_back((f32)v[0], (f32)v[1], (f32)v[2]);
@@ -230,7 +262,9 @@ namespace Havana::Tools
 				const s32 numNormals{ normals.Size() };
 				for (s32 i{ 0 }; i < numNormals; i++)
 				{
-					m.normals.emplace_back((f32)normals[i][0], (f32)normals[i][1], (f32)normals[i][2]);
+					FbxVector4 n{ inverseTranspose.MultT(normals[i]) };
+					n.Normalize();
+					m.normals.emplace_back((f32)n[0], (f32)n[1], (f32)n[2]);
 				}
 			}
 			else
@@ -252,8 +286,13 @@ namespace Havana::Tools
 				const s32 numTangents{ tangents->GetCount() };
 				for (s32 i{0}; i < numTangents; i++)
 				{
+					// TODO: not sure if this transformation is correct.
 					FbxVector4 t{ tangents->GetAt(i) };
-					m.tangents.emplace_back((f32)t[0], (f32)t[1], (f32)t[2], (f32)t[3]);
+					const f32 handedness{ (f32)t[3] };
+					t[3] = 0.0;
+					t.Normalize();
+					t = inverseTranspose.MultT(t);
+					m.tangents.emplace_back((f32)t[0], (f32)t[1], (f32)t[2], handedness);
 				}
 			}
 			else
