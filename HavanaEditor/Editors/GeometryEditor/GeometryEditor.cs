@@ -18,6 +18,34 @@ namespace HavanaEditor.Editors
     // in the game engine, this class and the WPF viewer will be obsolete.
     class MeshRendererVertexData : ViewModelBase
     {
+        private bool _isHighlighted;
+        public bool IsHighlighted
+        {
+            get => _isHighlighted;
+            set
+            {
+                if (_isHighlighted != value)
+                {
+                    _isHighlighted = value;
+                    OnPropertyChanged(nameof(IsHighlighted));
+                    OnPropertyChanged(nameof(Diffuse));
+                }
+            }
+        }
+
+        private bool _isIsolated;
+        public bool IsIsolated
+        {
+            get => _isIsolated;
+            set
+            {
+                if (_isIsolated != value)
+                {
+                    _isIsolated = value;
+                    OnPropertyChanged(nameof(IsIsolated));
+                }
+            }
+        }
 
         private Brush _specular = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ff111111"));
         public Brush Specular
@@ -36,7 +64,7 @@ namespace HavanaEditor.Editors
         private Brush _diffuse = Brushes.White;
         public Brush Diffuse
         {
-            get => _diffuse;
+            get => _isHighlighted ? Brushes.Orange : _diffuse;
             set
             {
                 if (_diffuse != value)
@@ -47,6 +75,7 @@ namespace HavanaEditor.Editors
             }
         }
 
+        public string Name { get; set; }
         public Point3DCollection Positions { get; } = new Point3DCollection();
         public Vector3DCollection Normals { get; } = new Vector3DCollection();
         public PointCollection UVs { get; } = new PointCollection();
@@ -178,7 +207,7 @@ namespace HavanaEditor.Editors
             var intervals = 2.0f / ((1 << 16) - 1);
             foreach (var mesh in lod.Meshes)
             {
-                var vertexData = new MeshRendererVertexData();
+                var vertexData = new MeshRendererVertexData() { Name = mesh.Name };
                 // Unpack all vertices
                 using (var reader = new BinaryReader(new MemoryStream(mesh.Vertices)))
                 {
@@ -231,6 +260,18 @@ namespace HavanaEditor.Editors
             {
                 CameraTarget = old.CameraTarget;
                 CameraPosition = old.CameraPosition;
+
+                // NOTE: this is only for primitive meshes with multiple LODs,
+                //       because they're displayed with textures:
+                foreach (var mesh in old.Meshes)
+                {
+                    mesh.IsHighlighted = false;
+                }
+
+                foreach (var mesh in old.Meshes)
+                {
+                    mesh.Diffuse = old.Meshes.First().Diffuse;
+                }
             }
             else
             {

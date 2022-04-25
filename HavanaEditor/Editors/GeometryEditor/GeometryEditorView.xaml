@@ -48,6 +48,9 @@
                 <ColumnDefinition MinWidth="250" MaxWidth="400"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
+
+            <ed:GeometryDetailsView Tag="{Binding ElementName=geometryView}"/>
+
             <GridSplitter HorizontalAlignment="Right" Width="5" Background="{StaticResource Editor.Window.GreyBrush1}"
                           VerticalAlignment="Stretch"/>
             <ed:GeometryView DataContext="{Binding MeshRenderer}" Grid.Column="1" x:Name="geometryView"/>

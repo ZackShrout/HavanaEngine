@@ -82,6 +82,21 @@ namespace HavanaEditor.Content
                 }
             }
         }
+
+        private string _name;
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged(nameof(Name));
+                }
+            }
+        }
+
         public byte[] Vertices { get; set; }
         public byte[] Indices { get; set; }
     }
@@ -417,9 +432,8 @@ namespace HavanaEditor.Content
                     Debug.Assert(lodGroup.LoDs.Any());
                     
                     // Use name of most detailed LoD for file name
-                    string meshFileName = ContentHelper.SanitizeFileName(_lodGroups.Count > 1 ?
-                        path + fileName + "_" + lodGroup.LoDs[0].Name + AssetFileExtension :
-                        path + fileName + AssetFileExtension);
+                    string meshFileName = ContentHelper.SanitizeFileName(
+                           path + fileName + ((_lodGroups.Count > 1) ? "_" + ((lodGroup.LoDs.Count > 1) ? lodGroup.Name : lodGroup.LoDs[0].Name) : string.Empty)) + AssetFileExtension;
                     // Different id for each asset file, but if a geometry asset file with the same name
                     // already exists, use it's guid instead.
                     Guid = TryGetAssetInfo(meshFileName) is AssetInfo info && info.Type == Type ? info.Guid : Guid.NewGuid();
@@ -499,6 +513,7 @@ namespace HavanaEditor.Content
 
             foreach (var mesh in lod.Meshes)
             {
+                writer.Write(mesh.Name);
                 writer.Write(mesh.VertexSize);
                 writer.Write(mesh.VertexCount);
                 writer.Write(mesh.IndexSize);
@@ -527,6 +542,7 @@ namespace HavanaEditor.Content
             {
                 var mesh = new Mesh()
                 {
+                    Name = reader.ReadString(),
                     VertexSize = reader.ReadInt32(),
                     VertexCount = reader.ReadInt32(),
                     IndexSize = reader.ReadInt32(),
@@ -570,7 +586,7 @@ namespace HavanaEditor.Content
                 meshName = $"mesh_{ContentHelper.GetRandomString()}";
             }
 
-            Mesh mesh = new Mesh();
+            Mesh mesh = new Mesh() { Name = meshName };
             int lodID = reader.ReadInt32();
             mesh.VertexSize = reader.ReadInt32();
             mesh.VertexCount = reader.ReadInt32();
