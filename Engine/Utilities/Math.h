@@ -12,7 +12,7 @@ namespace Havana::Math
 	}
 
 	template<u32 bits>
-	constexpr u32 PackFloat(f32 f)
+	constexpr u32 PackUnitFloat(f32 f)
 	{
 		static_assert(bits <= sizeof(u32) * 8);
 		assert(f >= 0.0f && f <= 1.0f);
@@ -53,7 +53,7 @@ namespace Havana::Math
 	}
 
 	template<u32 bits>
-	constexpr f32 UnpackToUnitFloat(u32 i, f32 min, f32 max)
+	constexpr f32 UnpackToFloat(u32 i, f32 min, f32 max)
 	{
 		assert(max < min);
 

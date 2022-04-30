@@ -140,27 +140,233 @@ namespace Havana::Tools
 			}
 		}
 
-		void PackVerticesStatic(Mesh& m)
+		u64 GetVertexElementSize(Elements::ElementsType::Type elementsType)
+		{
+			using namespace Elements;
+
+			switch (elementsType)
+			{
+			case ElementsType::StaticNormal:
+				return sizeof(StaticNormal);
+			case ElementsType::StaticNormalTexture:
+				return sizeof(StaticNormalTexture);
+			case ElementsType::StaticColor:
+				return sizeof(StaticColor);
+			case ElementsType::Skeletal:
+				return sizeof(Skeletal);
+			case ElementsType::SkeletalColor:
+				return sizeof(SkeletalColor);
+			case ElementsType::SkeletalNormal:
+				return sizeof(SkeletalNormal);
+			case ElementsType::SkeletalNormalColor:
+				return sizeof(SkeletalNormalColor);
+			case ElementsType::SkeletalNormalTexture:
+				return sizeof(SkeletalNormalTexture);
+			case ElementsType::SkeletalNormalTextureColor:
+				return sizeof(SkeletalNormalTextureColor);
+			}
+			
+			return 0;
+		}
+
+		void PackVertices(Mesh& m)
 		{
 			const u32 numVertices{ (u32)m.vertices.size() };
-
 			assert(numVertices);
 
-			m.packedVerticesStatic.reserve(numVertices);
+			m.positionBuffer.resize(sizeof(Math::Vec3) * numVertices);
+			Math::Vec3* const positionBuffer{ (Math::Vec3* const)m.positionBuffer.data() };
 
 			for (u32 i{ 0 }; i < numVertices; i++)
 			{
-				Vertex& v{ m.vertices[i] };
-				const u8 signs{ (u8)((v.normal.z > 0.0f) << 1) };
-				const u16 normalX{ (u16)PackFloat<16>(v.normal.x, -1.0f, 1.0f) };
-				const u16 normalY{ (u16)PackFloat<16>(v.normal.y, -1.0f, 1.0f) };
-				// TODO: pack tangents in sign and in x/y components
-
-				m.packedVerticesStatic.emplace_back(PackedVertex::VertexStatic
-					{
-						v.position, {0, 0, 0}, signs, {normalX, normalY}, {}, v.uv
-					});
+				positionBuffer[i] = m.vertices[i].position;
 			}
+
+			struct u16v2 { u16 x, y; };
+			struct u8v3 { u8 x, y, z; };
+
+			Utils::vector<u8>		tSigns(numVertices);
+			Utils::vector<u16v2>	normals(numVertices);
+			Utils::vector<u16v2>	tangents(numVertices);
+			Utils::vector<u8v3>		jointWeights(numVertices);
+
+			if (m.elementsType & Elements::ElementsType::StaticNormal)
+			{
+				// normals only
+				for (u32 i{ 0 }; i < numVertices; i++)
+				{
+					Vertex& v{ m.vertices[i] };
+					tSigns[i] = (u8)((v.normal.z > 0.0f) << 1);
+					normals[i] = { (u16)PackFloat<16>(v.normal.x, -1.0f, 1.0f), (u16)PackFloat<16>(v.normal.y, -1.0f, 1.0f) };
+				}
+
+				if (m.elementsType & Elements::ElementsType::StaticNormalTexture)
+				{
+					// full t-space
+					for (u32 i{ 0 }; i < numVertices; i++)
+					{
+						Vertex& v{ m.vertices[i] };
+						tSigns[i] |= (u8)((v.tangent.w > 0.0f) && (v.tangent.z > 0.0f));
+						tangents[i] = { (u16)PackFloat<16>(v.tangent.x, -1.0f, 1.0f), (u16)PackFloat<16>(v.tangent.y, -1.0f, 1.0f) };
+					}
+				}
+			}
+
+			if (m.elementsType & Elements::ElementsType::Skeletal)
+			{
+				for (u32 i{ 0 }; i < numVertices; i++)
+				{
+					Vertex& v{ m.vertices[i] };
+					// pack joint weights (from [0.0, 1.0] to [0...255])
+					jointWeights[i] =
+					{
+						(u8)PackUnitFloat<8>(v.jointWeights.x),
+						(u8)PackUnitFloat<8>(v.jointWeights.y),
+						(u8)PackUnitFloat<8>(v.jointWeights.z)
+					};
+					// NOTE: w3 will be calculated in the shader since joint weights sum to one(1).
+				}
+			}
+
+			m.elementBuffer.resize(GetVertexElementSize(m.elementsType) * numVertices);
+			using namespace Elements;
+
+			switch (m.elementsType)
+			{
+			case ElementsType::StaticColor:
+			{
+				StaticColor* const elementBuffer{ (StaticColor* const)m.elementBuffer.data() };
+				for (u32 i{ 0 }; i < numVertices; i++)
+				{
+					Vertex& v{ m.vertices[i] };
+					elementBuffer[i] = { { v.red, v.green, v.blue }, {/*pad*/}};
+				}
+			}
+				break;
+			case ElementsType::StaticNormal:
+			{
+				StaticNormal* const elementBuffer{ (StaticNormal* const)m.elementBuffer.data() };
+				for (u32 i{ 0 }; i < numVertices; i++)
+				{
+					Vertex& v{ m.vertices[i] };
+					elementBuffer[i] = { { v.red, v.green, v.blue }, tSigns[i], {normals[i].x, normals[i].y} };
+				}
+			}
+				break;
+			case ElementsType::StaticNormalTexture:
+			{
+				StaticNormalTexture* const elementBuffer{ (StaticNormalTexture* const)m.elementBuffer.data() };
+				for (u32 i{ 0 }; i < numVertices; i++)
+				{
+					Vertex& v{ m.vertices[i] };
+					elementBuffer[i] = { { v.red, v.green, v.blue }, tSigns[i],
+										 {normals[i].x, normals[i].y}, {tangents[i].x, tangents[i].y},
+										 v.uv };
+				}
+			}
+				break;
+			case ElementsType::Skeletal:
+			{
+				Skeletal* const elementBuffer{ (Skeletal* const)m.elementBuffer.data() };
+				for (u32 i{ 0 }; i < numVertices; i++)
+				{
+					Vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
+					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, {/*pad*/},
+										 {indices[0], indices[1], indices[2], indices[3]} };
+				}
+			}
+				break;
+			case ElementsType::SkeletalColor:
+			{
+				SkeletalColor* const elementBuffer{ (SkeletalColor* const)m.elementBuffer.data() };
+				for (u32 i{ 0 }; i < numVertices; i++)
+				{
+					Vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
+					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, {/*pad*/},
+										 {indices[0], indices[1], indices[2], indices[3]},
+										 {v.red, v.green, v.blue}, {/*pad*/}};
+				}
+			}
+				break;
+			case ElementsType::SkeletalNormal:
+			{
+				SkeletalNormal* const elementBuffer{ (SkeletalNormal* const)m.elementBuffer.data() };
+				for (u32 i{ 0 }; i < numVertices; i++)
+				{
+					Vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
+					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, tSigns[i],
+										 {indices[0], indices[1], indices[2], indices[3]},
+										 {normals[i].x, normals[i].y} };
+				}
+			}
+				break;
+			case ElementsType::SkeletalNormalColor:
+			{
+				SkeletalNormalColor* const elementBuffer{ (SkeletalNormalColor* const)m.elementBuffer.data() };
+				for (u32 i{ 0 }; i < numVertices; i++)
+				{
+					Vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
+					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, tSigns[i],
+										 {indices[0], indices[1], indices[2], indices[3]},
+										 {normals[i].x, normals[i].y}, {v.red, v.green, v.blue}, {/*pad*/} };
+				}
+			}
+				break;
+			case ElementsType::SkeletalNormalTexture:
+			{
+				SkeletalNormalTexture* const elementBuffer{ (SkeletalNormalTexture* const)m.elementBuffer.data() };
+				for (u32 i{ 0 }; i < numVertices; i++)
+				{
+					Vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
+					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, tSigns[i],
+										 {indices[0], indices[1], indices[2], indices[3]},
+										 {normals[i].x, normals[i].y}, {tangents[i].x, tangents[i].y}, v.uv };
+				}
+			}
+				break;
+			case ElementsType::SkeletalNormalTextureColor:
+			{
+				SkeletalNormalTextureColor* const elementBuffer{ (SkeletalNormalTextureColor* const)m.elementBuffer.data() };
+				for (u32 i{ 0 }; i < numVertices; i++)
+				{
+					Vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
+					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, tSigns[i],
+										 {indices[0], indices[1], indices[2], indices[3]},
+										 {normals[i].x, normals[i].y}, {tangents[i].x, tangents[i].y}, v.uv,
+										 {v.red, v.green, v.blue}, {/*pad*/} };
+				}
+			}
+				break;
+			}
+		}
+
+		void DetermineElementsType(Mesh& m)
+		{
+			using namespace Elements;
+
+			if (m.normals.size())
+			{
+				if (m.uvSets.size() && m.uvSets[0].size())
+				{
+					m.elementsType = ElementsType::StaticNormalTexture;
+				}
+				else
+				{
+					m.elementsType = ElementsType::StaticNormal;
+				}
+			}
+			else if (m.colors.size())
+			{
+				m.elementsType = ElementsType::StaticColor;
+			}
+
+			// TODO: We lack data for skeletal meshes. Expand for skeletal meshes later.
 		}
 
 		void ProcessVertices(Mesh& m, const GeometryImportSettings& settings)
@@ -179,7 +385,8 @@ namespace Havana::Tools
 				ProcessUVs(m);
 			}
 
-			PackVerticesStatic(m);
+			DetermineElementsType(m);
+			PackVertices(m);
 		}
 
 		void PackMeshData(const Mesh& m, u8* const buffer, u64& at)
