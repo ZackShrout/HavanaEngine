@@ -25,24 +25,36 @@ namespace HavanaEditor.Content
         Capsule
     }
 
+    enum ElementsType
+    {
+        Position = 0x00,
+        Normals = 0x01,
+        TSpace = 0x03,
+        Joints = 0x04,
+        Colors = 0x08
+    }
+
     class Mesh : ViewModelBase
     {
+        public static int PositionSize = sizeof(float) * 3;
+        
         // STATE
-        private int _vertexSize;
+        private int _elementSize;
         private int _vertexCount;
         private int _indexSize;
         private int _indexCount;
+        private string _name;
 
         // PROPERTIES
-        public int VertexSize
+        public int ElementSize
         {
-            get => _vertexSize;
+            get => _elementSize;
             set
             {
-                if (_vertexSize != value)
+                if (_elementSize != value)
                 {
-                    _vertexSize = value;
-                    OnPropertyChanged(nameof(VertexSize));
+                    _elementSize = value;
+                    OnPropertyChanged(nameof(ElementSize));
                 }
             }
         }
@@ -82,8 +94,6 @@ namespace HavanaEditor.Content
                 }
             }
         }
-
-        private string _name;
         public string Name
         {
             get => _name;
@@ -96,8 +106,9 @@ namespace HavanaEditor.Content
                 }
             }
         }
-
-        public byte[] Vertices { get; set; }
+        public ElementsType ElementsType { get; set; }
+        public byte[] Positions { get; set; }
+        public byte[] Elements { get; set; }
         public byte[] Indices { get; set; }
     }
     
@@ -514,11 +525,13 @@ namespace HavanaEditor.Content
             foreach (var mesh in lod.Meshes)
             {
                 writer.Write(mesh.Name);
-                writer.Write(mesh.VertexSize);
+                writer.Write(mesh.ElementSize);
+                writer.Write((int)mesh.ElementsType);
                 writer.Write(mesh.VertexCount);
                 writer.Write(mesh.IndexSize);
                 writer.Write(mesh.IndexCount);
-                writer.Write(mesh.Vertices);
+                writer.Write(mesh.Positions);
+                writer.Write(mesh.Elements);
                 writer.Write(mesh.Indices);
             }
 
@@ -543,13 +556,15 @@ namespace HavanaEditor.Content
                 var mesh = new Mesh()
                 {
                     Name = reader.ReadString(),
-                    VertexSize = reader.ReadInt32(),
+                    ElementSize = reader.ReadInt32(),
+                    ElementsType = (ElementsType)reader.ReadInt32(),
                     VertexCount = reader.ReadInt32(),
                     IndexSize = reader.ReadInt32(),
                     IndexCount = reader.ReadInt32()
                 };
 
-                mesh.Vertices = reader.ReadBytes(mesh.VertexSize * mesh.VertexCount);
+                mesh.Positions = reader.ReadBytes(Mesh.PositionSize * mesh.VertexCount);
+                mesh.Elements = reader.ReadBytes(mesh.ElementSize * mesh.VertexCount);
                 mesh.Indices = reader.ReadBytes(mesh.IndexSize * mesh.IndexCount);
 
                 lod.Meshes.Add(mesh);
@@ -564,13 +579,13 @@ namespace HavanaEditor.Content
             List<MeshLoD> lodList = new List<MeshLoD>();
             for (int i = 0; i < numMeshes; i++)
             {
-                ReadMesh(reader, lodIDs, lodList);
+                ReadMeshes(reader, lodIDs, lodList);
             }
 
             return lodList;
         }
 
-        private static void ReadMesh(BinaryReader reader, List<int> lodIDs, List<MeshLoD> lodList)
+        private static void ReadMeshes(BinaryReader reader, List<int> lodIDs, List<MeshLoD> lodList)
         {
             // Get mesh name
             int s = reader.ReadInt32();
@@ -588,16 +603,18 @@ namespace HavanaEditor.Content
 
             Mesh mesh = new Mesh() { Name = meshName };
             int lodID = reader.ReadInt32();
-            mesh.VertexSize = reader.ReadInt32();
+            mesh.ElementSize = reader.ReadInt32();
+            mesh.ElementsType = (ElementsType)reader.ReadInt32();
             mesh.VertexCount = reader.ReadInt32();
             mesh.IndexSize = reader.ReadInt32();
             mesh.IndexCount = reader.ReadInt32();
             float lodThreshold = reader.ReadSingle();
 
-            int vertexBufferSize = mesh.VertexSize * mesh.VertexCount;
+            int elementBufferSize = mesh.ElementSize * mesh.VertexCount;
             int indexBufferSize = mesh.IndexSize * mesh.IndexCount;
 
-            mesh.Vertices = reader.ReadBytes(vertexBufferSize);
+            mesh.Positions = reader.ReadBytes(Mesh.PositionSize * mesh.VertexCount);
+            mesh.Elements = reader.ReadBytes(elementBufferSize);
             mesh.Indices = reader.ReadBytes(indexBufferSize);
 
             MeshLoD lod;

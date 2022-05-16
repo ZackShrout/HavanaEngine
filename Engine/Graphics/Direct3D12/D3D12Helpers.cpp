@@ -1,5 +1,6 @@
 #include "D3D12Helpers.h"
 #include "D3D12Core.h"
+#include "D3D12Upload.h"
 
 namespace Havana::Graphics::D3D12::D3DX
 {
@@ -71,5 +72,68 @@ namespace Havana::Graphics::D3D12::D3DX
 		desc.pPipelineStateSubobjectStream = stream;
 
 		return CreatePipelineState(desc);
+	}
+
+	ID3D12Resource* CreateBuffer(u32 bufferSize, void* data/* = nullptr*/, bool isCPUAccessible/* = false*/,
+								 D3D12_RESOURCE_STATES state/* = D3D12_RESOURCE_STATE_COMMON*/,
+								 D3D12_RESOURCE_FLAGS flags/* = D3D12_RESOURCE_FLAG_NONE*/,
+								 ID3D12Heap* heap/* = nullptr*/, u64 heapOffset/* = 0*/)
+	{
+		assert(bufferSize);
+
+		D3D12_RESOURCE_DESC desc{};
+		desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		desc.Alignment = 0;
+		desc.Width = bufferSize;
+		desc.Height = 1;
+		desc.DepthOrArraySize = 1;
+		desc.MipLevels = 1;
+		desc.Format = DXGI_FORMAT_UNKNOWN;
+		desc.SampleDesc = { 1,0 };
+		desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		desc.Flags = isCPUAccessible ? D3D12_RESOURCE_FLAG_NONE : flags;
+
+		// The buffer will be only used for upload or as constant buffer/UAV
+		assert(desc.Flags == D3D12_RESOURCE_FLAG_NONE || desc.Flags == D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+
+		ID3D12Resource* resource{ nullptr };
+		const D3D12_RESOURCE_STATES resourceState{ isCPUAccessible ? D3D12_RESOURCE_STATE_GENERIC_READ : state };
+
+		if (heap)
+		{
+			DXCall(Core::Device()->CreatePlacedResource(heap, heapOffset, &desc, resourceState, nullptr, IID_PPV_ARGS(&resource)));
+		}
+		else
+		{
+			DXCall(Core::Device()->CreateCommittedResource(isCPUAccessible ? &heapProperties.uploadHeap : &heapProperties.defaultHeap, D3D12_HEAP_FLAG_NONE, &desc, resourceState, nullptr, IID_PPV_ARGS(&resource)));
+		}
+
+		if (data)
+		{
+			// If we have initial data which we'd like to be able to change later, we set isCPUAccessible
+			// to true. If we only want to upload some data once to be used by the GPU, then isCPUAccessible
+			// should be set to false.
+			if (isCPUAccessible)
+			{
+				// NOTE: range's Begin and End fields are set to 0, to indicate that
+				//		 the CPU is not reading any data (i.e. write-only)
+				D3D12_RANGE range{};
+				void* cpuAddress{ nullptr };
+				DXCall(resource->Map(0, &range, reinterpret_cast<void**>(&cpuAddress)));
+				assert(cpuAddress);
+				memcpy(cpuAddress, data, bufferSize);
+				resource->Unmap(0, nullptr);
+			}
+			else
+			{
+				Upload::D3D12UploadContext context{ bufferSize };
+				memcpy(context.CPUAddress(), data, bufferSize);
+				context.CommandList()->CopyResource(resource, context.UploadBuffer());
+				context.EndUpload();
+			}
+		}
+
+		assert(resource);
+		return resource;
 	}
 }

@@ -44,7 +44,7 @@ namespace HavanaEditor.GameProject
         public string FullPath => $@"{Path}{Name}{Extention}";
         public string Solution => $@"{Path}{Name}.sln";
         public string ContentPath => $@"{Path}Assets\";
-        public string TempFolder => $@"{Path}.Primal\Temp\";
+        public string TempFolder => $@"{Path}.Havana\Temp\";
 
         public static Project Current => Application.Current.MainWindow?.DataContext as Project;
         public ReadOnlyObservableCollection<Scene> Scenes { get; private set;  }

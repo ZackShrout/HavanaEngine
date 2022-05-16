@@ -77,6 +77,11 @@ namespace Havana::Graphics::D3D12::Core
 
 				m_fenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
 				assert(m_fenceEvent);
+				if (!m_fenceEvent)
+				{
+					Release();
+					return;
+				}
 			}
 
 			~D3D12Command()

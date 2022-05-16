@@ -1,4 +1,5 @@
 #include "Geometry.h"
+#include "..\Engine\Utilities\IOStream.h"
 
 namespace Havana::Tools
 {
@@ -389,42 +390,38 @@ namespace Havana::Tools
 			PackVertices(m);
 		}
 
-		void PackMeshData(const Mesh& m, u8* const buffer, u64& at)
+		void PackMeshData(const Mesh& m, Utils::BlobStreamWriter& blob)
 		{
-			constexpr u64 su32{ sizeof(u32) };
-			u32 s{ 0 };
-
 			// Mesh name
-			s = (u32)m.name.size();
-			memcpy(&buffer[at], &s, su32); at += su32;
-			memcpy(&buffer[at], m.name.c_str(), s); at += s;
+			blob.Write((u32)m.name.size());
+			blob.Write(m.name.c_str(), m.name.size());
 			// LoD ID
-			s = m.lodID;
-			memcpy(&buffer[at], &s, su32); at += su32;
-			// Vertex size
-			constexpr u32 vertexSize{ sizeof(PackedVertex::VertexStatic) };
-			s = vertexSize;
-			memcpy(&buffer[at], &s, su32); at += su32;
+			blob.Write(m.lodID);
+			// Vertex element size
+			const u32 elementsSize{ (u32)GetVertexElementSize(m.elementsType) };
+			blob.Write(elementsSize);
+			// Elements type enumeration
+			blob.Write((u32)m.elementsType);
 			// Number of vertices
 			const u32 numVertices{ (u32)m.vertices.size() };
-			s = numVertices;
-			memcpy(&buffer[at], &s, su32); at += su32;
+			blob.Write(numVertices);
 			// Index size (16 bit or 32 bit)
 			const u32 indexSize{ (numVertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
-			s = indexSize;
-			memcpy(&buffer[at], &s, su32); at += su32;
+			blob.Write(indexSize);
 			// Number of indices
 			const u32 numIndices{ (u32)m.indices.size() };
-			s = numIndices;
-			memcpy(&buffer[at], &s, su32); at += su32;
+			blob.Write(numIndices);
 			// LoD threshold
-			memcpy(&buffer[at], &m.lodThreshold, sizeof(f32)); at += sizeof(f32);
-			// Vertex data
-			s = vertexSize * numVertices;
-			memcpy(&buffer[at], m.packedVerticesStatic.data(), s); at += s;
+			blob.Write(m.lodThreshold);
+			// Position buffer
+			assert(m.positionBuffer.size() == sizeof(Math::Vec3) * numVertices);
+			blob.Write(m.positionBuffer.data(), m.positionBuffer.size());
+			// Element buffer
+			assert(m.elementBuffer.size() == elementsSize * numVertices);
+			blob.Write(m.elementBuffer.data(), m.elementBuffer.size());
 			// Index data
-			s = indexSize * numIndices;
-			void* data{ (void*)m.indices.data() };
+			const u32 indexBufferSize{ indexSize * numIndices };
+			const u8* data{ (const u8*)m.indices.data() };
 			Utils::vector<u16> indices;
 
 			if (indexSize == sizeof(u16))
@@ -433,32 +430,37 @@ namespace Havana::Tools
 				for (u32 i{ 0 }; i < numIndices; i++)
 				{
 					indices[i] = (u16)m.indices[i];
-					data = (void*)indices.data();
+					data = (const u8*)indices.data();
 				}
 			}
 
-			memcpy(&buffer[at], data, s); at += s;
+			blob.Write(data, indexBufferSize);
 		}
 
 		u64 GetMeshSize(const Mesh& m)
 		{
 			const u64 numVertices{ m.vertices.size() };
-			const u64 vertexBufferSize{ sizeof(PackedVertex::VertexStatic) * numVertices };
+			const u64 positionBufferSize{ m.positionBuffer.size() };
+			assert(positionBufferSize == sizeof(Math::Vec3) * numVertices);
+			const u64 elementBufferSize{ m.elementBuffer.size() };
+			assert(elementBufferSize == GetVertexElementSize(m.elementsType) * numVertices);
 			const u64 indexSize{ (numVertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
 			const u64 indexBufferSize{ indexSize * m.indices.size() };
 			constexpr u64 su32{ sizeof(u32) };
 			const u64 size
 			{
-				su32 +				// name length (number of characters)
-				m.name.size() +		// room for mesh name string
-				su32 +				// LoD id
-				su32 +				// vertex size
-				su32 +				// number of vertices
-				su32 +				// index size (16 bit or 32 bit)
-				su32 +				// number of indices
-				sizeof(f32) +		// LoD threshold
-				vertexBufferSize +	// room for the vertices
-				indexBufferSize		// room for the indices
+				su32 +					// name length (number of characters)
+				m.name.size() +			// room for mesh name string
+				su32 +					// LoD id
+				su32 +					// vertex element size (vertex size excluding position element)
+				su32 +					// element type enumeration
+				su32 +					// number of vertices
+				su32 +					// index size (16 bit or 32 bit)
+				su32 +					// number of indices
+				sizeof(f32) +			// LoD threshold
+				positionBufferSize +	// room for verticex positions
+				elementBufferSize +		// room for verticex elements
+				indexBufferSize			// room for the indices
 			};
 
 			return size;
@@ -601,34 +603,28 @@ namespace Havana::Tools
 		data.buffer = (u8*)CoTaskMemAlloc(sceneSize);
 		assert(data.buffer);
 
-		u8* const buffer{ data.buffer };
-		u64 at{ 0 };
-		u32 s{ 0 };
+		Utils::BlobStreamWriter blob{ data.buffer, data.bufferSize };
 
 		// Scene name
-		s = (u32)scene.name.size();
-		memcpy(&buffer[at], &s, su32); at += su32;
-		memcpy(&buffer[at], scene.name.c_str(), s); at += s;
+		blob.Write((u32)scene.name.size());
+		blob.Write(scene.name.c_str(), scene.name.size());
 		// Number of LoDs
-		s = (u32)scene.lodGroups.size();
-		memcpy(&buffer[at], &s, su32); at += su32;
+		blob.Write((u32)scene.lodGroups.size());
 
 		for (auto& lod : scene.lodGroups)
 		{
 			// LoD name
-			s = (u32)lod.name.size();
-			memcpy(&buffer[at], &s, su32); at += su32;
-			memcpy(&buffer[at], lod.name.c_str(), s); at += s;
+			blob.Write((u32)lod.name.size());
+			blob.Write(lod.name.c_str(), lod.name.size());
 			// Number of meshes in this LoD
-			s = (u32)lod.meshes.size();
-			memcpy(&buffer[at], &s, su32); at += su32;
+			blob.Write((u32)lod.meshes.size());
 
 			for (auto& m : lod.meshes)
 			{
-				PackMeshData(m, buffer, at);
+				PackMeshData(m, blob);
 			}
 		}
 
-		assert(sceneSize == at);
+		assert(sceneSize == blob.Offset());
 	}
 }

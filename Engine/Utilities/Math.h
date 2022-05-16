@@ -49,7 +49,7 @@ namespace Havana::Math
 		// Scale f to a value between 0 and 1
 		const f32 distance{ (f - min) / (max - min) };
 
-		return PackFloat<bits>(distance);
+		return PackUnitFloat<bits>(distance);
 	}
 
 	template<u32 bits>

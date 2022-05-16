@@ -47,6 +47,8 @@
     <ClInclude Include="Graphics\Direct3D12\D3D12GPass.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12PostProcess.h" />
     <ClInclude Include="Platforms\IncludeWindowCpp.h" />
+    <ClInclude Include="Utilities\IOStream.h" />
+    <ClInclude Include="Graphics\Direct3D12\D3D12Upload.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\Entity.cpp" />
@@ -77,6 +79,7 @@
     <ClCompile Include="Graphics\Direct3D12\D3D12PostProcess.cpp" />
     <ClCompile Include="Platforms\PlatformLinux.cpp" />
     <ClCompile Include="Platforms\Window.cpp" />
+    <ClCompile Include="Graphics\Direct3D12\D3D12Upload.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Graphics\Vulkan\Shaders\compile_shaders.bat" />
