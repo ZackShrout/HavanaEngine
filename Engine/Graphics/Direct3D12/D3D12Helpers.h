@@ -314,7 +314,7 @@ namespace Havana::Graphics::D3D12::D3DX
 	ID3D12PipelineState* CreatePipelineState(D3D12_PIPELINE_STATE_STREAM_DESC desc);
 	ID3D12PipelineState* CreatePipelineState(void* stream, u64 streamSize);
 
-	ID3D12Resource* CreateBuffer(u32 bufferSize, void* data = nullptr, bool isCPUAccessible = false,
+	ID3D12Resource* CreateBuffer(const void* data, u32 bufferSize, bool isCPUAccessible = false,
 								 D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON,
 								 D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
 								 ID3D12Heap* heap = nullptr, u64 heapOffset = 0);

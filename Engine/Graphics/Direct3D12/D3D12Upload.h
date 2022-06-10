@@ -17,6 +17,7 @@ namespace Havana::Graphics::D3D12::Upload
 		constexpr void* const CPUAddress() const { return m_cpuAddress; }
 
 	private:
+		DEBUG_OP(D3D12UploadContext() = default);
 		id3d12GraphicsCommandList*		m_cmdList{ nullptr };
 		ID3D12Resource*					m_uploadBuffer{ nullptr };
 		void*							m_cpuAddress{ nullptr };

@@ -74,7 +74,7 @@ namespace Havana::Graphics::D3D12::D3DX
 		return CreatePipelineState(desc);
 	}
 
-	ID3D12Resource* CreateBuffer(u32 bufferSize, void* data/* = nullptr*/, bool isCPUAccessible/* = false*/,
+	ID3D12Resource* CreateBuffer(const void* data, u32 bufferSize, bool isCPUAccessible/* = false*/,
 								 D3D12_RESOURCE_STATES state/* = D3D12_RESOURCE_STATE_COMMON*/,
 								 D3D12_RESOURCE_FLAGS flags/* = D3D12_RESOURCE_FLAG_NONE*/,
 								 ID3D12Heap* heap/* = nullptr*/, u64 heapOffset/* = 0*/)
@@ -117,7 +117,7 @@ namespace Havana::Graphics::D3D12::D3DX
 			{
 				// NOTE: range's Begin and End fields are set to 0, to indicate that
 				//		 the CPU is not reading any data (i.e. write-only)
-				D3D12_RANGE range{};
+				const D3D12_RANGE range{};
 				void* cpuAddress{ nullptr };
 				DXCall(resource->Map(0, &range, reinterpret_cast<void**>(&cpuAddress)));
 				assert(cpuAddress);

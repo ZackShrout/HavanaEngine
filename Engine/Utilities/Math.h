@@ -59,9 +59,30 @@ namespace Havana::Math
 
 		return UnpackToUnitFloat<bits>(i) * (max - min) + min;
 	}
+	
+	/// <summary>
+	/// Align by rounding up. Will result in a multiple of 'alignment'
+	/// </summary>
+	template<u64 alignment>
+	constexpr u64 AlignSizeUp(u64 size)
+	{
+		static_assert(alignment, "Alignment must be non-zero");
+		constexpr u64 mask{ alignment - 1 };
+		static_assert(!(alignment & mask), "Alignment must be a power of 2.");
+		return ((size + mask) & -mask);
+	}
+
+	/// <summary>
+	/// Align by rounding down. Will result in a multiple of 'alignment'
+	/// </summary>
+	/// <param name="size"></param>
+	/// <returns></returns>
+	template<u64 alignment>
+	constexpr u64 AlignSizeDown(u64 size)
+	{
+		static_assert(alignment, "Alignment must be non-zero");
+		constexpr u64 mask{ alignment - 1 };
+		static_assert(!(alignment & mask), "Alignment must be a power of 2.");
+		return (size & -mask);
+	}
 }
-
-
-
-
-
