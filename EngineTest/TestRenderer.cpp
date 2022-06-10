@@ -6,6 +6,8 @@
 
 #if TEST_RENDERER
 
+#define USE_CONSOLE 0 // set to 1 if you want the console activated
+
 using namespace Havana;
 
 Graphics::RenderSurface surfaces[4];
@@ -170,7 +172,9 @@ void TestShutdown()
 #ifdef _WIN64
 bool EngineTest::Initialize()
 {
+#if USE_CONSOLE
 	ActivateConsole();
+#endif // USE_CONSOLE
 
 	return TestInitialize();
 }
