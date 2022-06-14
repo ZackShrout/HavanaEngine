@@ -8,22 +8,17 @@ namespace Havana::Graphics::D3D12::Content
 {
 	namespace
 	{
-		struct PositionView
+		struct SubmeshView
 		{
 			D3D12_VERTEX_BUFFER_VIEW		positionBufferView{};
-			D3D12_INDEX_BUFFER_VIEW			indexBufferView{};
-		};
-
-		struct ElementView
-		{
 			D3D12_VERTEX_BUFFER_VIEW		elementBufferView{};
-			u32								elementsType{};
+			D3D12_INDEX_BUFFER_VIEW			indexBufferView{};
 			D3D_PRIMITIVE_TOPOLOGY			primitiveTopology;
+			u32								elementsType{};
 		};
 
 		Utils::free_list<ID3D12Resource*>	submeshBuffers{};
-		Utils::free_list<PositionView>		positionViews{};
-		Utils::free_list<ElementView>		elementViews{};
+		Utils::free_list<SubmeshView>		submeshViews{};
 		std::mutex							submeshMutex{};
 
 		D3D_PRIMITIVE_TOPOLOGY GetD3DPrimitiveTopology(Havana::Content::PrimitiveTopology::Type type)
@@ -92,37 +87,34 @@ namespace Havana::Graphics::D3D12::Content
 			blob.Skip(totalBufferSize);
 			data = blob.Position();
 
-			PositionView positionView{};
-			positionView.positionBufferView.BufferLocation = resource->GetGPUVirtualAddress();
-			positionView.positionBufferView.SizeInBytes = positionBufferSize;
-			positionView.positionBufferView.StrideInBytes = sizeof(Math::Vec3);
+			SubmeshView view{};
+			view.positionBufferView.BufferLocation = resource->GetGPUVirtualAddress();
+			view.positionBufferView.SizeInBytes = positionBufferSize;
+			view.positionBufferView.StrideInBytes = sizeof(Math::Vec3);
 
-			positionView.indexBufferView.BufferLocation = resource->GetGPUVirtualAddress() + alignedPositionBufferSize + alignedElementBufferSize;
-			positionView.indexBufferView.Format = (indexSize == sizeof(u16)) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
-			positionView.indexBufferView.SizeInBytes = indexBufferSize;
-
-			ElementView elementView{};
 			if (elementSize)
 			{
-				elementView.elementBufferView.BufferLocation = resource->GetGPUVirtualAddress() + alignedPositionBufferSize;
-				elementView.elementBufferView.SizeInBytes = elementBufferSize;
-				elementView.elementBufferView.StrideInBytes = elementSize;
+				view.elementBufferView.BufferLocation = resource->GetGPUVirtualAddress() + alignedPositionBufferSize;
+				view.elementBufferView.SizeInBytes = elementBufferSize;
+				view.elementBufferView.StrideInBytes = elementSize;
 			}
 
-			elementView.elementsType = elementsType;
-			elementView.primitiveTopology = GetD3DPrimitiveTopology((Havana::Content::PrimitiveTopology::Type)primitiveTopology);
+			view.indexBufferView.BufferLocation = resource->GetGPUVirtualAddress() + alignedPositionBufferSize + alignedElementBufferSize;
+			view.indexBufferView.SizeInBytes = indexBufferSize;
+			view.indexBufferView.Format = (indexSize == sizeof(u16)) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
+
+			view.primitiveTopology = GetD3DPrimitiveTopology((Havana::Content::PrimitiveTopology::Type)primitiveTopology);
+			view.elementsType = elementsType;
 
 			std::lock_guard lock{ submeshMutex };
 			submeshBuffers.add(resource);
-			positionViews.add(positionView);
-			return elementViews.add(elementView);
+			return submeshViews.add(view);
 		}
 
 		void Remove(Id::id_type id)
 		{
 			std::lock_guard lock{ submeshMutex };
-			positionViews.remove(id);
-			elementViews.remove(id);
+			submeshViews.remove(id);
 
 			Core::DeferredRelease(submeshBuffers[id]);
 			submeshBuffers.remove(id);

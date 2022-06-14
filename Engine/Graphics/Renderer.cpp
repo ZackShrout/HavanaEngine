@@ -95,4 +95,14 @@ namespace Havana::Graphics
 		assert(IsValid());
 		gfx.Surface.Render(m_id);
 	}
+
+	Id::id_type AddSubmesh(const u8*& data)
+	{
+
+	}
+
+	void RemoveSubmesh(Id::id_type id)
+	{
+
+	}
 }

@@ -20,6 +20,12 @@ namespace Havana::Graphics
 			void(*Render)(surface_id);
 		} Surface;
 
+		struct
+		{
+			Id::id_type (*AddSubmesh)(const u8*&);
+			void (*RemoveSubmesh)(Id::id_type);
+		} Resources;
+
 		GraphicsPlatform platform = (GraphicsPlatform)-1;
 	};
 }

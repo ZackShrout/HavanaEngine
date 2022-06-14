@@ -8,13 +8,13 @@ namespace Havana::Graphics::D3D12::Upload
 	public:
 		D3D12UploadContext(u32 alignedSize);
 		DISABLE_COPY_AND_MOVE(D3D12UploadContext);
-		~D3D12UploadContext() {}
+		~D3D12UploadContext() { assert(m_frameIndex == U32_INVALID_ID); }
 
 		void EndUpload();
 
-		constexpr id3d12GraphicsCommandList* const CommandList() const { return m_cmdList; }
-		constexpr ID3D12Resource* const UploadBuffer() const { return m_uploadBuffer; }
-		constexpr void* const CPUAddress() const { return m_cpuAddress; }
+		[[nodiscard]] constexpr id3d12GraphicsCommandList* const CommandList() const { return m_cmdList; }
+		[[nodiscard]] constexpr ID3D12Resource* const UploadBuffer() const { return m_uploadBuffer; }
+		[[nodiscard]] constexpr void* const CPUAddress() const { return m_cpuAddress; }
 
 	private:
 		DEBUG_OP(D3D12UploadContext() = default);

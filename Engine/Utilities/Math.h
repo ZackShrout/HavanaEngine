@@ -62,6 +62,7 @@ namespace Havana::Math
 	
 	/// <summary>
 	/// Align by rounding up. Will result in a multiple of 'alignment'
+	/// that is greater than or equal to 'size'
 	/// </summary>
 	template<u64 alignment>
 	constexpr u64 AlignSizeUp(u64 size)
@@ -74,6 +75,7 @@ namespace Havana::Math
 
 	/// <summary>
 	/// Align by rounding down. Will result in a multiple of 'alignment'
+	/// that is less than or equal to 'size'
 	/// </summary>
 	/// <param name="size"></param>
 	/// <returns></returns>

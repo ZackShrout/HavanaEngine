@@ -19,6 +19,11 @@ namespace Havana::Graphics
 			platformInterface.Surface.Height = Core::SurfaceHeight;
 			platformInterface.Surface.Render = Core::RenderSurface;
 
+			// NOTE:
+			// platformInterface.Resources.AddSubmesh = Content::Submesh::Add;
+			// platformInterface.Resources.RemoveSubmesh = Content::Submesh::Remove;
+			// need to be implemented
+
 			platformInterface.platform = GraphicsPlatform::VulkanAPI;
 		}
 	} // Vulkan namespace

@@ -47,4 +47,7 @@ namespace Havana::Graphics
 
 	Surface CreateSurface(Platform::Window window);
 	void RemoveSurface(surface_id id);
+
+	Id::id_type AddSubmesh(const u8*& data);
+	void RemoveSubmesh(Id::id_type id);
 }

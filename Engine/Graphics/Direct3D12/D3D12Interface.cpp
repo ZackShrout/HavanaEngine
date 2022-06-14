@@ -2,6 +2,7 @@
 #include "../Graphics/GraphicsPlatformInterface.h"
 #include "D3D12Interface.h"
 #include "D3D12Core.h"
+#include "D3D12Content.h"
 
 namespace Havana::Graphics
 {
@@ -18,6 +19,9 @@ namespace Havana::Graphics
 			platformInterface.Surface.Width = Core::SurfaceWidth;
 			platformInterface.Surface.Height = Core::SurfaceHeight;
 			platformInterface.Surface.Render = Core::RenderSurface;
+
+			platformInterface.Resources.AddSubmesh = Content::Submesh::Add;
+			platformInterface.Resources.RemoveSubmesh = Content::Submesh::Remove;
 
 			platformInterface.platform = GraphicsPlatform::Direct3D12;
 		}

@@ -6,7 +6,7 @@
 
 #if TEST_RENDERER
 
-#define USE_CONSOLE 0 // set to 1 if you want the console activated
+#define USE_CONSOLE 1 // set to 1 if you want the console activated
 
 using namespace Havana;
 

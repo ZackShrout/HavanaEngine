@@ -88,6 +88,7 @@ namespace Havana::Graphics::D3D12::Upload
 
 	D3D12UploadContext::D3D12UploadContext(u32 alignedSize)
 	{
+		assert(uploadCmdQueue);
 		{
 			// We don't want to lock this function for longer than necessary, so we scope this lock
 			std::lock_guard lock{ frameMutex };
