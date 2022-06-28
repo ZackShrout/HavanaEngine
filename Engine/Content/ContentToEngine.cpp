@@ -63,6 +63,8 @@ namespace Havana::Content
 			u32				m_lodCount;
 		};
 		
+		// This constant indicate that an element in geometryHierarchies is not a pointer, but a gpuId
+		constexpr uintptr_t		singleMeshMarker{ (uintptr_t)0x01 };
 		Utils::free_list<u8*>	geometryHierarchies;
 		std::mutex				geometryMutex;
 		
@@ -130,8 +132,54 @@ namespace Havana::Content
 				return true;
 				}());
 
+			static_assert(alignof(void*) > 2, "We need the least significant bit for the single mesh marker.");
 			std::lock_guard lock{ geometryMutex };
 			return geometryHierarchies.add(hierarchyBuffer);
+		}
+
+		// Creates geometry stream for the GPU that has a single submesh with a single LOD
+		// Creates a single submesh
+		// NOTE: expects the same data as CreateGeometryResource()
+		Id::id_type CreateSingleSubmesh(const void* const data)
+		{
+			assert(data);
+			Utils::BlobStreamReader blob{ (const u8*)data };
+			// skip lodCount, lodThreshold, submeshCount, and sizeOfSubmeshes
+			blob.Skip(sizeof(u32) + sizeof(f32) + sizeof(u32) + sizeof(u32));
+			const u8* at{ blob.Position() };
+			const Id::id_type gpuId{ Graphics::AddSubmesh(at) };
+
+			// Create a fake pointer and put it in the geometryHierarchies
+			static_assert(sizeof(uintptr_t) > sizeof(Id::id_type));
+			constexpr u8 shiftBits{ (sizeof(uintptr_t) - sizeof(Id::id_type)) << 3 };
+			u8* const fakePointer{ (u8* const)((((uintptr_t)gpuId) << shiftBits) | singleMeshMarker) };
+			std::lock_guard lock{ geometryMutex };
+			return geometryHierarchies.add(fakePointer);
+		}
+
+		// Determine if this geometry has a single lod with a single submesh
+		// NOTE: expects the same data as CreateGeometryResource()
+		bool IsSingleMesh(const void* const data)
+		{
+			assert(data);
+			Utils::BlobStreamReader blob{ (const u8*)data };
+			const u32 lodCount{ blob.Read<u32>() };
+			assert(lodCount);
+			if (lodCount > 1) return false;
+
+			// Skip over threshold
+			blob.Skip(sizeof(f32));
+			const u32 submeshCount{ blob.Read<u32>() };
+			assert(submeshCount);
+			return submeshCount == 1;
+		}
+
+		Id::id_type GpuIdFromFakePointer(u8* const pointer)
+		{
+			assert((uintptr_t)pointer & singleMeshMarker);
+			static_assert(sizeof(uintptr_t) > sizeof(Id::id_type));
+			constexpr u8 shiftBits{ (sizeof(uintptr_t) - sizeof(Id::id_type)) << 3 };
+			return (((uintptr_t)pointer) >> shiftBits) & (uintptr_t)Id::INVALID_ID;
 		}
 
 		// NOTE: Expects 'data' to contain (in order):
@@ -156,6 +204,7 @@ namespace Havana::Content
 		//
 		// Output format:
 		// 
+		// If geometry has more than one LOD or submesh:
 		// struct
 		// {
 		//     u32 lodCount,
@@ -167,29 +216,41 @@ namespace Havana::Content
 		//     } lodOffsets[lodCount],
 		//     Id::id_type gpuIds[totalNumberOfSubmeshes]
 		// } geometryHierarchy;
+		//
+		// If geometry has a single LOD and submesh
+		// 
+		// (gpu_id << 32) | 0x01
+		//
 
 		Id::id_type CreateGeometryResource(const void* const data)
 		{
-			return CreateMeshHierarchy(data);
+			assert(data);
+			return IsSingleMesh(data) ? CreateSingleSubmesh(data) : CreateMeshHierarchy(data);
 		}
 
 		void DestroyGeometryResource(Id::id_type id)
 		{
 			std::lock_guard lock{ geometryMutex };
 			u8* const pointer{ geometryHierarchies[id] };
-
-			GeometryHierarchyStream stream{ pointer };
-			const u32 lodCount{ stream.LoDCount() };
-			u32 idIndex{ 0 };
-			for (u32 lod{ 0 }; lod < lodCount; lod++)
+			if ((uintptr_t)pointer & singleMeshMarker)
 			{
-				for (u32 i{ 0 }; i < stream.LoDOffsets()[lod].count; i++)
-				{
-					Graphics::RemoveSubmesh(stream.GpuIds()[idIndex++]);
-				}
+				Graphics::RemoveSubmesh(GpuIdFromFakePointer(pointer));
 			}
-
-			free(pointer);
+			else
+			{
+				GeometryHierarchyStream stream{ pointer };
+				const u32 lodCount{ stream.LoDCount() };
+				u32 idIndex{ 0 };
+				for (u32 lod{ 0 }; lod < lodCount; lod++)
+				{
+					for (u32 i{ 0 }; i < stream.LoDOffsets()[lod].count; i++)
+					{
+						Graphics::RemoveSubmesh(stream.GpuIds()[idIndex++]);
+					}
+				}
+				
+				free(pointer);
+			}
 
 			geometryHierarchies.remove(id);
 		}

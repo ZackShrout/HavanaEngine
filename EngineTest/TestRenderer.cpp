@@ -2,13 +2,54 @@
 #include "../Platforms/PlatformTypes.h"
 #include "../Platforms/Platform.h"
 #include "../Graphics/Renderer.h"
+#include "../Graphics/Direct3D12/D3D12Core.h"
 #include "ShaderCompilation.h"
 
 #if TEST_RENDERER
 
-#define USE_CONSOLE 1 // set to 1 if you want the console activated
+#define USE_CONSOLE 0 // set to 1 if you want the console activated
 
 using namespace Havana;
+
+// Multithreading test worker span code /////////////////////////////////////
+#define ENABLE_TEST_WORKERS 1
+
+constexpr u32	numThreads{ 8 };
+bool			close{ false };
+std::thread		workers[numThreads];
+
+Utils::vector<u8> buffer(1024 * 1024, 0);
+// Test worker for upload context
+void BufferTestWorker()
+{
+	while (!close)
+	{
+		auto* resource = Graphics::D3D12::D3DX::CreateBuffer(buffer.data(), (u32)buffer.size());
+		// NOTE: We can also use Core::Release(resource) since we're not using the buffer for rendering.
+		//		 However, this is a nice test for DeferredRelease functionality.
+		Graphics::D3D12::Core::DeferredRelease(resource);
+	}
+}
+
+template<class FnPtr, class... Args>
+void InitTestWorkers(FnPtr&& fnPtr, Args&&... args)
+{
+#if ENABLE_TEST_WORKERS
+	close = false;
+	for (auto& w : workers)
+		w = std::thread(std::forward<FnPtr>(fnPtr), std::forward<Args>(args)...);
+#endif
+}
+
+void JointTestWorkers()
+{
+#if ENABLE_TEST_WORKERS
+	close = true;
+	for (auto& w : workers) w.join();
+#endif
+}
+/////////////////////////////////////////////////////////////////////////////
+
 
 Graphics::RenderSurface surfaces[4];
 
@@ -156,12 +197,15 @@ bool TestInitialize()
 	for (u32 i{ 0 }; i < _countof(surfaces); i++)
 		CreateRenderSurface(surfaces[i], info[i], nullptr);
 
+	InitTestWorkers(BufferTestWorker);
+	
 	isRestarting = false;
 	return true;
 }
 
 void TestShutdown()
 {
+	JointTestWorkers();
 	for (u32 i{ 0 }; i < _countof(surfaces); i++)
 		DestroyRenderSurface(surfaces[i]);
 

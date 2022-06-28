@@ -98,11 +98,11 @@ namespace Havana::Graphics
 
 	Id::id_type AddSubmesh(const u8*& data)
 	{
-
+		return gfx.Resources.AddSubmesh(data);
 	}
 
 	void RemoveSubmesh(Id::id_type id)
 	{
-
+		gfx.Resources.RemoveSubmesh(id);
 	}
 }
