@@ -183,11 +183,15 @@ xcopy /Y /D $(SolutionDir)packages\DirectXShaderCompiler\bin\x64\dxil.dll $(OutD
     <ClCompile Include="ShaderCompilation.cpp" />
     <ClCompile Include="TestEntityComponents.h" />
     <ClCompile Include="TestRenderer.cpp" />
+    <ClCompile Include="TestRendererLinux.cpp" />
+    <ClCompile Include="TestRendererWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderCompilation.h" />
     <ClInclude Include="Test.h" />
     <ClInclude Include="TestRenderer.h" />
+    <ClInclude Include="TestRendererLinux.h" />
+    <ClInclude Include="TestRendererWin32.h" />
     <ClInclude Include="TestWindowWin32.h" />
     <ClInclude Include="TestWindowLinux.h" />
   </ItemGroup>

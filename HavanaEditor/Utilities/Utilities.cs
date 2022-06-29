@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Windows.Threading;
 
@@ -40,6 +41,32 @@ namespace HavanaEditor.Utilities
         {
             if (!value.HasValue || !other.HasValue) return false;
             return Math.Abs(value.Value - other.Value) < Epsilon;
+        }
+
+        /// <summary>
+        /// Align by rounding up. Will result in a multiple of 'alignment'
+        /// that is greater than or equal to 'size'
+        /// </summary>
+        public static long AlignSizeUp(long size, long alignment)
+        {
+            Debug.Assert(alignment > 0, "Alignment must be non-zero");
+            long mask = alignment - 1;
+            Debug.Assert((alignment & mask) == 0, "Alignment must be a power of 2.");
+            return ((size + mask) & -mask);
+        }
+
+        /// <summary>
+        /// Align by rounding down. Will result in a multiple of 'alignment'
+        /// that is less than or equal to 'size'
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static long AlignSizeDown(long size, long alignment)
+        {
+            Debug.Assert(alignment > 0, "Alignment must be non-zero");
+            long mask = alignment - 1;
+            Debug.Assert((alignment & mask) == 0, "Alignment must be a power of 2.");
+            return (size & -mask);
         }
     }
 

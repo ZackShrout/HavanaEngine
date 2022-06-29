@@ -5,6 +5,8 @@
     <ClCompile Include="TestEntityComponents.h" />
     <ClCompile Include="TestRenderer.cpp" />
     <ClCompile Include="ShaderCompilation.cpp" />
+    <ClCompile Include="TestRendererWin32.cpp" />
+    <ClCompile Include="TestRendererLinux.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Test.h" />
@@ -12,5 +14,7 @@
     <ClInclude Include="TestRenderer.h" />
     <ClInclude Include="ShaderCompilation.h" />
     <ClInclude Include="TestWindowLinux.h" />
+    <ClInclude Include="TestRendererWin32.h" />
+    <ClInclude Include="TestRendererLinux.h" />
   </ItemGroup>
 </Project>

@@ -7,7 +7,9 @@
 #include "TestWindowWin32.h"
 #include "TestWindowLinux.h"
 #elif TEST_RENDERER
-#include "TestRenderer.h"
+//#include "TestRenderer.h"
+#include "TestRendererWin32.h"
+#include "TestRendererLinux.h"
 #else
 #error One of the tests must be enabled
 #endif
