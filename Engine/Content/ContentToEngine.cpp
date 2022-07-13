@@ -103,7 +103,7 @@ namespace Havana::Content
 			const u32 lodCount{ blob.Read<u32>() };
 			assert(lodCount);
 			GeometryHierarchyStream stream{ hierarchyBuffer, lodCount };
-			u16 submeshIndex{ 0 };
+			u32 submeshIndex{ 0 };
 			Id::id_type* const gpuIds{ stream.GpuIds() };
 
 			for (u32 lodIdx{ 0 }; lodIdx < lodCount; lodIdx++)
@@ -111,7 +111,7 @@ namespace Havana::Content
 				stream.Thresholds()[lodIdx] = blob.Read<f32>();
 				const u32 idCount{ blob.Read<u32>() };
 				assert(idCount < (1 << 16));
-				stream.LoDOffsets()[lodIdx] = { submeshIndex, (u16)idCount };
+				stream.LoDOffsets()[lodIdx] = { (u16)submeshIndex, (u16)idCount };
 				blob.Skip(sizeof(u32)); // skip over sizeOfSubmeshes
 				for (u32 idIdx{ 0 }; idIdx < idCount; idIdx++)
 				{

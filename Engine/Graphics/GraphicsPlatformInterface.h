@@ -1,7 +1,7 @@
 #pragma once
 #include "CommonHeaders.h"
 #include "Renderer.h"
-#include "../Platforms/Window.h"
+//#include "../Platforms/Window.h"
 
 namespace Havana::Graphics
 {
@@ -19,6 +19,14 @@ namespace Havana::Graphics
 			u32(*Height)(surface_id);
 			void(*Render)(surface_id);
 		} Surface;
+
+		struct
+		{
+			Camera(*Create)(CameraInitInfo);
+			void(*Remove)(camera_id);
+			void(*SetParamter)(camera_id, CameraParameter::Parameter, const void *const, u32);
+			void(*GetParamter)(camera_id, CameraParameter::Parameter, void *const, u32);
+		} Camera;
 
 		struct
 		{
