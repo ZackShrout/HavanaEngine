@@ -55,4 +55,10 @@ namespace Havana::Graphics::D3D12::Camera
 		Id::id_type				m_entityID;
 		bool					m_isDirty;
 	};
+
+	Graphics::Camera Create(CameraInitInfo info);
+	void Remove(camera_id id);
+	void SetParamter(camera_id id, CameraParameter::Parameter parameter, const void *const data, u32 dataSize);
+	void GetParamter(camera_id id, CameraParameter::Parameter parameter, void *const data, u32 dataSize);
+	[[nodiscard]] D3D12Camera& Get(camera_id id);
 }
