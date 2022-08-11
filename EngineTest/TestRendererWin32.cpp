@@ -1,11 +1,13 @@
 #ifdef _WIN64
 
+#include "Platforms/PlatformTypes.h"
+#include "Platforms/Platform.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/Direct3D12/D3D12Core.h"
+#include "Content/ContentToEngine.h"
+#include "Components/Entity.h"
+#include "Components/Transform.h"
 #include "TestRendererWin32.h"
-#include "../Platforms/PlatformTypes.h"
-#include "../Platforms/Platform.h"
-#include "../Graphics/Renderer.h"
-#include "../Graphics/Direct3D12/D3D12Core.h"
-#include "../Content/ContentToEngine.h"
 #include "ShaderCompilation.h"
 #include <filesystem>
 #include <fstream>
@@ -54,8 +56,9 @@ void JointTestWorkers()
 #endif
 }
 /////////////////////////////////////////////////////////////////////////////
-
+Entity::Entity entity{};
 Id::id_type modelId{ Id::INVALID_ID };
+Graphics::Camera camera{};
 Graphics::RenderSurface surfaces[4];
 TimeIt timer{};
 
@@ -146,6 +149,22 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+Entity::Entity CreateOneGameEntity()
+{
+	Transform::InitInfo transformInfo{};
+	Math::Vec3A rot{ 0, 3.14f, 0 };
+	DirectX::XMVECTOR quat{ DirectX::XMQuaternionRotationRollPitchYawFromVector(DirectX::XMLoadFloat3A(&rot)) };
+	Math::Vec4A rotQuat;
+	DirectX::XMStoreFloat4A(&rotQuat, quat);
+	memcpy(&transformInfo.rotation[0], &rotQuat.x, sizeof(transformInfo.rotation));
+
+	Entity::EntityInfo entityInfo{};
+	entityInfo.transform = &transformInfo;
+	Entity::Entity ntt{ Entity::CreateEntity(entityInfo) };
+	assert(ntt.IsValid());
+	return ntt;
+}
+
 bool ReadFile(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
 {
 	if (!std::filesystem::exists(path)) return false;
@@ -227,12 +246,19 @@ bool TestInitialize()
 
 	InitTestWorkers(BufferTestWorker);
 
+	entity = CreateOneGameEntity();
+	camera = Graphics::CreateCamera(Graphics::PerspectiveCameraInitInfo(entity.GetID()));
+	assert(camera.IsValid());
+
 	isRestarting = false;
 	return true;
 }
 
 void TestShutdown()
 {
+	if (camera.IsValid()) Graphics::RemoveCamera(camera.GetID());
+	if (entity.IsValid()) Entity::RemoveEntity(entity.GetID());
+	
 	JointTestWorkers();
 
 	if (Id::IsValid(modelId))

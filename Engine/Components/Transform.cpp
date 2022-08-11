@@ -5,8 +5,19 @@ namespace Havana::Transform
 	namespace // anonymous namespace
 	{
 		Utils::vector<Math::Vec3> positions;
+		Utils::vector<Math::Vec3> orientations;
 		Utils::vector<Math::Vec4> rotations;
 		Utils::vector<Math::Vec3> scales;
+
+		Math::Vec3 CalculateOrientation(Math::Vec4 rotation)
+		{
+			using namespace DirectX;
+			XMVECTOR rotationQuat{ XMLoadFloat4(&rotation) };
+			XMVECTOR front{ XMVectorSet(0.f, 0.f, 1.f, 0.f) };
+			Math::Vec3 orientation;
+			XMStoreFloat3(&orientation, XMVector3Rotate(front, rotationQuat));
+			return orientation;
+		}
 	}
 
 	Component Create(InitInfo info, Entity::Entity entity)
@@ -19,13 +30,16 @@ namespace Havana::Transform
 		if (positions.size() > entityIndex)
 		{
 #ifdef _WIN64
-			positions[entityIndex] = Math::Vec3(info.position);
-			rotations[entityIndex] = Math::Vec4(info.rotation);
-			scales[entityIndex] = Math::Vec3(info.scale);
+			Math::Vec4 rotation{ info.rotation };
+			rotations[entityIndex] = rotation;
+			orientations[entityIndex] = CalculateOrientation(rotation);
+			positions[entityIndex] = Math::Vec3{ info.position };
+			scales[entityIndex] = Math::Vec3{ info.scale };
 #elif __linux__
+			Math::Vec4 rotation{ info.rotation[0], info.rotation[1], info.rotation[2], info.rotation[3] };
+			rotations[entityIndex] = rotation;
+			orientations[entityIndex] = CalculateOrientation(rotation);
 			positions[entityIndex] = Math::Vec3(info.position[0], info.position[1], info.position[2]);
-			rotations[entityIndex] = Math::Vec4(info.rotation[0], info.rotation[1], info.rotation[2], 
-												info.rotation[3]);
 			scales[entityIndex] = Math::Vec3(info.scale[0], info.scale[1], info.scale[2]);
 #endif
 		}
@@ -33,8 +47,9 @@ namespace Havana::Transform
 		{
 			assert(positions.size() == entityIndex);
 #ifdef _WIN64
-			positions.emplace_back(info.position);
 			rotations.emplace_back(info.rotation);
+			orientations.emplace_back(CalculateOrientation(Math::Vec4{ info.rotation }));
+			positions.emplace_back(info.position);
 			scales.emplace_back(info.scale);
 #elif __linux__
 			positions.emplace_back(Math::Vec3(info.position[0], info.position[1], info.position[2]));
@@ -54,17 +69,24 @@ namespace Havana::Transform
 
 	
 	// Transform class method implementaions
-	Math::Vec3 Component::Position() const
-	{
-		assert(IsValid());
-		return positions[Id::Index(m_id)];
-	}
-	
 	Math::Vec4 Component::Rotation() const
 	{
 		assert(IsValid());
 		return rotations[Id::Index(m_id)];
 	}
+
+	Math::Vec3 Component::Orientation() const
+	{
+		assert(IsValid());
+		return orientations[Id::Index(m_id)];
+	}
+
+	Math::Vec3 Component::Position() const
+	{
+		assert(IsValid());
+		return positions[Id::Index(m_id)];
+	}
+
 
 	Math::Vec3 Component::Scale() const
 	{
