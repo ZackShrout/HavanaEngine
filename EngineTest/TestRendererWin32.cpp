@@ -56,9 +56,15 @@ void JointTestWorkers()
 #endif
 }
 /////////////////////////////////////////////////////////////////////////////
-Entity::Entity entity{};
+
+struct
+{
+	Entity::Entity entity{};
+	Graphics::Camera camera{};
+} camera;
+
+Id::id_type itemId{ Id::INVALID_ID };
 Id::id_type modelId{ Id::INVALID_ID };
-Graphics::Camera camera{};
 Graphics::RenderSurface surfaces[4];
 TimeIt timer{};
 
@@ -67,6 +73,8 @@ bool isRestarting{ false };
 void DestroyRenderSurface(Graphics::RenderSurface &surface);
 bool TestInitialize();
 void TestShutdown();
+Id::id_type CreateRenderItem(Id::id_type entityId);
+void DestroyRenderItem(Id::id_type itemId);
 
 LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -246,9 +254,11 @@ bool TestInitialize()
 
 	InitTestWorkers(BufferTestWorker);
 
-	entity = CreateOneGameEntity();
-	camera = Graphics::CreateCamera(Graphics::PerspectiveCameraInitInfo(entity.GetID()));
-	assert(camera.IsValid());
+	camera.entity = CreateOneGameEntity();
+	camera.camera = Graphics::CreateCamera(Graphics::PerspectiveCameraInitInfo(camera.entity.GetID()));
+	assert(camera.camera.IsValid());
+
+	itemId = CreateRenderItem(CreateOneGameEntity().GetID());
 
 	isRestarting = false;
 	return true;
@@ -256,8 +266,10 @@ bool TestInitialize()
 
 void TestShutdown()
 {
-	if (camera.IsValid()) Graphics::RemoveCamera(camera.GetID());
-	if (entity.IsValid()) Entity::RemoveEntity(entity.GetID());
+	DestroyRenderItem(itemId);
+	
+	if (camera.camera.IsValid()) Graphics::RemoveCamera(camera.camera.GetID());
+	if (camera.entity.IsValid()) Entity::RemoveEntity(camera.entity.GetID());
 	
 	JointTestWorkers();
 

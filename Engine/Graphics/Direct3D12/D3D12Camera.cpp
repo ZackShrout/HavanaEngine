@@ -7,14 +7,14 @@ namespace Havana::Graphics::D3D12::Camera
 	{
 		Utils::free_list<D3D12Camera> cameras;
 
-		void SetUpVector(D3D12Camera camera, const void* const data, u32 size)
+		void SetUpVector(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			Math::Vec3 upVector{ *(Math::Vec3*)data };
 			assert(sizeof(upVector) == size);
 			camera.Up(upVector);
 		}
 
-		void SetFieldOfView(D3D12Camera camera, const void* const data, u32 size)
+		void SetFieldOfView(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.ProjectionType() == Graphics::Camera::Perspective);
 			f32 fov{ *(f32*)data };
@@ -22,7 +22,7 @@ namespace Havana::Graphics::D3D12::Camera
 			camera.FieldOfView(fov);
 		}
 
-		void SetAspectRatio(D3D12Camera camera, const void* const data, u32 size)
+		void SetAspectRatio(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.ProjectionType() == Graphics::Camera::Perspective);
 			f32 aspectRatio{ *(f32*)data };
@@ -30,7 +30,7 @@ namespace Havana::Graphics::D3D12::Camera
 			camera.AspectRatio(aspectRatio);
 		}
 
-		void SetViewWidth(D3D12Camera camera, const void* const data, u32 size)
+		void SetViewWidth(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.ProjectionType() == Graphics::Camera::Orthographic);
 			f32 viewWidth{ *(f32*)data };
@@ -38,7 +38,7 @@ namespace Havana::Graphics::D3D12::Camera
 			camera.ViewWidth(viewWidth);
 		}
 
-		void SetViewHeight(D3D12Camera camera, const void* const data, u32 size)
+		void SetViewHeight(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.ProjectionType() == Graphics::Camera::Orthographic);
 			f32 viewHeight{ *(f32*)data };
@@ -46,63 +46,63 @@ namespace Havana::Graphics::D3D12::Camera
 			camera.ViewHeight(viewHeight);
 		}
 
-		void SetNearZ(D3D12Camera camera, const void* const data, u32 size)
+		void SetNearZ(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			f32 nearZ{ *(f32*)data };
 			assert(sizeof(nearZ) == size);
 			camera.NearZ(nearZ);
 		}
 
-		void SetFarZ(D3D12Camera camera, const void* const data, u32 size)
+		void SetFarZ(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			f32 farZ{ *(f32*)data };
 			assert(sizeof(farZ) == size);
 			camera.FarZ(farZ);
 		}
 
-		void GetView(D3D12Camera camera, void* const data, u32 size)
+		void GetView(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			Math::Mat4* const matrix{ (Math::Mat4* const)data };
 			assert(sizeof(Math::Mat4) == size);
 			DirectX::XMStoreFloat4x4(matrix, camera.View());
 		}
 
-		void GetProjection(D3D12Camera camera, void* const data, u32 size)
+		void GetProjection(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			Math::Mat4* const matrix{ (Math::Mat4* const)data };
 			assert(sizeof(Math::Mat4) == size);
 			DirectX::XMStoreFloat4x4(matrix, camera.Projection());
 		}
 
-		void GetInverseProjection(D3D12Camera camera, void* const data, u32 size)
+		void GetInverseProjection(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			Math::Mat4* const matrix{ (Math::Mat4* const)data };
 			assert(sizeof(Math::Mat4) == size);
 			DirectX::XMStoreFloat4x4(matrix, camera.InverseProjection());
 		}
 
-		void GetViewProjection(D3D12Camera camera, void* const data, u32 size)
+		void GetViewProjection(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			Math::Mat4* const matrix{ (Math::Mat4* const)data };
 			assert(sizeof(Math::Mat4) == size);
 			DirectX::XMStoreFloat4x4(matrix, camera.ViewProjection());
 		}
 
-		void GetInverseViewProjection(D3D12Camera camera, void* const data, u32 size)
+		void GetInverseViewProjection(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			Math::Mat4* const matrix{ (Math::Mat4* const)data };
 			assert(sizeof(Math::Mat4) == size);
 			DirectX::XMStoreFloat4x4(matrix, camera.InverseViewProjection());
 		}
 
-		void GetUpVector(D3D12Camera camera, void* const data, u32 size)
+		void GetUpVector(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			Math::Vec3* const upVector{ (Math::Vec3* const)data };
 			assert(sizeof(Math::Vec3) == size);
 			DirectX::XMStoreFloat3(upVector, camera.Up());
 		}
 
-		void GetFieldOfView(D3D12Camera camera, void* const data, u32 size)
+		void GetFieldOfView(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.ProjectionType() == Graphics::Camera::Perspective);
 			f32* const fov{ (f32* const)data };
@@ -110,7 +110,7 @@ namespace Havana::Graphics::D3D12::Camera
 			*fov = camera.FieldOfView();
 		}
 
-		void GetAspectRatio(D3D12Camera camera, void* const data, u32 size)
+		void GetAspectRatio(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.ProjectionType() == Graphics::Camera::Perspective);
 			f32* const aspectRatio{ (f32* const)data };
@@ -118,7 +118,7 @@ namespace Havana::Graphics::D3D12::Camera
 			*aspectRatio = camera.AspectRatio();
 		}
 
-		void GetViewWidth(D3D12Camera camera, void* const data, u32 size)
+		void GetViewWidth(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.ProjectionType() == Graphics::Camera::Orthographic);
 			f32* const viewWidth{ (f32* const)data };
@@ -126,7 +126,7 @@ namespace Havana::Graphics::D3D12::Camera
 			*viewWidth = camera.ViewWidth();
 		}
 
-		void GetViewHeight(D3D12Camera camera, void* const data, u32 size)
+		void GetViewHeight(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.ProjectionType() == Graphics::Camera::Orthographic);
 			f32* const viewHeight{ (f32* const)data };
@@ -134,28 +134,28 @@ namespace Havana::Graphics::D3D12::Camera
 			*viewHeight = camera.ViewHeight();
 		}
 
-		void GetNearZ(D3D12Camera camera, void* const data, u32 size)
+		void GetNearZ(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			f32* const nearZ{ (f32* const)data };
 			assert(sizeof(f32) == size);
 			*nearZ = camera.NearZ();
 		}
 
-		void GetFarZ(D3D12Camera camera, void* const data, u32 size)
+		void GetFarZ(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			f32* const farZ{ (f32* const)data };
 			assert(sizeof(f32) == size);
 			*farZ = camera.FarZ();
 		}
 
-		void GetProjectionType(D3D12Camera camera, void* const data, u32 size)
+		void GetProjectionType(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			Graphics::Camera::Type* const type{ (Graphics::Camera::Type* const)data };
 			assert(sizeof(Graphics::Camera::Type) == size);
 			*type = camera.ProjectionType();
 		}
 
-		void GetEntityID(D3D12Camera camera, void* const data, u32 size)
+		void GetEntityID(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			Id::id_type* const entityID{ (Id::id_type* const)data };
 			assert(sizeof(Id::id_type) == size);

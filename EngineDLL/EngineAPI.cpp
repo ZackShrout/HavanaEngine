@@ -8,10 +8,10 @@
 #include <Windows.h>
 #include <atlsafe.h>
 #include "Common.h"
-#include "..\Engine\Components\Script.h"
-#include "..\Graphics\Renderer.h"
-#include "..\Platforms\PlatformTypes.h"
-#include "..\Platforms\Platform.h"
+#include "Components\Script.h"
+#include "Graphics\Renderer.h"
+#include "Platforms\PlatformTypes.h"
+#include "Platforms\Platform.h"
 
 using namespace Havana;
 

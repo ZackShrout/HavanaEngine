@@ -2,10 +2,11 @@
 //Havana Engine API for use in Havana Editor
 //		     ***Entities***
 //******************************************
-#include "..\Common\Id.h"
-#include "..\Components\Entity.h"
-#include "..\Components\Transform.h"
-#include "..\Components\Script.h"
+#include "Id.h"
+#include "CommonHeaders.h"
+#include "Components\Entity.h"
+#include "Components\Transform.h"
+#include "Components\Script.h"
 #include "Common.h"
 
 using namespace Havana;

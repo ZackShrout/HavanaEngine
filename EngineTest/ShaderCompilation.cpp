@@ -1,8 +1,8 @@
 #ifdef _WIN64
 #include "..\packages\DirectXShaderCompiler\inc\d3d12shader.h"
 #include "..\packages\DirectXShaderCompiler\inc\dxcapi.h"
-#include "Graphics/Direct3D12/D3D12Core.h"
-#include "Graphics/Direct3D12/D3D12Shaders.h"
+#include "Graphics\Direct3D12\D3D12Core.h"
+#include "Graphics\Direct3D12\D3D12Shaders.h"
 
 #pragma comment(lib, "../packages/DirectXShaderCompiler/lib/x64/dxcompiler.lib")
 
@@ -28,24 +28,29 @@ using namespace Havana;
 
 namespace
 {
-	struct ShaderFileInfo
-	{
-		const char*			file;
-		const char*			function;
-		EngineShader::ID	id;
-		ShaderType::Type	type;
-	};
-
-	constexpr ShaderFileInfo shaderFiles[]
-	{
-		{"FullScreenTriangle.hlsl", "FullScreenTriangleVS", EngineShader::fullscreenTriangleVS, ShaderType::vertex},
-		{"FillColor.hlsl", "FillColorPS", EngineShader::fillColorPS, ShaderType::pixel},
-		{"PostProcess.hlsl", "PostProcessPS", EngineShader::postProcessPS, ShaderType::pixel},
-	};
-
-	static_assert(_countof(shaderFiles) == EngineShader::count);
-
 	constexpr const char* shadersSourcePath{ "../../Engine/Graphics/Direct3D12/Shaders/" };
+
+	struct EngineShaderInfo
+	{
+		EngineShader::ID	id;
+		ShaderFileInfo		info;
+	};
+	
+	constexpr EngineShaderInfo engineShaderFiles[]
+	{
+		EngineShader::fullscreenTriangleVS, {"FullScreenTriangle.hlsl", "FullScreenTriangleVS", ShaderType::vertex},
+		EngineShader::fillColorPS, {"FillColor.hlsl", "FillColorPS", ShaderType::pixel},
+		EngineShader::postProcessPS, {"PostProcess.hlsl", "PostProcessPS", ShaderType::pixel},
+	};
+
+	static_assert(_countof(engineShaderFiles) == EngineShader::count);
+
+	struct dxc_compiled_shader
+	{
+		ComPtr<IDxcBlob>		byte_code;
+		ComPtr<IDxcBlobUtf8>	disassembly;
+		DxcShaderHash			hash;
+	};
 
 	std::wstring ToWString(const char* c)
 	{
@@ -68,7 +73,7 @@ namespace
 		}
 		DISABLE_COPY_AND_MOVE(ShaderCompiler);
 
-		IDxcBlob* Compile(ShaderFileInfo info, std::filesystem::path fullPath)
+		dxc_compiled_shader Compile(ShaderFileInfo info, std::filesystem::path fullPath)
 		{
 			assert(m_compiler && m_utils && m_includeHandler);
 			HRESULT hr{ S_OK };
@@ -76,10 +81,10 @@ namespace
 			// Load the source file using Utils interface
 			ComPtr<IDxcBlobEncoding> sourceBlob{ nullptr };
 			DXCall(hr = m_utils->LoadFile(fullPath.c_str(), nullptr, &sourceBlob));
-			if (FAILED(hr)) return nullptr;
+			if (FAILED(hr)) return {};
 			assert(sourceBlob && sourceBlob->GetBufferSize());
 
-			std::wstring file{ ToWString(info.file) };
+			std::wstring file{ ToWString(info.fileName) };
 			std::wstring func{ ToWString(info.function) };
 			std::wstring prof{ ToWString(m_profileStrings[(u32)info.type]) };
 			std::wstring inc{ ToWString(shadersSourcePath) };
@@ -90,6 +95,7 @@ namespace
 				L"-E", func.c_str(),									// entry function
 				L"-T", prof.c_str(),									// target profile
 				L"-I", inc.c_str(),										// include path
+				L"-enable-16bit-types",
 				DXC_ARG_ALL_RESOURCES_BOUND,
 #if _DEBUG
 				DXC_ARG_DEBUG,
@@ -103,12 +109,15 @@ namespace
 			};
 
 			OutputDebugStringA("Compiling ");
-			OutputDebugStringA(info.file);
+			OutputDebugStringA(info.fileName);
+			OutputDebugStringA(" : ");
+			OutputDebugStringA(info.function);
+			OutputDebugStringA("\n");
 
 			return Compile(sourceBlob.Get(), args, _countof(args));
 		}
 
-		IDxcBlob* Compile(IDxcBlobEncoding* sourceBlob, LPCWSTR* args, u32 numArgs)
+		dxc_compiled_shader Compile(IDxcBlobEncoding* sourceBlob, LPCWSTR* args, u32 numArgs)
 		{
 			DxcBuffer buffer{};
 			buffer.Encoding = DXC_CP_ACP;					// auto detect format
@@ -118,11 +127,11 @@ namespace
 			HRESULT hr{ S_OK };
 			ComPtr<IDxcResult> results{ nullptr };
 			DXCall(hr = m_compiler->Compile(&buffer, args, numArgs, m_includeHandler.Get(), IID_PPV_ARGS(&results)));
-			if (FAILED(hr)) return nullptr;
+			if (FAILED(hr)) return {};
 
 			ComPtr<IDxcBlobUtf8> errors{ nullptr };
 			DXCall(hr = results->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr));
-			if (FAILED(hr)) return nullptr;
+			if (FAILED(hr)) return {};
 
 			if (errors && errors->GetStringLength())
 			{
@@ -137,17 +146,44 @@ namespace
 
 			HRESULT status{ S_OK };
 			DXCall(hr = results->GetStatus(&status));
-			if (FAILED(hr) || FAILED(status)) return nullptr;
+			if (FAILED(hr) || FAILED(status)) return {};
+
+			ComPtr<IDxcBlob> hash{ nullptr };
+			DXCall(hr = results->GetOutput(DXC_OUT_SHADER_HASH, IID_PPV_ARGS(&hash), nullptr));
+			if (FAILED(hr)) return {};
+			DxcShaderHash* const hash_buffer{ (DxcShaderHash* const)hash->GetBufferPointer() };
+			// Different source code could result in the same byte code, so we only care about byte code hash
+			assert(!(hash_buffer->Flags & DXC_HASHFLAG_INCLUDES_SOURCE));
+			OutputDebugStringA("Shader hash: ");
+			for (u32 i{ 0 }; i < _countof(hash_buffer->HashDigest); ++i)
+			{
+				char hash_bytes[3]{}; // 2 chars for hex value plus termination 0.
+				sprintf_s(hash_bytes, "%02x", (u32)hash_buffer->HashDigest[i]);
+				OutputDebugStringA(hash_bytes);
+				OutputDebugStringA(" ");
+			}
+			OutputDebugStringA("\n");
 
 			ComPtr<IDxcBlob> shader{ nullptr };
 			DXCall(hr = results->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shader), nullptr));
-			if (FAILED(hr)) return nullptr;
+			if (FAILED(hr)) return {};
+			buffer.Ptr = shader->GetBufferPointer();
+			buffer.Size = shader->GetBufferSize();
 
-			return shader.Detach();
+			ComPtr<IDxcResult> disasm_results{ nullptr };
+			DXCall(hr = m_compiler->Disassemble(&buffer, IID_PPV_ARGS(&disasm_results)));
+
+			ComPtr<IDxcBlobUtf8> disassembly{ nullptr };
+			DXCall(hr = disasm_results->GetOutput(DXC_OUT_DISASSEMBLY, IID_PPV_ARGS(&disassembly), nullptr));
+
+			dxc_compiled_shader result{ shader.Detach(), disassembly.Detach() };
+			memcpy(&result.hash.HashDigest[0], &hash_buffer->HashDigest[0], _countof(hash_buffer->HashDigest));
+
+			return result;
 		}
 	private:
 		// NOTE: Shader Model 6.x can also be used (AS and MS are only supported from SM6.5 and up)
-		constexpr static const char* m_profileStrings[]{ "vs_6_5", "hs_6_5", "ds_6_5", "gs_6_5", "ps_6_5", "cs_6_5", "as_6_5", "ms_6_5" };
+		constexpr static const char* m_profileStrings[]{ "vs_6_6", "hs_6_6", "ds_6_6", "gs_6_6", "ps_6_6", "cs_6_6", "as_6_6", "ms_6_6" };
 		static_assert(_countof(m_profileStrings) == ShaderType::count);
 
 		ComPtr<IDxcCompiler3>		m_compiler{ nullptr };
@@ -167,17 +203,15 @@ namespace
 		if (!std::filesystem::exists(engineShadersPath)) return false;
 		auto shadersCompilationTime = std::filesystem::last_write_time(engineShadersPath);
 
-		std::filesystem::path path{};
 		std::filesystem::path fullPath{};
 
 		// Check if either of the engine shader source files are newer than the compiled shader file,
 		// in which case, we need to recompile
 		for (u32 i{ 0 }; i < EngineShader::count; i++)
 		{
-			auto& info = shaderFiles[i];
-			path = shadersSourcePath;
-			path += info.file;
-			fullPath = path;
+			auto& file = engineShaderFiles[i];
+			fullPath = shadersSourcePath;
+			fullPath += file.info.fileName;
 			if (!std::filesystem::exists(fullPath)) return false;
 
 			auto shaderFileTime = std::filesystem::last_write_time(fullPath);
@@ -191,7 +225,7 @@ namespace
 	}
 
 #ifdef _WIN64
-	bool SaveCompiledShaders(Utils::vector<ComPtr<IDxcBlob>> shaders)
+	bool SaveCompiledShaders(Utils::vector<dxc_compiled_shader>& shaders)
 	{
 		auto engineShadersPath = GetEngineShadersPath();
 		std::filesystem::create_directories(engineShadersPath.parent_path());
@@ -205,8 +239,9 @@ namespace
 
 		for (auto& shader : shaders)
 		{
-			const D3D12_SHADER_BYTECODE byteCode{ shader->GetBufferPointer(), shader->GetBufferSize() };
+			const D3D12_SHADER_BYTECODE byteCode{ shader.byte_code->GetBufferPointer(), shader.byte_code->GetBufferSize() };
 			file.write((char*)&byteCode.BytecodeLength, sizeof(byteCode.BytecodeLength));
+			file.write((char*)&shader.hash.HashDigest[0], sizeof(shader.hash.HashDigest));
 			file.write((char*)byteCode.pShaderBytecode, byteCode.BytecodeLength);
 		}
 
@@ -230,21 +265,20 @@ bool CompileShaders()
 {
 	if (CompiledShadersAreUpToData()) return true;
 
-	Utils::vector<ComPtr<IDxcBlob>> shaders;
-	std::filesystem::path path{};
+	ShaderCompiler compiler{};
+	Utils::vector<dxc_compiled_shader> shaders;
 	std::filesystem::path fullPath{};
 
-	ShaderCompiler compiler{};
 	// Compile shaders put all shaders together in a buffer in the same order of compilation
 	for (u32 i{ 0 }; i < EngineShader::count; i++)
 	{
-		auto& info = shaderFiles[i];
-		path = shadersSourcePath;
-		path += info.file;
-		fullPath = path;
+		auto& file = engineShaderFiles[i];
+
+		fullPath = shadersSourcePath;
+		fullPath += file.info.fileName;
 		if (!std::filesystem::exists(fullPath)) return false;
-		ComPtr<IDxcBlob> compiledShader{ compiler.Compile(info, fullPath) };
-		if (compiledShader && compiledShader->GetBufferPointer() && compiledShader->GetBufferSize())
+		dxc_compiled_shader compiledShader{ compiler.Compile(file.info, fullPath) };
+		if (compiledShader.byte_code && compiledShader.byte_code->GetBufferPointer() && compiledShader.byte_code->GetBufferSize())
 		{
 			shaders.emplace_back(std::move(compiledShader));
 		}
