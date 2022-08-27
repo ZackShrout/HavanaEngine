@@ -46,7 +46,7 @@ namespace // anonymous namespace
 	/// </summary>
 	struct ScriptComponent
 	{
-		Script::Detail::script_creator scriptCreator;
+		Script::detail::script_creator scriptCreator;
 
 		Script::InitInfo ToInitInfo()
 		{
@@ -66,7 +66,7 @@ namespace // anonymous namespace
 		ScriptComponent script;
 	};
 
-	Entity::Entity EntityFromId(Id::id_type id)
+	Entity::Entity EntityFromId(id::id_type id)
 	{
 		return Entity::Entity{ Entity::entity_id{ id } };
 	}
@@ -78,7 +78,7 @@ namespace // anonymous namespace
 /// <param name="e">- Object that describes the entity being added.</param>
 /// <returns>EntityID</returns>
 EDITOR_INTERFACE
-Id::id_type CreateGameEntity(GameEntityDescriptor* e)
+id::id_type CreateGameEntity(GameEntityDescriptor* e)
 {
 	assert(e);
 	GameEntityDescriptor descriptor{ *e };
@@ -94,9 +94,9 @@ Id::id_type CreateGameEntity(GameEntityDescriptor* e)
 /// </summary>
 /// <param name="e">- Object that describes the entity being added.</param>
 EDITOR_INTERFACE
-void RemoveGameEntity(Id::id_type id)
+void RemoveGameEntity(id::id_type id)
 {
-	assert(Id::is_valid(id));
+	assert(id::is_valid(id));
 	Entity::RemoveEntity(Entity::entity_id{ id });
 }
 

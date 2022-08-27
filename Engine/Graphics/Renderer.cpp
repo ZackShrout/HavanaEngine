@@ -1,8 +1,7 @@
 #include "Renderer.h"
 #include "GraphicsPlatformInterface.h"
-#include "../Graphics/Direct3D12/D3D12Interface.h"
-#include "../Graphics/Vulkan/VulkanInterface.h"
-#include "../Graphics/OpenGL/OpenGLInterface.h"
+#include "Graphics/Direct3D12/D3D12Interface.h"
+#include "Graphics/Vulkan/VulkanInterface.h"
 
 namespace havana::Graphics
 {
@@ -28,9 +27,6 @@ namespace havana::Graphics
 #endif // _WIN64
 			case GraphicsPlatform::VulkanAPI:
 				Vulkan::GetPlatformInterface(gfx);
-				break;
-			case GraphicsPlatform::OpenGraphicsL:
-				OpenGL::GetPlatformInterface(gfx);
 				break;
 			default:
 				return false;
@@ -68,7 +64,7 @@ namespace havana::Graphics
 
 	void RemoveSurface(surface_id id)
 	{
-		assert(Id::is_valid(id));
+		assert(id::is_valid(id));
 		gfx.Surface.Remove(id);
 	}
 
@@ -247,20 +243,20 @@ namespace havana::Graphics
 		return type;
 	}
 
-	Id::id_type Camera::EntityID() const
+	id::id_type Camera::EntityID() const
 	{
 		assert(is_valid());
-		Id::id_type id;
+		id::id_type id;
 		gfx.Camera.GetParamter(m_id, CameraParameter::EntityID, &id, sizeof(id));
 		return id;
 	}
 
-	Id::id_type AddSubmesh(const u8*& data)
+	id::id_type AddSubmesh(const u8*& data)
 	{
 		return gfx.Resources.AddSubmesh(data);
 	}
 
-	void RemoveSubmesh(Id::id_type id)
+	void RemoveSubmesh(id::id_type id)
 	{
 		gfx.Resources.RemoveSubmesh(id);
 	}

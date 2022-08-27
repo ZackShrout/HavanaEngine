@@ -5,12 +5,12 @@ namespace havana::Script
 {
 	namespace // anonymous namespace
 	{
-		utl::vector<Detail::script_ptr>		entityScripts;
-		utl::vector<Id::id_type>				idMapping;
-		utl::vector<Id::generation_type>		generations;
+		utl::vector<detail::script_ptr>		entityScripts;
+		utl::vector<id::id_type>				idMapping;
+		utl::vector<id::generation_type>		generations;
 		utl::deque<script_id>				freeIDs;
 
-		using script_registry = std::unordered_map<size_t, Detail::script_creator>;
+		using script_registry = std::unordered_map<size_t, detail::script_creator>;
 
 		script_registry& Registry()
 		{
@@ -35,17 +35,17 @@ namespace havana::Script
 
 		bool Exists(script_id id)
 		{
-			assert(Id::is_valid(id));
-			const Id::id_type index{ Id::Index(id) };
+			assert(id::is_valid(id));
+			const id::id_type index{ id::index(id) };
 			assert(index < generations.size() && idMapping[index] < entityScripts.size());
-			assert(generations[id] == Id::Generation(id));
-			return (generations[id] == Id::Generation(id)) &&
+			assert(generations[id] == id::generation(id));
+			return (generations[id] == id::generation(id)) &&
 				entityScripts[idMapping[index]] &&
 				entityScripts[idMapping[index]]->is_valid();
 		}
 	}
 
-	namespace Detail
+	namespace detail
 	{
 		u8 RegisterScript(size_t tag, script_creator func)
 		{
@@ -77,26 +77,26 @@ namespace havana::Script
 		assert(info.script_creator);
 
 		script_id id{};
-		if (freeIDs.size() > Id::minDeletedElements)
+		if (freeIDs.size() > id::mindeleted_elements)
 		{
 			id = freeIDs.front();
 			assert(!Exists(id));
 			freeIDs.pop_front();
-			id = script_id{ Id::NewGeneration(id) };
-			++generations[Id::Index(id)];
+			id = script_id{ id::new_generation(id) };
+			++generations[id::index(id)];
 		}
 		else
 		{
-			id = script_id{ (Id::id_type)idMapping.size() };
+			id = script_id{ (id::id_type)idMapping.size() };
 			idMapping.emplace_back();
 			generations.push_back(0);
 		}
 
-		assert(Id::is_valid(id));
-		const Id::id_type index{ (Id::id_type)entityScripts.size() };
+		assert(id::is_valid(id));
+		const id::id_type index{ (id::id_type)entityScripts.size() };
 		entityScripts.emplace_back(info.script_creator(entity));
 		assert(entityScripts.back()->GetID() == entity.GetID());
-		idMapping[Id::Index(id)] = index;
+		idMapping[id::index(id)] = index;
 		return Component{ id };
 	}
 
@@ -104,11 +104,11 @@ namespace havana::Script
 	{
 		assert(component.is_valid() && Exists(component.GetID()));
 		const script_id id{ component.GetID() };
-		const Id::id_type index{ idMapping[Id::Index(id)] };
+		const id::id_type index{ idMapping[id::index(id)] };
 		const script_id lastID{ entityScripts.back()->Script().GetID() };
 		utl::EraseUnordered(entityScripts, index);
-		idMapping[Id::Index(lastID)] = index;
-		idMapping[Id::Index(id)] = Id::INVALID_ID;
+		idMapping[id::index(lastID)] = index;
+		idMapping[id::index(id)] = id::invalid_id;
 	}
 
 	void Update(float dt)

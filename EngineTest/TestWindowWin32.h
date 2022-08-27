@@ -33,7 +33,7 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	case WM_SYSCHAR:
 		if (wparam == VK_RETURN && (HIWORD(lparam) & KF_ALTDOWN))
 		{
-			Platform::Window win{ Platform::window_id{(Id::id_type)GetWindowLongPtr(hwnd, GWLP_USERDATA)} };
+			Platform::Window win{ Platform::window_id{(id::id_type)GetWindowLongPtr(hwnd, GWLP_USERDATA)} };
 			win.SetFullscreen(!win.IsFullscreen());
 			return 0;
 		}

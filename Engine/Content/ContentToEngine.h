@@ -33,6 +33,6 @@ namespace havana::Content
 		};
 	};
 
-	Id::id_type CreateResource(const void* const data, AssetType::type type);
-	void DestroyResource(Id::id_type id, AssetType::type type);
+	id::id_type CreateResource(const void* const data, AssetType::type type);
+	void DestroyResource(id::id_type id, AssetType::type type);
 }

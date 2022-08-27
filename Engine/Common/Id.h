@@ -1,73 +1,78 @@
 #pragma once
 #include "CommonHeaders.h"
 
-namespace havana::Id
+namespace havana::id
 {
 	// Define ID type for ECS system
 	using id_type = u32;
 
 	// constants for index and generation bits for ECS system
-	namespace Detail
+	namespace detail
 	{
-		constexpr u32 GENERATION_BITS{ 10 };
-		constexpr u32 INDEX_BITS{ sizeof(id_type) * 8 - GENERATION_BITS };
-		constexpr id_type INDEX_MASK{ (id_type{1} << INDEX_BITS) - 1 };
-		constexpr id_type GENERATION_MASK{ (id_type{1} << GENERATION_BITS) - 1 };
+		constexpr u32 generation_bits{ 10 };
+		constexpr u32 index_bits{ sizeof(id_type) * 8 - generation_bits };
+		constexpr id_type index_mask{ (id_type{1} << index_bits) - 1 };
+		constexpr id_type generation_mask{ (id_type{1} << generation_bits) - 1 };
 	}
-	constexpr id_type INVALID_ID{ id_type(-1) };
-	constexpr u32 minDeletedElements{ 1024 };
+	constexpr id_type invalid_id{ id_type(-1) };
+	constexpr u32 mindeleted_elements{ 1024 };
 
 	// Define generation type for ECS system
-	using generation_type = std::conditional_t<Detail::GENERATION_BITS <= 16, std::conditional_t<Detail::GENERATION_BITS <= 8, u8, u16>, u32>;
+	using generation_type = std::conditional_t<detail::generation_bits <= 16, std::conditional_t<detail::generation_bits <= 8, u8, u16>, u32>;
 
 	// ASSERTIONS
-	static_assert(sizeof(generation_type) * 8 >= Detail::GENERATION_BITS); // generation_type can be no larger than u32
+	static_assert(sizeof(generation_type) * 8 >= detail::generation_bits); // generation_type can be no larger than u32
 	static_assert(sizeof(id_type) - sizeof(generation_type) > 0); // Enforces id_type larger than generation_type
 
 	// METHODS
-	constexpr bool is_valid(id_type id)
+	constexpr bool
+	is_valid(id_type id)
 	{
-		return id != INVALID_ID;
+		return id != invalid_id;
 	}
 
-	constexpr id_type Index(id_type id)
+	constexpr id_type
+	index(id_type id)
 	{
-		id_type index{ id & Detail::INDEX_MASK };
-		assert(index != Detail::INDEX_MASK);
+		id_type index{ id & detail::index_mask };
+		assert(index != detail::index_mask);
 		return index;
 	}
 
-	constexpr id_type Generation(id_type id)
+	constexpr id_type
+	generation(id_type id)
 	{
-		return (id >> Detail::INDEX_BITS) & Detail::GENERATION_MASK;
+		return (id >> detail::index_bits) & detail::generation_mask;
 	}
 
-	constexpr id_type NewGeneration(id_type id)
+	constexpr id_type
+	new_generation(id_type id)
 	{
-		const id_type generation{ Id::Generation(id) + 1 };
-		assert(generation < (((u64)1 << Detail::GENERATION_BITS) - 1));
-		return Index(id) | (generation << Detail::INDEX_BITS);
+		const id_type generation{ id::generation(id) + 1 };
+		assert(generation < (((u64)1 << detail::generation_bits) - 1));
+		return index(id) | (generation << detail::index_bits);
 	}
 
 #if _DEBUG
-	namespace internal
+	namespace detail
 	{
-		struct IdBase
+		struct id_base
 		{
-			constexpr explicit IdBase(id_type id) : id{ id } {}
+			constexpr explicit id_base(id_type id) : id{ id } {}
 			constexpr operator id_type() const { return id; }
 		private:
 			id_type id;
 		};
-	}
+	} // detail namespace
+
 	#define DEFINE_TYPED_ID(name)								\
-			struct name final : Id::internal::IdBase			\
+			struct name final : id::detail::id_base				\
 			{													\
-				constexpr explicit name(Id::id_type id)			\
-					: IdBase{ id } {}							\
-				constexpr name() : IdBase{ 0 } {}				\
+				constexpr explicit name(id::id_type id)			\
+					: id_base{ id } {}							\
+				constexpr name() : id_base{ 0 } {}				\
 			};
 #else
-	#define DEFINE_TYPED_ID(name) using name = Id::id_type
+	#define DEFINE_TYPED_ID(name) using name = id::id_type
 #endif
 }

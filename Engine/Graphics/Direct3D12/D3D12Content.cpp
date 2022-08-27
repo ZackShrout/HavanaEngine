@@ -61,7 +61,7 @@ namespace havana::Graphics::D3D12::Content
 		/// </summary>
 		/// <param name="data"></param>
 		/// <returns></returns>
-		Id::id_type Add(const u8*& data)
+		id::id_type Add(const u8*& data)
 		{
 			utl::blob_stream_reader blob{ (const u8*)data };
 
@@ -111,7 +111,7 @@ namespace havana::Graphics::D3D12::Content
 			return submeshViews.add(view);
 		}
 
-		void Remove(Id::id_type id)
+		void Remove(id::id_type id)
 		{
 			std::lock_guard lock{ submeshMutex };
 			submeshViews.remove(id);

@@ -8,17 +8,17 @@
 #include <Windows.h>
 #include <atlsafe.h>
 #include "Common.h"
-#include "Components\Script.h"
-#include "Graphics\Renderer.h"
-#include "Platforms\PlatformTypes.h"
-#include "Platforms\Platform.h"
+#include "Components/Script.h"
+#include "Graphics/Renderer.h"
+#include "Platforms/PlatformTypes.h"
+#include "Platforms/Platform.h"
 
 using namespace havana;
 
 namespace
 {
 	HMODULE gameCodeDll{ nullptr };
-	using get_script_creator = havana::Script::Detail::script_creator(*)(size_t);
+	using get_script_creator = havana::Script::detail::script_creator(*)(size_t);
 	get_script_creator GetScriptCreatorDll{ nullptr };
 	using get_script_names = LPSAFEARRAY(*)(void);
 	get_script_names GetScriptNamesDll{ nullptr };
@@ -66,9 +66,9 @@ EDITOR_INTERFACE u32 UnloadGameCodeDll()
 /// </summary>
 /// <param name="name">Name of the script to get.</param>
 /// <returns>Function pointer to script.</returns>
-EDITOR_INTERFACE Script::Detail::script_creator GetScriptCreator(const char* name)
+EDITOR_INTERFACE Script::detail::script_creator GetScriptCreator(const char* name)
 {
-	return (gameCodeDll && GetScriptCreatorDll) ? GetScriptCreatorDll(Script::Detail::string_hash()(name)) : nullptr;
+	return (gameCodeDll && GetScriptCreatorDll) ? GetScriptCreatorDll(Script::detail::string_hash()(name)) : nullptr;
 }
 
 /// <summary>

@@ -285,7 +285,7 @@ namespace havana::Graphics::D3D12::Core
 		}
 	} // anonymous namespace
 
-	namespace Detail
+	namespace detail
 	{
 		void DeferredRelease(IUnknown* resource)
 		{
@@ -294,7 +294,7 @@ namespace havana::Graphics::D3D12::Core
 			deferredReleases[frameIdx].push_back(resource);
 			SetDeferredReleasesFlag();
 		}
-	} // Detail namespace
+	} // detail namespace
 
 	bool Initialize()
 	{

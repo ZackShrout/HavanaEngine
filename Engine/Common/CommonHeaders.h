@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <mutex>
 
+// TODO: check Linux implementation now that it has DirectXMath, not GLM
 #if defined (_WIN64)
 	#include <DirectXMath.h>
 #endif
@@ -43,7 +44,7 @@
 
 // COMMON HEADERS
 #include "PrimitiveTypes.h"
-#include "../Utilities/Math.h"
-#include "../Utilities/Utilities.h"
+#include "Utilities/Math.h"
+#include "Utilities/Utilities.h"
 #include "Id.h"
-#include "../Utilities/MathTypes.h"
+#include "Utilities/MathTypes.h"

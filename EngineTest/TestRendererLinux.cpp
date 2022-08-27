@@ -53,7 +53,7 @@ void JointTestWorkers()
 }
 /////////////////////////////////////////////////////////////////////////////
 
-Id::id_type modelId{ Id::INVALID_ID };
+id::id_type modelId{ id::invalid_id };
 Graphics::RenderSurface surfaces[4];
 TimeIt timer{};
 
@@ -127,7 +127,7 @@ bool TestInitialize(void *disp)
 	if (!ReadFile("..\\..\\enginetest\\model.model", model, size)) return false;
 
 	modelId = Content::CreateResource(model.get(), Content::AssetType::Mesh);
-	if (!Id::is_valid(modelId)) return false;
+	if (!id::is_valid(modelId)) return false;
 
 	InitTestWorkers(BufferTestWorker);
 
@@ -139,7 +139,7 @@ void TestShutdown()
 {
 	JointTestWorkers();
 
-	if (Id::is_valid(modelId))
+	if (id::is_valid(modelId))
 	{
 		Content::DestroyResource(modelId, Content::AssetType::Mesh);
 	}

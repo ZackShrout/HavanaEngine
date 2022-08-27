@@ -25,7 +25,7 @@ namespace havana::Graphics::D3D12::Core
 		}
 	}
 
-	namespace Detail
+	namespace detail
 	{
 		void DeferredRelease(IUnknown* resource);
 	}
@@ -35,7 +35,7 @@ namespace havana::Graphics::D3D12::Core
 	{
 		if (resource)
 		{
-			Detail::DeferredRelease(resource);
+			detail::DeferredRelease(resource);
 			resource = nullptr;
 		}
 	}

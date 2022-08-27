@@ -8,7 +8,7 @@ namespace havana::Entity
 	{
 		utl::vector <Transform::Component>	transforms;
 		utl::vector <Script::Component>		scripts;
-		utl::vector<Id::generation_type>		generations;
+		utl::vector<id::generation_type>		generations;
 		utl::deque<entity_id>					freeIDs;
 	}
 	
@@ -19,17 +19,17 @@ namespace havana::Entity
 
 		entity_id id;
 
-		if (freeIDs.size() > Id::minDeletedElements)
+		if (freeIDs.size() > id::mindeleted_elements)
 		{
 			id = freeIDs.front();
 			assert(!IsAlive(id));
 			freeIDs.pop_front();
-			id = entity_id{ Id::NewGeneration(id) };
-			++generations[Id::Index(id)];
+			id = entity_id{ id::new_generation(id) };
+			++generations[id::index(id)];
 		}
 		else
 		{
-			id = entity_id{ (Id::id_type)generations.size() };
+			id = entity_id{ (id::id_type)generations.size() };
 			generations.push_back(0);
 
 			// Resize components vector to match the amount of entities
@@ -39,7 +39,7 @@ namespace havana::Entity
 		}
 
 		const Entity newEntity{ id };
-		const Id::id_type index{ Id::Index(id) };
+		const id::id_type index{ id::index(id) };
 
 		// Create transform component
 		assert(!transforms[index].is_valid());
@@ -59,7 +59,7 @@ namespace havana::Entity
 
 	void RemoveEntity(entity_id id)
 	{
-		const Id::id_type index{ Id::Index(id) };
+		const id::id_type index{ id::index(id) };
 		assert(IsAlive(id));
 
 		if (scripts[index].is_valid())
@@ -75,24 +75,24 @@ namespace havana::Entity
 
 	bool IsAlive(entity_id id)
 	{
-		assert(Id::is_valid(id));
-		const Id::id_type index{ Id::Index(id) };
+		assert(id::is_valid(id));
+		const id::id_type index{ id::index(id) };
 		assert(index < generations.size());
-		return (generations[index] == Id::Generation(id) && transforms[index].is_valid());
+		return (generations[index] == id::generation(id) && transforms[index].is_valid());
 	}
 
 	// Entity class method implementations
 	Transform::Component Entity::Transform() const
 	{
 		assert(IsAlive(m_id));
-		const Id::id_type index{ Id::Index(m_id) };
+		const id::id_type index{ id::index(m_id) };
 		return transforms[index];
 	}
 
 	Script::Component Entity::Script() const
 	{
 		assert(IsAlive(m_id));
-		const Id::id_type index{ Id::Index(m_id) };
+		const id::id_type index{ id::index(m_id) };
 		return scripts[index];
 	}
 }

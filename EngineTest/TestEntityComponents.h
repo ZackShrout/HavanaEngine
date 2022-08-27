@@ -68,7 +68,7 @@ private:
 		{
 			++m_added;
 			Entity::Entity entity{ Entity::CreateEntity(entityInfo) };
-			assert(entity.is_valid() && Id::is_valid(entity.GetID()));
+			assert(entity.is_valid() && id::is_valid(entity.GetID()));
 			m_entities.push_back(entity);
 			assert(Entity::IsAlive(entity.GetID()));
 			--count;
@@ -84,7 +84,7 @@ private:
 		{
 			const u32 index{ (u32)rand() % ((u32)m_entities.size()) };
 			const Entity::Entity entity{ m_entities[index] };
-			assert(entity.is_valid() && Id::is_valid(entity.GetID()));
+			assert(entity.is_valid() && id::is_valid(entity.GetID()));
 			if (entity.is_valid())
 			{
 				Entity::RemoveEntity(entity.GetID());

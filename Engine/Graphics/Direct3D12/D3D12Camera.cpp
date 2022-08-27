@@ -157,8 +157,8 @@ namespace havana::Graphics::D3D12::Camera
 
 		void GetEntityID(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			Id::id_type* const entityID{ (Id::id_type* const)data };
-			assert(sizeof(Id::id_type) == size);
+			id::id_type* const entityID{ (id::id_type* const)data };
+			assert(sizeof(id::id_type) == size);
 			*entityID = camera.EntityID();
 		}
 
@@ -212,7 +212,7 @@ namespace havana::Graphics::D3D12::Camera
 		m_fieldOfView{ info.fieldOfView }, m_aspectRatio{ info.aspectRatio },
 		m_projectionType{ info.type }, m_entityID{ info.entityId }, m_isDirty{ true }
 	{
-		assert(Id::is_valid(m_entityID));
+		assert(id::is_valid(m_entityID));
 		Update();
 	}
 
@@ -293,7 +293,7 @@ namespace havana::Graphics::D3D12::Camera
 
 	void Remove(camera_id id)
 	{
-		assert(Id::is_valid(id));
+		assert(id::is_valid(id));
 		cameras.remove(id);
 	}
 
@@ -315,7 +315,7 @@ namespace havana::Graphics::D3D12::Camera
 
 	D3D12Camera& Get(camera_id id)
 	{
-		assert(Id::is_valid(id));
+		assert(id::is_valid(id));
 		return cameras[id];
 	}
 }

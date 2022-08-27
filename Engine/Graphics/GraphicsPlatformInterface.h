@@ -30,8 +30,8 @@ namespace havana::Graphics
 
 		struct
 		{
-			Id::id_type (*AddSubmesh)(const u8*&);
-			void (*RemoveSubmesh)(Id::id_type);
+			id::id_type (*AddSubmesh)(const u8*&);
+			void (*RemoveSubmesh)(id::id_type);
 		} Resources;
 
 		GraphicsPlatform platform = (GraphicsPlatform)-1;

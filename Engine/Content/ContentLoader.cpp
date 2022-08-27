@@ -71,7 +71,7 @@ namespace havana::Content
 			memcpy(&scriptName, data, nameLength); data += nameLength;
 			// make scriptName a 0-terminated c-string
 			scriptName[nameLength] = 0;
-			scriptInfo.script_creator = Script::Detail::GetScriptCreatorDll(Script::Detail::string_hash()(scriptName));
+			scriptInfo.script_creator = Script::detail::GetScriptCreatorDll(Script::detail::string_hash()(scriptName));
 			
 			info.script = &scriptInfo;
 			

@@ -23,7 +23,7 @@ namespace havana::Transform
 	Component Create(InitInfo info, Entity::Entity entity)
 	{
 		assert(entity.is_valid());
-		const Id::id_type entityIndex{ Id::Index(entity.GetID()) };
+		const id::id_type entityIndex{ id::index(entity.GetID()) };
 
 		// If our entity has filled a hole in the vector of entities, put the
 		// transform component into that same slot in the vector of transforms
@@ -72,25 +72,25 @@ namespace havana::Transform
 	math::v4 Component::Rotation() const
 	{
 		assert(is_valid());
-		return rotations[Id::Index(m_id)];
+		return rotations[id::index(m_id)];
 	}
 
 	math::v3 Component::Orientation() const
 	{
 		assert(is_valid());
-		return orientations[Id::Index(m_id)];
+		return orientations[id::index(m_id)];
 	}
 
 	math::v3 Component::Position() const
 	{
 		assert(is_valid());
-		return positions[Id::Index(m_id)];
+		return positions[id::index(m_id)];
 	}
 
 
 	math::v3 Component::Scale() const
 	{
 		assert(is_valid());
-		return scales[Id::Index(m_id)];
+		return scales[id::index(m_id)];
 	}
 }

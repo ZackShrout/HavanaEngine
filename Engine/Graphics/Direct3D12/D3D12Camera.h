@@ -30,7 +30,7 @@ namespace havana::Graphics::D3D12::Camera
 		[[nodiscard]] constexpr f32 ViewWidth() const { return m_viewWidth; }
 		[[nodiscard]] constexpr f32 ViewHeight() const { return m_viewHeight; }
 		[[nodiscard]] constexpr Graphics::Camera::type ProjectionType() const { return m_projectionType; }
-		[[nodiscard]] constexpr Id::id_type EntityID() const { return m_entityID; }
+		[[nodiscard]] constexpr id::id_type EntityID() const { return m_entityID; }
 
 	private:
 		DirectX::XMMATRIX		m_view;
@@ -52,7 +52,7 @@ namespace havana::Graphics::D3D12::Camera
 			f32					m_viewHeight;	// use with orthographic camera
 		};
 		Graphics::Camera::type	m_projectionType;
-		Id::id_type				m_entityID;
+		id::id_type				m_entityID;
 		bool					m_isDirty;
 	};
 

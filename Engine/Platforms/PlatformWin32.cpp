@@ -30,7 +30,7 @@ namespace havana::Platform
 
 		WindowInfo &GetFromHandle(window_handle handle)
 		{
-			const window_id id{(Id::id_type)GetWindowLongPtr(handle, GWLP_USERDATA)};
+			const window_id id{(id::id_type)GetWindowLongPtr(handle, GWLP_USERDATA)};
 			return GetFromId(id);
 		}
 
@@ -249,7 +249,7 @@ namespace havana::Platform
 			ShowWindow(info.hwnd, SW_SHOWNORMAL);
 			UpdateWindow(info.hwnd);
 
-			window_id id{ (Id::id_type)GetWindowLongPtr(info.hwnd, GWLP_USERDATA) };
+			window_id id{ (id::id_type)GetWindowLongPtr(info.hwnd, GWLP_USERDATA) };
 			windows[id] = info;
 
 			return Window{id};

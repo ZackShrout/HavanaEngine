@@ -9,9 +9,9 @@ bool ReadFile(std::filesystem::path, std::unique_ptr<u8[]>&, u64&);
 
 namespace
 {
-	Id::id_type modelId{ Id::INVALID_ID };
-	Id::id_type vsId{ Id::INVALID_ID };
-	Id::id_type psId{ Id::INVALID_ID };
+	id::id_type modelId{ id::invalid_id };
+	id::id_type vsId{ id::invalid_id };
+	id::id_type psId{ id::invalid_id };
 
 	void LoadModel()
 	{
@@ -20,7 +20,7 @@ namespace
 		ReadFile("..\\..\\enginetest\\model.model", model, size);
 
 		modelId = Content::CreateResource(model.get(), Content::AssetType::Mesh);
-		assert(Id::is_valid(modelId));
+		assert(id::is_valid(modelId));
 	}
 
 	void LoadShaders()
@@ -30,7 +30,7 @@ namespace
 	}
 } // anonymous namespace
 
-Id::id_type CreateRenderItem(Id::id_type entityId)
+id::id_type CreateRenderItem(id::id_type entityId)
 {
 	// load a model, pretend it belongs to entityId
 	auto _1 = std::thread{ [] { LoadModel(); } };
@@ -44,7 +44,7 @@ Id::id_type CreateRenderItem(Id::id_type entityId)
 	// add a render item using the model and its materials
 }
 
-void DestroyRenderItem(Id::id_type itemId)
+void DestroyRenderItem(id::id_type itemId)
 {
 
 }

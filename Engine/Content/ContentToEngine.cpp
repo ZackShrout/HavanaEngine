@@ -26,11 +26,11 @@ namespace havana::Content
 				m_lodCount = *((u32*)buffer);
 				m_thresholds = (f32*)(&buffer[sizeof(u32)]);
 				m_lodOffsets = (lodOffset*)(&m_thresholds[m_lodCount]);
-				m_gpuIds = (Id::id_type*)(&m_lodOffsets[m_lodCount]);
+				m_gpuIds = (id::id_type*)(&m_lodOffsets[m_lodCount]);
 			}
 			DISABLE_COPY_AND_MOVE(GeometryHierarchyStream);
 
-			void GpuIds(u32 lod, Id::id_type*& ids, u32& idCount)
+			void GpuIds(u32 lod, id::id_type*& ids, u32& idCount)
 			{
 				assert(lod < m_lodCount);
 				ids = &m_gpuIds[m_lodOffsets[lod].offset];
@@ -53,13 +53,13 @@ namespace havana::Content
 			[[nodiscard]] constexpr u32 LoDCount() const { return m_lodCount; }
 			[[nodiscard]] constexpr f32* Thresholds() const { return m_thresholds; }
 			[[nodiscard]] constexpr lodOffset* LoDOffsets() const { return m_lodOffsets; }
-			[[nodiscard]] constexpr Id::id_type* GpuIds() const { return m_gpuIds; }
+			[[nodiscard]] constexpr id::id_type* GpuIds() const { return m_gpuIds; }
 
 		private:
 			u8* const		m_buffer;
 			f32*			m_thresholds;
 			lodOffset*		m_lodOffsets;
-			Id::id_type*	m_gpuIds;
+			id::id_type*	m_gpuIds;
 			u32				m_lodCount;
 		};
 		
@@ -82,8 +82,8 @@ namespace havana::Content
 			{
 				// skip threshold
 				blob.skip(sizeof(f32));
-				// add size of gpuIds (sizeof(Id::id_type) * submeshCount)
-				size += sizeof(Id::id_type) * blob.read<u32>();
+				// add size of gpuIds (sizeof(id::id_type) * submeshCount)
+				size += sizeof(id::id_type) * blob.read<u32>();
 				// skip submesh data and go to the next LOD
 				blob.skip(blob.read<u32>());				
 			}
@@ -93,7 +93,7 @@ namespace havana::Content
 
 		// Creates a hierarchy stream for a geometry that has multiple LODs and/or multiple submeshes
 		// NOTE: expects the same data as CreateGeometryResource()
-		Id::id_type CreateMeshHierarchy(const void* const data)
+		id::id_type CreateMeshHierarchy(const void* const data)
 		{
 			assert(data);
 			const u32 size{ GetGeometryHierarchySize(data) };
@@ -104,7 +104,7 @@ namespace havana::Content
 			assert(lodCount);
 			GeometryHierarchyStream stream{ hierarchyBuffer, lodCount };
 			u32 submeshIndex{ 0 };
-			Id::id_type* const gpuIds{ stream.GpuIds() };
+			id::id_type* const gpuIds{ stream.GpuIds() };
 
 			for (u32 lodIdx{ 0 }; lodIdx < lodCount; lodIdx++)
 			{
@@ -140,18 +140,18 @@ namespace havana::Content
 		// Creates geometry stream for the GPU that has a single submesh with a single LOD
 		// Creates a single submesh
 		// NOTE: expects the same data as CreateGeometryResource()
-		Id::id_type CreateSingleSubmesh(const void* const data)
+		id::id_type CreateSingleSubmesh(const void* const data)
 		{
 			assert(data);
 			utl::blob_stream_reader blob{ (const u8*)data };
 			// skip lodCount, lod_threshold, submeshCount, and sizeOfSubmeshes
 			blob.skip(sizeof(u32) + sizeof(f32) + sizeof(u32) + sizeof(u32));
 			const u8* at{ blob.position() };
-			const Id::id_type gpuId{ Graphics::AddSubmesh(at) };
+			const id::id_type gpuId{ Graphics::AddSubmesh(at) };
 
 			// Create a fake pointer and put it in the geometryHierarchies
-			static_assert(sizeof(uintptr_t) > sizeof(Id::id_type));
-			constexpr u8 shiftBits{ (sizeof(uintptr_t) - sizeof(Id::id_type)) << 3 };
+			static_assert(sizeof(uintptr_t) > sizeof(id::id_type));
+			constexpr u8 shiftBits{ (sizeof(uintptr_t) - sizeof(id::id_type)) << 3 };
 			u8* const fakePointer{ (u8* const)((((uintptr_t)gpuId) << shiftBits) | singleMeshMarker) };
 			std::lock_guard lock{ geometryMutex };
 			return geometryHierarchies.add(fakePointer);
@@ -174,12 +174,12 @@ namespace havana::Content
 			return submeshCount == 1;
 		}
 
-		Id::id_type GpuIdFromFakePointer(u8* const pointer)
+		id::id_type GpuIdFromFakePointer(u8* const pointer)
 		{
 			assert((uintptr_t)pointer & singleMeshMarker);
-			static_assert(sizeof(uintptr_t) > sizeof(Id::id_type));
-			constexpr u8 shiftBits{ (sizeof(uintptr_t) - sizeof(Id::id_type)) << 3 };
-			return (((uintptr_t)pointer) >> shiftBits) & (uintptr_t)Id::INVALID_ID;
+			static_assert(sizeof(uintptr_t) > sizeof(id::id_type));
+			constexpr u8 shiftBits{ (sizeof(uintptr_t) - sizeof(id::id_type)) << 3 };
+			return (((uintptr_t)pointer) >> shiftBits) & (uintptr_t)id::invalid_id;
 		}
 
 		// NOTE: Expects 'data' to contain (in order):
@@ -214,7 +214,7 @@ namespace havana::Content
 		//         u16 offset,
 		//         u16 count,
 		//     } lodOffsets[lodCount],
-		//     Id::id_type gpuIds[totalNumberOfSubmeshes]
+		//     id::id_type gpuIds[totalNumberOfSubmeshes]
 		// } geometryHierarchy;
 		//
 		// If geometry has a single LOD and submesh
@@ -222,13 +222,13 @@ namespace havana::Content
 		// (gpu_id << 32) | 0x01
 		//
 
-		Id::id_type CreateGeometryResource(const void* const data)
+		id::id_type CreateGeometryResource(const void* const data)
 		{
 			assert(data);
 			return IsSingleMesh(data) ? CreateSingleSubmesh(data) : CreateMeshHierarchy(data);
 		}
 
-		void DestroyGeometryResource(Id::id_type id)
+		void DestroyGeometryResource(id::id_type id)
 		{
 			std::lock_guard lock{ geometryMutex };
 			u8* const pointer{ geometryHierarchies[id] };
@@ -256,10 +256,10 @@ namespace havana::Content
 		}
 	} // anonymous namespaces
 
-	Id::id_type CreateResource(const void* const data, AssetType::type type)
+	id::id_type CreateResource(const void* const data, AssetType::type type)
 	{
 		assert(data);
-		Id::id_type id{ Id::INVALID_ID };
+		id::id_type id{ id::invalid_id };
 
 		switch (type)
 		{
@@ -280,13 +280,13 @@ namespace havana::Content
 			break;
 		}
 
-		assert(Id::is_valid(id));
+		assert(id::is_valid(id));
 		return id;
 	}
 
-	void DestroyResource(Id::id_type id, AssetType::type type)
+	void DestroyResource(id::id_type id, AssetType::type type)
 	{
-		assert(Id::is_valid(id));
+		assert(id::is_valid(id));
 
 		switch (type)
 		{

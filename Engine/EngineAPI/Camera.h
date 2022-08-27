@@ -17,7 +17,7 @@ namespace havana::Graphics
 		constexpr explicit Camera(camera_id id) : m_id{ id } {}
 		constexpr Camera() = default;
 		constexpr camera_id GetID() const { return m_id; }
-		constexpr bool is_valid() const { return Id::is_valid(m_id); }
+		constexpr bool is_valid() const { return id::is_valid(m_id); }
 
 
 		void Up(math::v3 up) const;
@@ -40,9 +40,9 @@ namespace havana::Graphics
 		f32 ViewWidth() const;
 		f32 ViewHeight() const;
 		type ProjectionType() const;
-		Id::id_type EntityID() const;
+		id::id_type EntityID() const;
 
 	private:
-		camera_id m_id{ Id::INVALID_ID };
+		camera_id m_id{ id::invalid_id };
 	};
 }

@@ -13,7 +13,7 @@ namespace havana::Graphics
 		constexpr Surface() = default;
 		constexpr explicit Surface(surface_id id) : m_id{ id } {}
 		constexpr surface_id GetID() const { return m_id; }
-		constexpr bool is_valid() const { return Id::is_valid(m_id); }
+		constexpr bool is_valid() const { return id::is_valid(m_id); }
 
 		void Resize(u32 width, u32 height) const;
 		u32 Width() const;
@@ -21,7 +21,7 @@ namespace havana::Graphics
 		void Render() const;
 
 	private:
-		surface_id m_id{ Id::INVALID_ID };
+		surface_id m_id{ id::invalid_id };
 	};
 
 	struct RenderSurface
@@ -55,7 +55,7 @@ namespace havana::Graphics
 
 	struct CameraInitInfo
 	{
-		Id::id_type		entityId{ Id::INVALID_ID };
+		id::id_type		entityId{ id::invalid_id };
 		Camera::type	type{};
 		math::v3		up;
 		f32				nearZ;
@@ -74,9 +74,9 @@ namespace havana::Graphics
 
 	struct PerspectiveCameraInitInfo : public CameraInitInfo
 	{
-		explicit PerspectiveCameraInitInfo(Id::id_type id)
+		explicit PerspectiveCameraInitInfo(id::id_type id)
 		{
-			assert(Id::is_valid(id));
+			assert(id::is_valid(id));
 			entityId = id;
 			type = Camera::Perspective;
 			up = { 0.0f, 1.0f, 0.0f };
@@ -89,9 +89,9 @@ namespace havana::Graphics
 
 	struct OrthographicCameraInitInfo : public CameraInitInfo
 	{
-		explicit OrthographicCameraInitInfo(Id::id_type id)
+		explicit OrthographicCameraInitInfo(id::id_type id)
 		{
-			assert(Id::is_valid(id));
+			assert(id::is_valid(id));
 			entityId = id;
 			type = Camera::Orthographic;
 			up = { 0.0f, 1.0f, 0.0f };
@@ -124,6 +124,6 @@ namespace havana::Graphics
 	Camera CreateCamera(CameraInitInfo info);
 	void RemoveCamera(camera_id id);
 
-	Id::id_type AddSubmesh(const u8*& data);
-	void RemoveSubmesh(Id::id_type id);
+	id::id_type AddSubmesh(const u8*& data);
+	void RemoveSubmesh(id::id_type id);
 }
