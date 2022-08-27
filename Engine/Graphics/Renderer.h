@@ -3,7 +3,7 @@
 #include "../Platforms/Platform.h"
 #include "EngineAPI/Camera.h"
 
-namespace Havana::Graphics
+namespace havana::Graphics
 {
 	DEFINE_TYPED_ID(surface_id);
 	
@@ -13,7 +13,7 @@ namespace Havana::Graphics
 		constexpr Surface() = default;
 		constexpr explicit Surface(surface_id id) : m_id{ id } {}
 		constexpr surface_id GetID() const { return m_id; }
-		constexpr bool IsValid() const { return Id::IsValid(m_id); }
+		constexpr bool is_valid() const { return Id::is_valid(m_id); }
 
 		void Resize(u32 width, u32 height) const;
 		u32 Width() const;
@@ -46,18 +46,18 @@ namespace Havana::Graphics
 			InverseProjection,
 			ViewProjection,
 			InverseViewProjection,
-			Type,
+			type,
 			EntityID,
 
-			Count
+			count
 		};
 	};
 
 	struct CameraInitInfo
 	{
 		Id::id_type		entityId{ Id::INVALID_ID };
-		Camera::Type	type{};
-		Math::Vec3		up;
+		Camera::type	type{};
+		math::v3		up;
 		f32				nearZ;
 		f32				farZ;
 		union
@@ -76,7 +76,7 @@ namespace Havana::Graphics
 	{
 		explicit PerspectiveCameraInitInfo(Id::id_type id)
 		{
-			assert(Id::IsValid(id));
+			assert(Id::is_valid(id));
 			entityId = id;
 			type = Camera::Perspective;
 			up = { 0.0f, 1.0f, 0.0f };
@@ -91,7 +91,7 @@ namespace Havana::Graphics
 	{
 		explicit OrthographicCameraInitInfo(Id::id_type id)
 		{
-			assert(Id::IsValid(id));
+			assert(Id::is_valid(id));
 			entityId = id;
 			type = Camera::Orthographic;
 			up = { 0.0f, 1.0f, 0.0f };

@@ -2,7 +2,7 @@
 #include "CommonHeaders.h"
 
 #ifndef SHIPPING
-namespace Havana::Content
+namespace havana::Content
 {
 	bool LoadGame();
 	void UnloadGame();

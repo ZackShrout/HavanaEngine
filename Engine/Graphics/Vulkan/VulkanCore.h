@@ -1,7 +1,7 @@
 #pragma once
 #include "VulkanCommonHeaders.h"
 
-namespace Havana::Graphics::Vulkan::Core
+namespace havana::Graphics::Vulkan::Core
 {
 	bool Initialize();
 	void Shutdown();

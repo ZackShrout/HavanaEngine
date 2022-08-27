@@ -4,7 +4,7 @@
 #include "../Graphics/Vulkan/VulkanInterface.h"
 #include "../Graphics/OpenGL/OpenGLInterface.h"
 
-namespace Havana::Graphics
+namespace havana::Graphics
 {
 	namespace
 	{
@@ -68,31 +68,31 @@ namespace Havana::Graphics
 
 	void RemoveSurface(surface_id id)
 	{
-		assert(Id::IsValid(id));
+		assert(Id::is_valid(id));
 		gfx.Surface.Remove(id);
 	}
 
 	void Surface::Resize(u32 width, u32 height) const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		return gfx.Surface.Resize(m_id, width, height);
 	}
 
 	u32 Surface::Width() const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		return gfx.Surface.Width(m_id);
 	}
 
 	u32 Surface::Height() const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		return gfx.Surface.Height(m_id);
 	}
 
 	void Surface::Render() const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		gfx.Surface.Render(m_id);
 	}
 
@@ -106,94 +106,94 @@ namespace Havana::Graphics
 		gfx.Camera.Remove(id);
 	}
 
-	void Camera::Up(Math::Vec3 up) const
+	void Camera::Up(math::v3 up) const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		gfx.Camera.SetParamter(m_id, CameraParameter::UpVector, &up, sizeof(up));
 	}
 
 	void Camera::FieldOfView(f32 fov) const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		gfx.Camera.SetParamter(m_id, CameraParameter::FieldOfView, &fov, sizeof(fov));
 	}
 
 	void Camera::AspectRatio(f32 aspectRatio) const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		gfx.Camera.SetParamter(m_id, CameraParameter::AspectRatio, &aspectRatio, sizeof(aspectRatio));
 	}
 
 	void Camera::ViewWidth(f32 width) const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		gfx.Camera.SetParamter(m_id, CameraParameter::ViewWidth, &width, sizeof(width));
 	}
 
 	void Camera::ViewHeight(f32 height) const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		gfx.Camera.SetParamter(m_id, CameraParameter::ViewHeight, &height, sizeof(height));
 	}
 
 	void Camera::Range(f32 nearZ, f32 farZ) const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		gfx.Camera.SetParamter(m_id, CameraParameter::NearZ, &nearZ, sizeof(nearZ));
 		gfx.Camera.SetParamter(m_id, CameraParameter::FarZ, &farZ, sizeof(farZ));
 	}
 
-	Math::Mat4 Camera::View() const
+	math::Mat4 Camera::View() const
 	{
-		assert(IsValid());
-		Math::Mat4 matrix;
+		assert(is_valid());
+		math::Mat4 matrix;
 		gfx.Camera.GetParamter(m_id, CameraParameter::View, &matrix, sizeof(matrix));
 		return matrix;
 	}
 
-	Math::Mat4 Camera::Projection() const
+	math::Mat4 Camera::Projection() const
 	{
-		assert(IsValid());
-		Math::Mat4 matrix;
+		assert(is_valid());
+		math::Mat4 matrix;
 		gfx.Camera.GetParamter(m_id, CameraParameter::Projection, &matrix, sizeof(matrix));
 		return matrix;
 	}
 
-	Math::Mat4 Camera::InverseProjection() const
+	math::Mat4 Camera::InverseProjection() const
 	{
-		assert(IsValid());
-		Math::Mat4 matrix;
+		assert(is_valid());
+		math::Mat4 matrix;
 		gfx.Camera.GetParamter(m_id, CameraParameter::InverseProjection, &matrix, sizeof(matrix));
 		return matrix;
 	}
 
-	Math::Mat4 Camera::ViewProjection() const
+	math::Mat4 Camera::ViewProjection() const
 	{
-		assert(IsValid());
-		Math::Mat4 matrix;
+		assert(is_valid());
+		math::Mat4 matrix;
 		gfx.Camera.GetParamter(m_id, CameraParameter::ViewProjection, &matrix, sizeof(matrix));
 		return matrix;
 	}
 
-	Math::Mat4 Camera::InverseViewProjection() const
+	math::Mat4 Camera::InverseViewProjection() const
 	{
-		assert(IsValid());
-		Math::Mat4 matrix;
+		assert(is_valid());
+		math::Mat4 matrix;
 		gfx.Camera.GetParamter(m_id, CameraParameter::InverseViewProjection, &matrix, sizeof(matrix));
 		return matrix;
 	}
 
-	Math::Vec3 Camera::Up() const
+	math::v3 Camera::Up() const
 	{
-		assert(IsValid());
-		Math::Vec3 upVector;
+		assert(is_valid());
+		math::v3 upVector;
 		gfx.Camera.GetParamter(m_id, CameraParameter::UpVector, &upVector, sizeof(upVector));
 		return upVector;
 	}
 
 	f32 Camera::NearZ() const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		f32 nearZ;
 		gfx.Camera.GetParamter(m_id, CameraParameter::NearZ, &nearZ, sizeof(nearZ));
 		return nearZ;
@@ -201,7 +201,7 @@ namespace Havana::Graphics
 
 	f32 Camera::FarZ() const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		f32 farZ;
 		gfx.Camera.GetParamter(m_id, CameraParameter::FarZ, &farZ, sizeof(farZ));
 		return farZ;
@@ -209,7 +209,7 @@ namespace Havana::Graphics
 
 	f32 Camera::FieldOfView() const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		f32 fov;
 		gfx.Camera.GetParamter(m_id, CameraParameter::FieldOfView, &fov, sizeof(fov));
 		return fov;
@@ -217,7 +217,7 @@ namespace Havana::Graphics
 
 	f32 Camera::AspectRatio() const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		f32 aspectRatio;
 		gfx.Camera.GetParamter(m_id, CameraParameter::AspectRatio, &aspectRatio, sizeof(aspectRatio));
 		return aspectRatio;
@@ -225,7 +225,7 @@ namespace Havana::Graphics
 
 	f32 Camera::ViewWidth() const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		f32 width;
 		gfx.Camera.GetParamter(m_id, CameraParameter::ViewWidth, &width, sizeof(width));
 		return width;
@@ -233,23 +233,23 @@ namespace Havana::Graphics
 
 	f32 Camera::ViewHeight() const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		f32 height;
 		gfx.Camera.GetParamter(m_id, CameraParameter::ViewHeight, &height, sizeof(height));
 		return height;
 	}
 
-	Camera::Type Camera::ProjectionType() const
+	Camera::type Camera::ProjectionType() const
 	{
-		assert(IsValid());
-		Type type;
-		gfx.Camera.GetParamter(m_id, CameraParameter::Type, &type, sizeof(type));
+		assert(is_valid());
+		type type;
+		gfx.Camera.GetParamter(m_id, CameraParameter::type, &type, sizeof(type));
 		return type;
 	}
 
 	Id::id_type Camera::EntityID() const
 	{
-		assert(IsValid());
+		assert(is_valid());
 		Id::id_type id;
 		gfx.Camera.GetParamter(m_id, CameraParameter::EntityID, &id, sizeof(id));
 		return id;

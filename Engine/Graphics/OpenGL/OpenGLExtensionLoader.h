@@ -1,7 +1,7 @@
 #pragma once
 #include "OpenGLCommonHeaders.h"
 
-namespace Havana::Graphics::OpenGL::OGL
+namespace havana::Graphics::OpenGL::OGL
 {
 #ifdef __linux__
     #include <dlfcn.h>

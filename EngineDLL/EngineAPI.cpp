@@ -13,16 +13,16 @@
 #include "Platforms\PlatformTypes.h"
 #include "Platforms\Platform.h"
 
-using namespace Havana;
+using namespace havana;
 
 namespace
 {
 	HMODULE gameCodeDll{ nullptr };
-	using get_script_creator = Havana::Script::Detail::script_creator(*)(size_t);
+	using get_script_creator = havana::Script::Detail::script_creator(*)(size_t);
 	get_script_creator GetScriptCreatorDll{ nullptr };
 	using get_script_names = LPSAFEARRAY(*)(void);
 	get_script_names GetScriptNamesDll{ nullptr };
-	Utils::vector<Graphics::RenderSurface> surfaces;
+	utl::vector<Graphics::RenderSurface> surfaces;
 } // anonymous namespace
 
 /// <summary>
@@ -92,7 +92,7 @@ EDITOR_INTERFACE u32 CreateRenderSurface(HWND host, s32 width, s32 height)
 	assert(host);
 	Platform::WindowInitInfo info{ nullptr, host, nullptr, 0, 0, width, height };
 	Graphics::RenderSurface surface{ Platform::MakeWindow(&info), {} };
-	assert(surface.window.IsValid());
+	assert(surface.window.is_valid());
 	surfaces.emplace_back(surface);
 	return (u32)(surfaces.size() - 1);
 }

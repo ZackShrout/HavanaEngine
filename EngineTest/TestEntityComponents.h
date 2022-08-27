@@ -6,7 +6,7 @@
 #include "../Engine/Components/Entity.h"
 #include "../Engine/Components/Transform.h"
 
-using namespace Havana;
+using namespace havana;
 
 class EngineTest : public Test
 {
@@ -68,7 +68,7 @@ private:
 		{
 			++m_added;
 			Entity::Entity entity{ Entity::CreateEntity(entityInfo) };
-			assert(entity.IsValid() && Id::IsValid(entity.GetID()));
+			assert(entity.is_valid() && Id::is_valid(entity.GetID()));
 			m_entities.push_back(entity);
 			assert(Entity::IsAlive(entity.GetID()));
 			--count;
@@ -84,8 +84,8 @@ private:
 		{
 			const u32 index{ (u32)rand() % ((u32)m_entities.size()) };
 			const Entity::Entity entity{ m_entities[index] };
-			assert(entity.IsValid() && Id::IsValid(entity.GetID()));
-			if (entity.IsValid())
+			assert(entity.is_valid() && Id::is_valid(entity.GetID()));
+			if (entity.is_valid())
 			{
 				Entity::RemoveEntity(entity.GetID());
 				m_entities.erase(m_entities.begin() + index);
@@ -102,7 +102,7 @@ private:
 		std::cout << "Entities removed: " << m_removed << std::endl;
 	}
 
-	Utils::vector<Entity::Entity> m_entities;
+	utl::vector<Entity::Entity> m_entities;
 	u32 m_added{ 0 };
 	u32 m_removed{ 0 };
 	u32 m_numEntities{ 0 };

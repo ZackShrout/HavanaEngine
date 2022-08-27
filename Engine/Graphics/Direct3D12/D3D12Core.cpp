@@ -7,7 +7,7 @@
 
 using namespace Microsoft::WRL;
 
-namespace Havana::Graphics::D3D12::Core
+namespace havana::Graphics::D3D12::Core
 {
 	namespace
 	{
@@ -187,7 +187,7 @@ namespace Havana::Graphics::D3D12::Core
 			u32							m_frameIndex{ 0 };
 		};
 
-		using surface_collection = Utils::free_list<D3D12Surface>;
+		using surface_collection = utl::free_list<D3D12Surface>;
 
 		id3d12Device*				mainDevice{ nullptr };
 		IDXGIFactory7*				dxgiFactory{ nullptr };
@@ -199,7 +199,7 @@ namespace Havana::Graphics::D3D12::Core
 		DescriptorHeap				dsvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
 		DescriptorHeap				srvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
 		DescriptorHeap				uavDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
-		Utils::vector<IUnknown*>	deferredReleases[frameBufferCount]{};
+		utl::vector<IUnknown*>	deferredReleases[frameBufferCount]{};
 		u32							deferredReleasesFlag[frameBufferCount]{};
 		std::mutex					deferredReleasesMutex{};
 
@@ -275,7 +275,7 @@ namespace Havana::Graphics::D3D12::Core
 			srvDescHeap.ProcessDeferredFree(frameIdx);
 			uavDescHeap.ProcessDeferredFree(frameIdx);
 			
-			Utils::vector<IUnknown*>& resources{ deferredReleases[frameIdx] };
+			utl::vector<IUnknown*>& resources{ deferredReleases[frameIdx] };
 			if (!resources.empty())
 			{
 				for (auto& resource : resources)

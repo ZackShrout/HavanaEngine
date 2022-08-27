@@ -2,11 +2,11 @@
 #include "OpenGLSurface.h"
 #define OPENGL_IMPLEMENT_LOADER // This needs to be defined here in order to call GetOpenGLExtensions();
 #include "OpenGLExtensionLoader.h"
-namespace Havana::Graphics::OpenGL::Core
+namespace havana::Graphics::OpenGL::Core
 {
     namespace
 	{
-		using surface_collection = Utils::free_list<OpenGLSurface>;
+		using surface_collection = utl::free_list<OpenGLSurface>;
 
 		surface_collection surfaces;
 

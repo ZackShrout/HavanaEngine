@@ -19,7 +19,7 @@ using f32 = float;
 #ifdef _WIN64
 // CONSTANTS
 constexpr u64 U64_INVALID_ID{ 0xffff'ffff'ffff'ffffui64 };
-constexpr u32 U32_INVALID_ID{ 0xffff'ffffui32 };
+constexpr u32 u32_invalid_id{ 0xffff'ffffui32 };
 constexpr u16 U16_INVALID_ID{ 0xffffui16 };
 constexpr u8 U8_INVALID_ID{ 0xffui8 };
 #else
@@ -30,7 +30,7 @@ constexpr u8  operator"" _ui8(unsigned long long X)  noexcept { return static_ca
 
 // CONSTANTS
 constexpr u64 U64_INVALID_ID{ 0xffff'ffff'ffff'ffff_ui64 };
-constexpr u32 U32_INVALID_ID{ 0xffff'ffff_ui32 };
+constexpr u32 u32_invalid_id{ 0xffff'ffff_ui32 };
 constexpr u16 U16_INVALID_ID{ 0xffff_ui16 };
 constexpr u8 U8_INVALID_ID{ 0xff_ui8 };
 #endif // _WIN64

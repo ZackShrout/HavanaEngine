@@ -9,7 +9,7 @@
 #include "Components\Script.h"
 #include "Common.h"
 
-using namespace Havana;
+using namespace havana;
 
 namespace // anonymous namespace
 {
@@ -96,7 +96,7 @@ Id::id_type CreateGameEntity(GameEntityDescriptor* e)
 EDITOR_INTERFACE
 void RemoveGameEntity(Id::id_type id)
 {
-	assert(Id::IsValid(id));
+	assert(Id::is_valid(id));
 	Entity::RemoveEntity(Entity::entity_id{ id });
 }
 

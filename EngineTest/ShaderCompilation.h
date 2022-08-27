@@ -2,7 +2,7 @@
 
 struct ShaderType
 {
-	enum Type : u32
+	enum type : u32
 	{
 		vertex = 0,
 		hull,
@@ -21,7 +21,7 @@ struct ShaderFileInfo
 {
 	const char*			fileName;
 	const char*			function;
-	ShaderType::Type	type;
+	ShaderType::type	type;
 };
 
 bool CompileShaders();

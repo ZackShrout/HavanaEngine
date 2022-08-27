@@ -2,7 +2,7 @@
 #include "Graphics/Renderer.h"
 #include "Utilities/IOStream.h"
 
-namespace Havana::Content
+namespace havana::Content
 {
 	namespace
 	{
@@ -15,10 +15,10 @@ namespace Havana::Content
 				u16 count;
 			};
 
-			GeometryHierarchyStream(u8* const buffer, u32 lods = U32_INVALID_ID) : m_buffer{ buffer }
+			GeometryHierarchyStream(u8* const buffer, u32 lods = u32_invalid_id) : m_buffer{ buffer }
 			{
 				assert(buffer && lods);
-				if (lods != U32_INVALID_ID)
+				if (lods != u32_invalid_id)
 				{
 					*((u32*)buffer) = lods;
 				}
@@ -65,15 +65,15 @@ namespace Havana::Content
 		
 		// This constant indicate that an element in geometryHierarchies is not a pointer, but a gpuId
 		constexpr uintptr_t		singleMeshMarker{ (uintptr_t)0x01 };
-		Utils::free_list<u8*>	geometryHierarchies;
+		utl::free_list<u8*>	geometryHierarchies;
 		std::mutex				geometryMutex;
 		
 		// NOTE: expects the same data as CreateGeometryResource()
 		u32 GetGeometryHierarchySize(const void* const data)
 		{
 			assert(data);
-			Utils::BlobStreamReader blob{ (const u8*)data };
-			const u32 lodCount{ blob.Read<u32>() };
+			utl::blob_stream_reader blob{ (const u8*)data };
+			const u32 lodCount{ blob.read<u32>() };
 			assert(lodCount);
 			// Add size of lodCount, thresholds, and lod offsets to the size of hierarchy
 			u32 size{ sizeof(u32) + (sizeof(f32) + sizeof(GeometryHierarchyStream::lodOffset)) * lodCount };
@@ -81,11 +81,11 @@ namespace Havana::Content
 			for (u32 lodIdx{ 0 }; lodIdx < lodCount; lodIdx++)
 			{
 				// skip threshold
-				blob.Skip(sizeof(f32));
+				blob.skip(sizeof(f32));
 				// add size of gpuIds (sizeof(Id::id_type) * submeshCount)
-				size += sizeof(Id::id_type) * blob.Read<u32>();
+				size += sizeof(Id::id_type) * blob.read<u32>();
 				// skip submesh data and go to the next LOD
-				blob.Skip(blob.Read<u32>());				
+				blob.skip(blob.read<u32>());				
 			}
 
 			return size;
@@ -99,8 +99,8 @@ namespace Havana::Content
 			const u32 size{ GetGeometryHierarchySize(data) };
 			u8* const hierarchyBuffer{ (u8* const)malloc(size) };
 
-			Utils::BlobStreamReader blob{ (const u8*)data };
-			const u32 lodCount{ blob.Read<u32>() };
+			utl::blob_stream_reader blob{ (const u8*)data };
+			const u32 lodCount{ blob.read<u32>() };
 			assert(lodCount);
 			GeometryHierarchyStream stream{ hierarchyBuffer, lodCount };
 			u32 submeshIndex{ 0 };
@@ -108,16 +108,16 @@ namespace Havana::Content
 
 			for (u32 lodIdx{ 0 }; lodIdx < lodCount; lodIdx++)
 			{
-				stream.Thresholds()[lodIdx] = blob.Read<f32>();
-				const u32 idCount{ blob.Read<u32>() };
+				stream.Thresholds()[lodIdx] = blob.read<f32>();
+				const u32 idCount{ blob.read<u32>() };
 				assert(idCount < (1 << 16));
 				stream.LoDOffsets()[lodIdx] = { (u16)submeshIndex, (u16)idCount };
-				blob.Skip(sizeof(u32)); // skip over sizeOfSubmeshes
+				blob.skip(sizeof(u32)); // skip over sizeOfSubmeshes
 				for (u32 idIdx{ 0 }; idIdx < idCount; idIdx++)
 				{
-					const u8* at{ blob.Position() };
+					const u8* at{ blob.position() };
 					gpuIds[submeshIndex++] = Graphics::AddSubmesh(at);
-					blob.Skip((u32)(at - blob.Position()));
+					blob.skip((u32)(at - blob.position()));
 					assert(submeshIndex < (1 << 16));
 				}
 			}
@@ -143,10 +143,10 @@ namespace Havana::Content
 		Id::id_type CreateSingleSubmesh(const void* const data)
 		{
 			assert(data);
-			Utils::BlobStreamReader blob{ (const u8*)data };
-			// skip lodCount, lodThreshold, submeshCount, and sizeOfSubmeshes
-			blob.Skip(sizeof(u32) + sizeof(f32) + sizeof(u32) + sizeof(u32));
-			const u8* at{ blob.Position() };
+			utl::blob_stream_reader blob{ (const u8*)data };
+			// skip lodCount, lod_threshold, submeshCount, and sizeOfSubmeshes
+			blob.skip(sizeof(u32) + sizeof(f32) + sizeof(u32) + sizeof(u32));
+			const u8* at{ blob.position() };
 			const Id::id_type gpuId{ Graphics::AddSubmesh(at) };
 
 			// Create a fake pointer and put it in the geometryHierarchies
@@ -162,14 +162,14 @@ namespace Havana::Content
 		bool IsSingleMesh(const void* const data)
 		{
 			assert(data);
-			Utils::BlobStreamReader blob{ (const u8*)data };
-			const u32 lodCount{ blob.Read<u32>() };
+			utl::blob_stream_reader blob{ (const u8*)data };
+			const u32 lodCount{ blob.read<u32>() };
 			assert(lodCount);
 			if (lodCount > 1) return false;
 
 			// Skip over threshold
-			blob.Skip(sizeof(f32));
-			const u32 submeshCount{ blob.Read<u32>() };
+			blob.skip(sizeof(f32));
+			const u32 submeshCount{ blob.read<u32>() };
 			assert(submeshCount);
 			return submeshCount == 1;
 		}
@@ -188,13 +188,13 @@ namespace Havana::Content
 		//     u32 lodCount
 		//     struct
 		//     {
-		//         f32 lodThreshold,
+		//         f32 lod_threshold,
 		//         u32 submeshCount,
 		//         u32 sizeOfSubmeshes,
 		//         struct
 		//         {
 		//             u32 elementSize, u32 vertexCount,
-		//             u32 indexCount, u32 elementsType, u32 primitiveTopology
+		//             u32 indexCount, u32 elements_type, u32 primitiveTopology
 		//		       u8 positions[sizeof(f32) * 3 * vertextCount],		// sizeof(positions) must be a multiple of 4 bytes. Pad if needed.
 		//		       u8 elements[sizeof(elementSize) * vertextCount],	// sizeof(elements) must be a multiple of 4 bytes. Pad if needed.
 		//		       u8 indices[indexSize * indexCount],
@@ -256,7 +256,7 @@ namespace Havana::Content
 		}
 	} // anonymous namespaces
 
-	Id::id_type CreateResource(const void* const data, AssetType::Type type)
+	Id::id_type CreateResource(const void* const data, AssetType::type type)
 	{
 		assert(data);
 		Id::id_type id{ Id::INVALID_ID };
@@ -280,13 +280,13 @@ namespace Havana::Content
 			break;
 		}
 
-		assert(Id::IsValid(id));
+		assert(Id::is_valid(id));
 		return id;
 	}
 
-	void DestroyResource(Id::id_type id, AssetType::Type type)
+	void DestroyResource(Id::id_type id, AssetType::type type)
 	{
-		assert(Id::IsValid(id));
+		assert(Id::is_valid(id));
 
 		switch (type)
 		{

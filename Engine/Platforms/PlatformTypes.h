@@ -9,7 +9,7 @@
 
 #include <Windows.h>
 
-namespace Havana::Platform
+namespace havana::Platform
 {
 	using window_proc = LRESULT(*)(HWND, UINT, WPARAM, LPARAM);
 	using window_handle = HWND;
@@ -36,7 +36,7 @@ namespace Havana::Platform
 // Prevents collision from our Window class and the XWindow Window define
 using XWindow = Window;
 
-namespace Havana::Platform
+namespace havana::Platform
 {	
 	using window_handle = XWindow*;
 

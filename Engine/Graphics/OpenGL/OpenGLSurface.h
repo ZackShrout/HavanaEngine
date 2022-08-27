@@ -1,7 +1,7 @@
 #pragma once
 #include "OpenGLCommonHeaders.h"
 
-namespace Havana::Graphics::OpenGL
+namespace havana::Graphics::OpenGL
 {
     class OpenGLSurface
     {

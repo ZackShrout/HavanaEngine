@@ -12,7 +12,7 @@
 //
 //#define USE_CONSOLE 0 // set to 1 if you want the console activated
 //
-//using namespace Havana;
+//using namespace havana;
 //
 //// Multithreading test worker span code /////////////////////////////////////
 //#define ENABLE_TEST_WORKERS 0
@@ -21,7 +21,7 @@
 //bool			close{ false };
 //std::thread		workers[numThreads];
 //
-//Utils::vector<u8> buffer(1024 * 1024, 0);
+//utl::vector<u8> buffer(1024 * 1024, 0);
 //// Test worker for upload context
 //void BufferTestWorker()
 //{
@@ -75,7 +75,7 @@
 //		bool allClosed{true};
 //		for (u32 i{0}; i < _countof(surfaces); i++)
 //		{
-//			if (surfaces[i].window.IsValid())
+//			if (surfaces[i].window.is_valid())
 //			{
 //				if (surfaces[i].window.IsClosed())
 //				{
@@ -190,9 +190,9 @@
 //{
 //	Graphics::RenderSurface temp{surface};
 //	surface = {};
-//	if (temp.surface.IsValid())
+//	if (temp.surface.is_valid())
 //		Graphics::RemoveSurface(temp.surface.GetID());
-//	if (temp.window.IsValid())
+//	if (temp.window.is_valid())
 //		Platform::RemoveWindow(temp.window.GetID());
 //}
 //
@@ -225,7 +225,7 @@
 //	if (!ReadFile("..\\..\\enginetest\\model.model", model, size)) return false;
 //
 //	modelId = Content::CreateResource(model.get(), Content::AssetType::Mesh);
-//	if (!Id::IsValid(modelId)) return false;
+//	if (!Id::is_valid(modelId)) return false;
 //
 //	InitTestWorkers(BufferTestWorker);
 //	
@@ -237,7 +237,7 @@
 //{
 //	JointTestWorkers();
 //
-//	if (Id::IsValid(modelId))
+//	if (Id::is_valid(modelId))
 //	{
 //		Content::DestroyResource(modelId, Content::AssetType::Mesh);
 //	}
@@ -267,7 +267,7 @@
 //
 //	for (u32 i{0}; i < _countof(surfaces); i++)
 //	{
-//		if (surfaces[i].surface.IsValid())
+//		if (surfaces[i].surface.is_valid())
 //		{
 //			surfaces[i].surface.Render();
 //		}
@@ -313,7 +313,7 @@
 //
 //	for (u32 i{0}; i < _countof(surfaces); i++)
 //	{
-//		if (surfaces[i].surface.IsValid())
+//		if (surfaces[i].surface.is_valid())
 //		{
 //			surfaces[i].surface.Render();
 //		}
@@ -347,7 +347,7 @@
 //				//		 and the check if this was a window resize.
 //				for (u32 i{ 0 }; i < _countof(surfaces); i++)
 //				{
-//					if (!surfaces[i].window.IsValid()) continue;
+//					if (!surfaces[i].window.is_valid()) continue;
 //					if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
 //					{
 //						if ((u32)xce.width != surfaces[i].window.Width() || (u32)xce.height != surfaces[i].window.Height())
@@ -364,7 +364,7 @@
 //					// Find which window was sent the close event, and call function
 //					for (u32 i{ 0 }; i < _countof(surfaces); i++)
 //					{
-//						if (!surfaces[i].window.IsValid()) continue;
+//						if (!surfaces[i].window.is_valid()) continue;
 //						if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
 //						{
 //							DestroyRenderSurface(surfaces[i]);
@@ -376,7 +376,7 @@
 //					bool allClosed{ true };
 //					for (u32 i{ 0 }; i < _countof(surfaces); i++)
 //					{
-//						if (!surfaces[i].window.IsValid()) continue;
+//						if (!surfaces[i].window.is_valid()) continue;
 //						if (!surfaces[i].window.IsClosed())
 //						{
 //							allClosed = false;
@@ -409,7 +409,7 @@
 //				{
 //					for (u32 i{ 0 }; i < _countof(surfaces); i++)
 //					{
-//						if (!surfaces[i].window.IsValid()) continue;
+//						if (!surfaces[i].window.is_valid()) continue;
 //						if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
 //						{
 //							surfaces[i].window.SetFullscreen(!surfaces[i].window.IsFullscreen());

@@ -1,34 +1,34 @@
 #include "PrimitiveMesh.h"
 #include "Geometry.h"
 
-namespace Havana::Tools
+namespace havana::tools
 {
 	namespace
 	{
-		using namespace Math;
+		using namespace math;
 		using namespace DirectX;
-		using primitive_mesh_creator = void(*)(Scene&, const PrimitiveInitInfo& info);
+		using primitive_mesh_creator = void(*)(scene&, const primitive_init_info& info);
 
-		void CreatePlane(Scene& scene, const PrimitiveInitInfo& info);
-		void CreateCube(Scene& scene, const PrimitiveInitInfo& info);
-		void CreateUVSphere(Scene& scene, const PrimitiveInitInfo& info);
-		void CreateICOSphere(Scene& scene, const PrimitiveInitInfo& info);
-		void CreateCylinder(Scene& scene, const PrimitiveInitInfo& info);
-		void CreateCapsule(Scene& scene, const PrimitiveInitInfo& info);
+		void create_plane(scene& scene, const primitive_init_info& info);
+		void create_cube(scene& scene, const primitive_init_info& info);
+		void create_uv_sphere(scene& scene, const primitive_init_info& info);
+		void create_ico_sphere(scene& scene, const primitive_init_info& info);
+		void create_cylinder(scene& scene, const primitive_init_info& info);
+		void create_capsule(scene& scene, const primitive_init_info& info);
 
 		primitive_mesh_creator creators[]
 		{
-			CreatePlane,
-			CreateCube,
-			CreateUVSphere,
-			CreateICOSphere,
-			CreateCylinder,
-			CreateCapsule
+			create_plane,
+			create_cube,
+			create_uv_sphere,
+			create_ico_sphere,
+			create_cylinder,
+			create_capsule
 		};
 		
-		static_assert(_countof(creators) == PrimitiveMeshType::Count);
+		static_assert(_countof(creators) == primitive_mesh_type::count);
 
-		struct Axis
+		struct axis
 		{
 			enum: u32 
 			{
@@ -38,107 +38,109 @@ namespace Havana::Tools
 			};
 		};
 
-		Mesh CreatePlane(const PrimitiveInitInfo& info,
-			u32 horizontalIndex = Axis::x, u32 verticalIndex = Axis::z, bool flipWinding = false,
-			Vec3 offset = { -0.5f, 0.0f, -0.5f }, Vec2 uRange = { 0.0f, 1.0f }, Vec2 vRange = { 0.0f, 1.0f })
+		mesh
+		create_plane(const primitive_init_info& info,
+					 u32 horizontal_index = axis::x, u32 vertical_index = axis::z, bool flip_winding = false,
+					 v3 offset = { -0.5f, 0.0f, -0.5f }, v2 u_range = { 0.0f, 1.0f }, v2 v_range = { 0.0f, 1.0f })
 		{
-			assert(horizontalIndex < 3 && verticalIndex < 3);
-			assert(horizontalIndex != verticalIndex);
+			assert(horizontal_index < 3 && vertical_index < 3);
+			assert(horizontal_index != vertical_index);
 
-			const u32 horizontalCount{ clamp(info.segments[horizontalIndex], 1u, 10u) };
-			const u32 verticalCount{ clamp(info.segments[verticalIndex], 1u, 10u) };
-			const f32 horizontalStep{ 1.0f / horizontalCount };
-			const f32 verticalStep{ 1.0f / verticalCount };
-			const f32 uStep{ (uRange.y - uRange.x) / horizontalCount };
-			const f32 vStep{ (vRange.y - vRange.x) / verticalCount };
+			const u32 horizontal_count{ clamp(info.segments[horizontal_index], 1u, 10u) };
+			const u32 vertical_count{ clamp(info.segments[vertical_index], 1u, 10u) };
+			const f32 horizontal_step{ 1.0f / horizontal_count };
+			const f32 vertical_step{ 1.0f / vertical_count };
+			const f32 u_step{ (u_range.y - u_range.x) / horizontal_count };
+			const f32 v_step{ (v_range.y - v_range.x) / vertical_count };
 
-			Mesh m{};
-			Utils::vector<Vec2> uvs;
+			mesh m{};
+			utl::vector<v2> uvs;
 
-			for (u32 j{ 0 }; j <= verticalCount; j++)
+			for (u32 j{ 0 }; j <= vertical_count; ++j)
 			{
-				for (u32 i{ 0 }; i <= horizontalCount; i++)
+				for (u32 i{ 0 }; i <= horizontal_count; ++i)
 				{
-					Vec3 position{ offset };
+					v3 position{ offset };
 					f32* const as_array{ &position.x };
-					as_array[horizontalIndex] += i * horizontalStep;
-					as_array[verticalIndex] += j * verticalStep;
+					as_array[horizontal_index] += i * horizontal_step;
+					as_array[vertical_index] += j * vertical_step;
 					m.positions.emplace_back(position.x * info.size.x, position.y * info.size.y, position.z * info.size.z);
 
-					Vec2 uv{ uRange.x, 1.0f - vRange.x };
-					uv.x += i * uStep;
-					uv.y -= j * vStep;
+					v2 uv{ u_range.x, 1.0f - v_range.x };
+					uv.x += i * u_step;
+					uv.y -= j * v_step;
 					uvs.emplace_back(uv);
 				}
 			}
 
-			assert(m.positions.size() == (((u64)horizontalCount + 1)*((u64)verticalCount + 1)));
+			assert(m.positions.size() == (((u64)horizontal_count + 1)*((u64)vertical_count + 1)));
 			
-			const u32 rowLength{ horizontalCount + 1 }; // number of vertices in a row
+			const u32 row_length{ horizontal_count + 1 }; // number of vertices in a row
 			
-			for (u32 j{ 0 }; j < verticalCount; j++)
+			for (u32 j{ 0 }; j < vertical_count; ++j)
 			{
 				u32 k{ 0 };
-				for (u32 i{ k }; i < horizontalCount; i++)
+				for (u32 i{ k }; i < horizontal_count; ++i)
 				{
 					const u32 index[4]
 					{
-						i + j * rowLength,
-						i + (j + 1) * rowLength,
-						(i + 1) + j * rowLength,
-						(i + 1) + (j + 1) * rowLength,
+						i + j * row_length,
+						i + (j + 1) * row_length,
+						(i + 1) + j * row_length,
+						(i + 1) + (j + 1) * row_length,
 					};
 
 					// Triangle 1
-					m.rawIndices.emplace_back(index[0]);
-					m.rawIndices.emplace_back(index[flipWinding ? 2 : 1]);
-					m.rawIndices.emplace_back(index[flipWinding ? 1 : 2]);
+					m.raw_indices.emplace_back(index[0]);
+					m.raw_indices.emplace_back(index[flip_winding ? 2 : 1]);
+					m.raw_indices.emplace_back(index[flip_winding ? 1 : 2]);
 
 					// Triangle 2
-					m.rawIndices.emplace_back(index[2]);
-					m.rawIndices.emplace_back(index[flipWinding ? 3 : 1]);
-					m.rawIndices.emplace_back(index[flipWinding ? 1 : 3]);
+					m.raw_indices.emplace_back(index[2]);
+					m.raw_indices.emplace_back(index[flip_winding ? 3 : 1]);
+					m.raw_indices.emplace_back(index[flip_winding ? 1 : 3]);
 				}
 				++k;
 			}
 
-			const u32 numIndices{ 3 * 2 * horizontalCount * verticalCount };
-			assert(m.rawIndices.size() == numIndices);
+			const u32 num_indices{ 3 * 2 * horizontal_count * vertical_count };
+			assert(m.raw_indices.size() == num_indices);
 
-			m.uvSets.resize(1);
+			m.uv_sets.resize(1);
 
-			for (u32 i{ 0 }; i < numIndices; i++)
+			for (u32 i{ 0 }; i < num_indices; ++i)
 			{
-				m.uvSets[0].emplace_back(uvs[m.rawIndices[i]]);
+				m.uv_sets[0].emplace_back(uvs[m.raw_indices[i]]);
 			}
 
 			return m;
 		}
 
-		Mesh CreateUVSphere(const PrimitiveInitInfo& info)
+		mesh
+		create_uv_sphere(const primitive_init_info& info)
 		{
-			const u32 phiCount{ clamp(info.segments[Axis::x], 3u, 64u) };
-			const u32 thetaCount{ clamp(info.segments[Axis::y], 2u, 64u) };
-			const f32 thetaStep{ pi / thetaCount };
-			const f32 phiStep{ twoPi / phiCount };
-			const u32 numVertices{ 2 + phiCount * (thetaCount - 1) };
-			const u32 numIndices{ 2 * 3 * phiCount + 2 * 3 * phiCount * (thetaCount - 2) };
+			const u32 phi_count{ clamp(info.segments[axis::x], 3u, 64u) };
+			const u32 theta_count{ clamp(info.segments[axis::y], 2u, 64u) };
+			const f32 theta_step{ pi / theta_count };
+			const f32 phi_step{ twoPi / phi_count };
+			const u32 num_vertices{ 2 + phi_count * (theta_count - 1) };
+			const u32 num_indices{ 2 * 3 * phi_count + 2 * 3 * phi_count * (theta_count - 2) };
 
-			Mesh m{};
-			m.name = "uvSphere";
-			m.positions.resize(numVertices);
+			mesh m{};
+			m.name = "uv_sphere";
+			m.positions.resize(num_vertices);
 
 			// Add top vertex
 			u32 c{ 0 };
 			m.positions[c++] = { 0.0f, info.size.y, 0.0f };
 
 			// Add the body of the vertices
-			for (u32 j{ 1 }; j < thetaCount; j++)
+			for (u32 j{ 1 }; j < theta_count; ++j)
 			{
-				const f32 theta{ j * thetaStep };
-				for (u32 i{ 0 }; i < phiCount; i++)
+				const f32 theta{ j * theta_step };
+				for (u32 i{ 0 }; i < phi_count; ++i)
 				{
-					const f32 phi{ i * phiStep };
+					const f32 phi{ i * phi_step };
 					m.positions[c++] =
 					{
 						info.size.x * XMScalarSin(theta) * XMScalarCos(phi),
@@ -151,156 +153,162 @@ namespace Havana::Tools
 			// Add bottom vertex
 			m.positions[c++] = { 0.0f, -info.size.y, 0.0f };
 			
-			assert(numVertices == c);
+			assert(num_vertices == c);
 
 			c = 0;
-			m.rawIndices.resize(numIndices);
-			Utils::vector<Vec2> uvs(numIndices);
-			const f32 inverseThetaCount{ 1.0f / thetaCount };
-			const f32 inversePhiCount{ 1.0f / phiCount };
+			m.raw_indices.resize(num_indices);
+			utl::vector<v2> uvs(num_indices);
+			const f32 inverse_theta_count{ 1.0f / theta_count };
+			const f32 inverse_phi_count{ 1.0f / phi_count };
 
 			// Indices for top cap, connecting the north pole to the first ring
 			// UV Coords at the same time
-			for (u32 i{ 0 }; i < (phiCount - 1); i++)
+			for (u32 i{ 0 }; i < (phi_count - 1); ++i)
 			{
-				uvs[c] = { (2 * i + 1) * 0.5f * inversePhiCount, 1.0f };
-				m.rawIndices[c++] = 0;
-				uvs[c] = { i * inversePhiCount, 1.0f - inverseThetaCount };
-				m.rawIndices[c++] = i + 1;
-				uvs[c] = { (i + 1) * inversePhiCount, 1.0f - inverseThetaCount };
-				m.rawIndices[c++] = i + 2;
+				uvs[c] = { (2 * i + 1) * 0.5f * inverse_phi_count, 1.0f };
+				m.raw_indices[c++] = 0;
+				uvs[c] = { i * inverse_phi_count, 1.0f - inverse_theta_count };
+				m.raw_indices[c++] = i + 1;
+				uvs[c] = { (i + 1) * inverse_phi_count, 1.0f - inverse_theta_count };
+				m.raw_indices[c++] = i + 2;
 			}
 			
-			uvs[c] = { 1.0f - 0.5f * inversePhiCount, 1.0f };
-			m.rawIndices[c++] = 0;
-			uvs[c] = { 1.0f - inversePhiCount, 1.0f - inverseThetaCount };
-			m.rawIndices[c++] = phiCount;
-			uvs[c] = { 1.0f, 1.0f - inverseThetaCount };
-			m.rawIndices[c++] = 1;
+			uvs[c] = { 1.0f - 0.5f * inverse_phi_count, 1.0f };
+			m.raw_indices[c++] = 0;
+			uvs[c] = { 1.0f - inverse_phi_count, 1.0f - inverse_theta_count };
+			m.raw_indices[c++] = phi_count;
+			uvs[c] = { 1.0f, 1.0f - inverse_theta_count };
+			m.raw_indices[c++] = 1;
 
 			// Indices for the section between the top and bottom rings
 			// UV Coords at the same time
-			for (u32 j{ 0 }; j < (thetaCount - 2); j++)
+			for (u32 j{ 0 }; j < (theta_count - 2); ++j)
 			{
-				for (u32 i{ 0 }; i < (phiCount - 1); i++)
+				for (u32 i{ 0 }; i < (phi_count - 1); ++i)
 				{
 					const u32 index[4]
 					{
-						1 + i + j * phiCount,
-						1 + i + (j + 1) * phiCount,
-						1 + (i + 1) + (j + 1) * phiCount,
-						1 + (i + 1) + j * phiCount
+						1 + i + j * phi_count,
+						1 + i + (j + 1) * phi_count,
+						1 + (i + 1) + (j + 1) * phi_count,
+						1 + (i + 1) + j * phi_count
 					};
 
 					// Triangle 1
-					uvs[c] = { i * inversePhiCount, 1.0f - (j + 1) * inverseThetaCount };
-					m.rawIndices[c++] = index[0];
-					uvs[c] = { i * inversePhiCount, 1.0f - (j + 2) * inverseThetaCount };
-					m.rawIndices[c++] = index[1];
-					uvs[c] = { (i + 1) * inversePhiCount, 1.0f - (j + 2) * inverseThetaCount };
-					m.rawIndices[c++] = index[2];
+					uvs[c] = { i * inverse_phi_count, 1.0f - (j + 1) * inverse_theta_count };
+					m.raw_indices[c++] = index[0];
+					uvs[c] = { i * inverse_phi_count, 1.0f - (j + 2) * inverse_theta_count };
+					m.raw_indices[c++] = index[1];
+					uvs[c] = { (i + 1) * inverse_phi_count, 1.0f - (j + 2) * inverse_theta_count };
+					m.raw_indices[c++] = index[2];
 
 					// Triangle 2
-					uvs[c] = { i * inversePhiCount, 1.0f - (j + 1) * inverseThetaCount };
-					m.rawIndices[c++] = index[0];
-					uvs[c] = { (i + 1) * inversePhiCount, 1.0f - (j + 2) * inverseThetaCount };
-					m.rawIndices[c++] = index[2];
-					uvs[c] = { (i + 1) * inversePhiCount, 1.0f - (j + 1) * inverseThetaCount };
-					m.rawIndices[c++] = index[3];
+					uvs[c] = { i * inverse_phi_count, 1.0f - (j + 1) * inverse_theta_count };
+					m.raw_indices[c++] = index[0];
+					uvs[c] = { (i + 1) * inverse_phi_count, 1.0f - (j + 2) * inverse_theta_count };
+					m.raw_indices[c++] = index[2];
+					uvs[c] = { (i + 1) * inverse_phi_count, 1.0f - (j + 1) * inverse_theta_count };
+					m.raw_indices[c++] = index[3];
 				}
 				
 				const u32 index[4]
 				{
-					phiCount + j * phiCount,
-					phiCount + (j + 1) * phiCount,
-					1 + (j + 1) * phiCount,
-					1 + j * phiCount
+					phi_count + j * phi_count,
+					phi_count + (j + 1) * phi_count,
+					1 + (j + 1) * phi_count,
+					1 + j * phi_count
 				};
 				
 				// Triangle 1
-				uvs[c] = { 1.0f - inversePhiCount, 1.0f - (j + 1) * inverseThetaCount };
-				m.rawIndices[c++] = index[0];
-				uvs[c] = { 1.0f - inversePhiCount, 1.0f - (j + 2) * inverseThetaCount };
-				m.rawIndices[c++] = index[1];
-				uvs[c] = { 1.0f, 1.0f - (j + 2) * inverseThetaCount };
-				m.rawIndices[c++] = index[2];
+				uvs[c] = { 1.0f - inverse_phi_count, 1.0f - (j + 1) * inverse_theta_count };
+				m.raw_indices[c++] = index[0];
+				uvs[c] = { 1.0f - inverse_phi_count, 1.0f - (j + 2) * inverse_theta_count };
+				m.raw_indices[c++] = index[1];
+				uvs[c] = { 1.0f, 1.0f - (j + 2) * inverse_theta_count };
+				m.raw_indices[c++] = index[2];
 
 				// Triangle 2
-				uvs[c] = { 1.0f - inversePhiCount, 1.0f - (j + 1) * inverseThetaCount };
-				m.rawIndices[c++] = index[0];
-				uvs[c] = { 1.0f, 1.0f - (j + 2) * inverseThetaCount };
-				m.rawIndices[c++] = index[2];
-				uvs[c] = { 1.0f, 1.0f - (j + 1) * inverseThetaCount };
-				m.rawIndices[c++] = index[3];
+				uvs[c] = { 1.0f - inverse_phi_count, 1.0f - (j + 1) * inverse_theta_count };
+				m.raw_indices[c++] = index[0];
+				uvs[c] = { 1.0f, 1.0f - (j + 2) * inverse_theta_count };
+				m.raw_indices[c++] = index[2];
+				uvs[c] = { 1.0f, 1.0f - (j + 1) * inverse_theta_count };
+				m.raw_indices[c++] = index[3];
 			}
 
 			// Indices for bottom cap, connecting the south pole to the last ring
 			// UV Coords at the same time
-			const u32 southPoleIndex{ (u32)m.positions.size() - 1 };
-			for (u32 i{ 0 }; i < (phiCount - 1); i++)
+			const u32 south_pole_index{ (u32)m.positions.size() - 1 };
+			for (u32 i{ 0 }; i < (phi_count - 1); i++)
 			{
-				uvs[c] = { (2 * i + 1) * 0.5f * inversePhiCount, 0.0f };
-				m.rawIndices[c++] = southPoleIndex;
-				uvs[c] = { (i + 1) * inversePhiCount, inverseThetaCount };
-				m.rawIndices[c++] = southPoleIndex - phiCount + i + 1;
-				uvs[c] = { i * inversePhiCount, inverseThetaCount };
-				m.rawIndices[c++] = southPoleIndex - phiCount + i;
+				uvs[c] = { (2 * i + 1) * 0.5f * inverse_phi_count, 0.0f };
+				m.raw_indices[c++] = south_pole_index;
+				uvs[c] = { (i + 1) * inverse_phi_count, inverse_theta_count };
+				m.raw_indices[c++] = south_pole_index - phi_count + i + 1;
+				uvs[c] = { i * inverse_phi_count, inverse_theta_count };
+				m.raw_indices[c++] = south_pole_index - phi_count + i;
 			}
 
-			uvs[c] = { 1.0f - 0.5f * inversePhiCount, 0.0f };
-			m.rawIndices[c++] = southPoleIndex;
-			uvs[c] = { 1.0f, inverseThetaCount };
-			m.rawIndices[c++] = southPoleIndex - phiCount;
-			uvs[c] = { 1.0f - inversePhiCount, inverseThetaCount };
-			m.rawIndices[c++] = southPoleIndex - 1;
+			uvs[c] = { 1.0f - 0.5f * inverse_phi_count, 0.0f };
+			m.raw_indices[c++] = south_pole_index;
+			uvs[c] = { 1.0f, inverse_theta_count };
+			m.raw_indices[c++] = south_pole_index - phi_count;
+			uvs[c] = { 1.0f - inverse_phi_count, inverse_theta_count };
+			m.raw_indices[c++] = south_pole_index - 1;
 
-			assert(c == numIndices);
+			assert(c == num_indices);
 
-			m.uvSets.emplace_back(uvs);
+			m.uv_sets.emplace_back(uvs);
 
 			return m;
 		}
 
-		void CreatePlane(Scene& scene, const PrimitiveInitInfo& info)
+		void
+		create_plane(scene& scene, const primitive_init_info& info)
 		{
-			LoDGroup lod{};
+			lod_group lod{};
 			lod.name = "plane";
-			lod.meshes.emplace_back(CreatePlane(info));
-			scene.lodGroups.emplace_back(lod);
+			lod.meshes.emplace_back(create_plane(info));
+			scene.lod_groups.emplace_back(lod);
 		}
 
-		void CreateCube(Scene&, const PrimitiveInitInfo&)
+		void
+		create_cube(scene&, const primitive_init_info&)
 		{}
 
-		void CreateUVSphere(Scene& scene, const PrimitiveInitInfo& info)
+		void
+		create_uv_sphere(scene& scene, const primitive_init_info& info)
 		{
-			LoDGroup lod{};
-			lod.name = "uvSphere";
-			lod.meshes.emplace_back(CreateUVSphere(info));
-			scene.lodGroups.emplace_back(lod);
+			lod_group lod{};
+			lod.name = "uv_sphere";
+			lod.meshes.emplace_back(create_uv_sphere(info));
+			scene.lod_groups.emplace_back(lod);
 		}
 
-		void CreateICOSphere(Scene&, const PrimitiveInitInfo&)
+		void
+		create_ico_sphere(scene&, const primitive_init_info&)
 		{}
 
-		void CreateCylinder(Scene&, const PrimitiveInitInfo&)
+		void
+		create_cylinder(scene&, const primitive_init_info&)
 		{}
 
-		void CreateCapsule(Scene&, const PrimitiveInitInfo&)
+		void
+		create_capsule(scene&, const primitive_init_info&)
 		{}
 
 	} // anonymous namespace
 
-	EDITOR_INTERFACE void CreatePrimitiveMesh(SceneData* data, PrimitiveInitInfo* info)
+	EDITOR_INTERFACE void
+	CreatePrimitiveMesh(scene_data* data, primitive_init_info* info)
 	{
 		assert(data && info);
-		assert(info->type < PrimitiveMeshType::Count);
-		Scene scene{};
+		assert(info->type < primitive_mesh_type::count);
+		scene scene{};
 		creators[info->type](scene, *info);
 
-		// TODO: process scene and pack to be sent to the Editor
-		data->settings.calculateNormals = 1;
-		ProcessScene(scene, data->settings);
-		PackData(scene, *data);
+		data->settings.calculate_normals = 1;
+		process_scene(scene, data->settings);
+		pack_data(scene, *data);
 	}
 }

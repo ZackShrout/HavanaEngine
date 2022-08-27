@@ -1,7 +1,7 @@
 #pragma once
 #include "ComponentsCommon.h"
 
-namespace Havana::Transform
+namespace havana::Transform
 {
 	
 

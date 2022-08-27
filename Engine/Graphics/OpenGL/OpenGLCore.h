@@ -1,7 +1,7 @@
 #pragma once
 #include "OpenGLCommonHeaders.h"
 
-namespace Havana::Graphics::OpenGL::Core
+namespace havana::Graphics::OpenGL::Core
 {
 	bool Initialize();
 	void Shutdown();

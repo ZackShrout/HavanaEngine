@@ -1,7 +1,7 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace Havana::Graphics::D3D12
+namespace havana::Graphics::D3D12
 {
 	class DescriptorHeap;
 
@@ -9,7 +9,7 @@ namespace Havana::Graphics::D3D12
 	{
 		D3D12_CPU_DESCRIPTOR_HANDLE cpu{};
 		D3D12_GPU_DESCRIPTOR_HANDLE gpu{};
-		u32							index{ U32_INVALID_ID };
+		u32							index{ u32_invalid_id };
 
 
 		[[nodiscard]] constexpr bool IsVaild() const { return cpu.ptr != 0; }
@@ -36,7 +36,7 @@ namespace Havana::Graphics::D3D12
 		[[nodiscard]] DescriptorHandle Allocate();
 		void Free(DescriptorHandle& handle);
 
-		[[nodiscard]] constexpr D3D12_DESCRIPTOR_HEAP_TYPE Type() { return m_type; }
+		[[nodiscard]] constexpr D3D12_DESCRIPTOR_HEAP_TYPE type() { return m_type; }
 		[[nodiscard]] constexpr D3D12_CPU_DESCRIPTOR_HANDLE CpuStart() { return m_cpuStart; }
 		[[nodiscard]] constexpr D3D12_GPU_DESCRIPTOR_HANDLE GpuStart() { return m_gpuStart; }
 		[[nodiscard]] constexpr ID3D12DescriptorHeap* const Heap() { return m_heap; }
@@ -50,7 +50,7 @@ namespace Havana::Graphics::D3D12
 		D3D12_CPU_DESCRIPTOR_HANDLE			m_cpuStart{};
 		D3D12_GPU_DESCRIPTOR_HANDLE			m_gpuStart{};
 		std::unique_ptr<u32[]>				m_freeHandles{};
-		Utils::vector<u32>					m_deferredFreeIndices[frameBufferCount]{};
+		utl::vector<u32>					m_deferredFreeIndices[frameBufferCount]{};
 		std::mutex							m_mutex{};
 		u32									m_capacity{ 0 };
 		u32									m_size{ 0 };

@@ -1,15 +1,15 @@
 #include "D3D12Camera.h"
 #include "EngineAPI/GameEntity.h"
 
-namespace Havana::Graphics::D3D12::Camera
+namespace havana::Graphics::D3D12::Camera
 {
 	namespace
 	{
-		Utils::free_list<D3D12Camera> cameras;
+		utl::free_list<D3D12Camera> cameras;
 
 		void SetUpVector(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
-			Math::Vec3 upVector{ *(Math::Vec3*)data };
+			math::v3 upVector{ *(math::v3*)data };
 			assert(sizeof(upVector) == size);
 			camera.Up(upVector);
 		}
@@ -62,43 +62,43 @@ namespace Havana::Graphics::D3D12::Camera
 
 		void GetView(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			Math::Mat4* const matrix{ (Math::Mat4* const)data };
-			assert(sizeof(Math::Mat4) == size);
+			math::Mat4* const matrix{ (math::Mat4* const)data };
+			assert(sizeof(math::Mat4) == size);
 			DirectX::XMStoreFloat4x4(matrix, camera.View());
 		}
 
 		void GetProjection(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			Math::Mat4* const matrix{ (Math::Mat4* const)data };
-			assert(sizeof(Math::Mat4) == size);
+			math::Mat4* const matrix{ (math::Mat4* const)data };
+			assert(sizeof(math::Mat4) == size);
 			DirectX::XMStoreFloat4x4(matrix, camera.Projection());
 		}
 
 		void GetInverseProjection(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			Math::Mat4* const matrix{ (Math::Mat4* const)data };
-			assert(sizeof(Math::Mat4) == size);
+			math::Mat4* const matrix{ (math::Mat4* const)data };
+			assert(sizeof(math::Mat4) == size);
 			DirectX::XMStoreFloat4x4(matrix, camera.InverseProjection());
 		}
 
 		void GetViewProjection(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			Math::Mat4* const matrix{ (Math::Mat4* const)data };
-			assert(sizeof(Math::Mat4) == size);
+			math::Mat4* const matrix{ (math::Mat4* const)data };
+			assert(sizeof(math::Mat4) == size);
 			DirectX::XMStoreFloat4x4(matrix, camera.ViewProjection());
 		}
 
 		void GetInverseViewProjection(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			Math::Mat4* const matrix{ (Math::Mat4* const)data };
-			assert(sizeof(Math::Mat4) == size);
+			math::Mat4* const matrix{ (math::Mat4* const)data };
+			assert(sizeof(math::Mat4) == size);
 			DirectX::XMStoreFloat4x4(matrix, camera.InverseViewProjection());
 		}
 
 		void GetUpVector(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			Math::Vec3* const upVector{ (Math::Vec3* const)data };
-			assert(sizeof(Math::Vec3) == size);
+			math::v3* const upVector{ (math::v3* const)data };
+			assert(sizeof(math::v3) == size);
 			DirectX::XMStoreFloat3(upVector, camera.Up());
 		}
 
@@ -150,8 +150,8 @@ namespace Havana::Graphics::D3D12::Camera
 
 		void GetProjectionType(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			Graphics::Camera::Type* const type{ (Graphics::Camera::Type* const)data };
-			assert(sizeof(Graphics::Camera::Type) == size);
+			Graphics::Camera::type* const type{ (Graphics::Camera::type* const)data };
+			assert(sizeof(Graphics::Camera::type) == size);
 			*type = camera.ProjectionType();
 		}
 
@@ -183,7 +183,7 @@ namespace Havana::Graphics::D3D12::Camera
 			DummySet,
 			DummySet,
 		};
-		static_assert(_countof(setFunctions) == CameraParameter::Count);
+		static_assert(_countof(setFunctions) == CameraParameter::count);
 
 		constexpr GetFunction getFunctions[]
 		{
@@ -202,7 +202,7 @@ namespace Havana::Graphics::D3D12::Camera
 			GetProjectionType,
 			GetEntityID,
 		};
-		static_assert(_countof(getFunctions) == CameraParameter::Count);
+		static_assert(_countof(getFunctions) == CameraParameter::count);
 
 	} // anonymous namespace
 
@@ -212,7 +212,7 @@ namespace Havana::Graphics::D3D12::Camera
 		m_fieldOfView{ info.fieldOfView }, m_aspectRatio{ info.aspectRatio },
 		m_projectionType{ info.type }, m_entityID{ info.entityId }, m_isDirty{ true }
 	{
-		assert(Id::IsValid(m_entityID));
+		assert(Id::is_valid(m_entityID));
 		Update();
 	}
 
@@ -220,8 +220,8 @@ namespace Havana::Graphics::D3D12::Camera
 	{
 		Entity::Entity entity{ Entity::entity_id{m_entityID} };
 		using namespace DirectX;
-		Math::Vec3 pos{ entity.Transform().Position() };
-		Math::Vec3 dir{ entity.Transform().Orientation() };
+		math::v3 pos{ entity.Transform().Position() };
+		math::v3 dir{ entity.Transform().Orientation() };
 		XMVECTOR position{ XMLoadFloat3(&pos) };
 		XMVECTOR direction{ XMLoadFloat3(&dir) };
 		m_view = XMMatrixLookToRH(position, direction, m_up);
@@ -239,7 +239,7 @@ namespace Havana::Graphics::D3D12::Camera
 		m_inverseViewProjection = XMMatrixInverse(nullptr, m_viewProjection);
 	}
 
-	void D3D12Camera::Up(Math::Vec3 up)
+	void D3D12Camera::Up(math::v3 up)
 	{
 		m_up = DirectX::XMLoadFloat3(&up);
 	}
@@ -293,14 +293,14 @@ namespace Havana::Graphics::D3D12::Camera
 
 	void Remove(camera_id id)
 	{
-		assert(Id::IsValid(id));
+		assert(Id::is_valid(id));
 		cameras.remove(id);
 	}
 
 	void SetParamter(camera_id id, CameraParameter::Parameter parameter, const void *const data, u32 dataSize)
 	{
 		assert(data && dataSize);
-		assert(parameter < CameraParameter::Count);
+		assert(parameter < CameraParameter::count);
 		D3D12Camera& camera{ Get(id) };
 		setFunctions[parameter](camera, data, dataSize);
 	}
@@ -308,14 +308,14 @@ namespace Havana::Graphics::D3D12::Camera
 	void GetParamter(camera_id id, CameraParameter::Parameter parameter, void *const data, u32 dataSize)
 	{
 		assert(data && dataSize);
-		assert(parameter < CameraParameter::Count);
+		assert(parameter < CameraParameter::count);
 		D3D12Camera& camera{ Get(id) };
 		getFunctions[parameter](camera, data, dataSize);
 	}
 
 	D3D12Camera& Get(camera_id id)
 	{
-		assert(Id::IsValid(id));
+		assert(Id::is_valid(id));
 		return cameras[id];
 	}
 }

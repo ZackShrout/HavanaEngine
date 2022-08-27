@@ -1,7 +1,7 @@
 #include "D3D12Resources.h"
 #include "D3D12Core.h"
 
-namespace Havana::Graphics::D3D12
+namespace havana::Graphics::D3D12
 {
 	//// DESCRIPTOR HEAP //////////////////////////////////////////////////////////////////////////
 	bool DescriptorHeap::Initialize(u32 capacity, bool isShaderVisible)
@@ -53,7 +53,7 @@ namespace Havana::Graphics::D3D12
 		std::lock_guard lock{ m_mutex };
 		assert(frameIdx < frameBufferCount);
 
-		Utils::vector<u32>& indices{ m_deferredFreeIndices[frameIdx] };
+		utl::vector<u32>& indices{ m_deferredFreeIndices[frameIdx] };
 		if (!indices.empty())
 		{
 			for (auto index : indices)

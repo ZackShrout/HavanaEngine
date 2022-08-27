@@ -5,7 +5,7 @@
 #include "../Platforms/PlatformTypes.h"
 #include "../Platforms/Platform.h"
 
-using namespace Havana;
+using namespace havana;
 
 Platform::Window windows[4];
 

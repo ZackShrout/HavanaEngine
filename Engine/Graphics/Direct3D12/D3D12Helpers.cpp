@@ -2,7 +2,7 @@
 #include "D3D12Core.h"
 #include "D3D12Upload.h"
 
-namespace Havana::Graphics::D3D12::D3DX
+namespace havana::Graphics::D3D12::D3DX
 {
 	namespace
 	{
@@ -74,17 +74,17 @@ namespace Havana::Graphics::D3D12::D3DX
 		return CreatePipelineState(desc);
 	}
 
-	ID3D12Resource* CreateBuffer(const void* data, u32 bufferSize, bool isCPUAccessible/* = false*/,
+	ID3D12Resource* CreateBuffer(const void* data, u32 buffer_size, bool isCPUAccessible/* = false*/,
 								 D3D12_RESOURCE_STATES state/* = D3D12_RESOURCE_STATE_COMMON*/,
 								 D3D12_RESOURCE_FLAGS flags/* = D3D12_RESOURCE_FLAG_NONE*/,
 								 ID3D12Heap* heap/* = nullptr*/, u64 heapOffset/* = 0*/)
 	{
-		assert(bufferSize);
+		assert(buffer_size);
 
 		D3D12_RESOURCE_DESC desc{};
 		desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 		desc.Alignment = 0;
-		desc.Width = bufferSize;
+		desc.Width = buffer_size;
 		desc.Height = 1;
 		desc.DepthOrArraySize = 1;
 		desc.MipLevels = 1;
@@ -121,13 +121,13 @@ namespace Havana::Graphics::D3D12::D3DX
 				void* cpuAddress{ nullptr };
 				DXCall(resource->Map(0, &range, reinterpret_cast<void**>(&cpuAddress)));
 				assert(cpuAddress);
-				memcpy(cpuAddress, data, bufferSize);
+				memcpy(cpuAddress, data, buffer_size);
 				resource->Unmap(0, nullptr);
 			}
 			else
 			{
-				Upload::D3D12UploadContext context{ bufferSize };
-				memcpy(context.CPUAddress(), data, bufferSize);
+				Upload::D3D12UploadContext context{ buffer_size };
+				memcpy(context.CPUAddress(), data, buffer_size);
 				context.CommandList()->CopyResource(resource, context.UploadBuffer());
 				context.EndUpload();
 			}

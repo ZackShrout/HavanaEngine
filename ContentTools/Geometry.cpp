@@ -1,23 +1,24 @@
 #include "Geometry.h"
-#include "..\Engine\Utilities\IOStream.h"
+#include "Utilities/IOStream.h"
 
-namespace Havana::Tools
+namespace havana::tools
 {
 	namespace
 	{
-		using namespace Math;
+		using namespace math;
 		using namespace DirectX;
 
-		void RecalculateNormals(Mesh& m)
+		void
+		recalculate_normals(mesh& m)
 		{
-			const u32 numIndices{ (u32)m.rawIndices.size() };
-			m.normals.resize(numIndices);
+			const u32 num_indices{ (u32)m.raw_indices.size() };
+			m.normals.resize(num_indices);
 
-			for (u32 i{ 0 }; i < numIndices; i++)
+			for (u32 i{ 0 }; i < num_indices; ++i)
 			{
-				const u32 i0{ m.rawIndices[i] };
-				const u32 i1{ m.rawIndices[++i] };
-				const u32 i2{ m.rawIndices[++i] };
+				const u32 i0{ m.raw_indices[i] };
+				const u32 i1{ m.raw_indices[++i] };
+				const u32 i2{ m.raw_indices[++i] };
 
 				XMVECTOR v0{ XMLoadFloat3(&m.positions[i0]) };
 				XMVECTOR v1{ XMLoadFloat3(&m.positions[i1]) };
@@ -33,59 +34,60 @@ namespace Havana::Tools
 			}
 		}
 
-		void ProcessNormals(Mesh& m, f32 smoothingAngle)
+		void
+		process_normals(mesh& m, f32 smoothing_angle)
 		{
-			const f32 cosAlpha{ XMScalarCos(pi - smoothingAngle * pi / 180.0f) };
-			const bool isHardEdge{ XMScalarNearEqual(smoothingAngle, 180.0f, epsilon) };
-			const bool isSoftEdge{ XMScalarNearEqual(smoothingAngle, 0.0f, epsilon) };
-			const u32 numIndices{ (u32)m.rawIndices.size() };
-			const u32 numVertices{ (u32)m.positions.size() };
+			const f32 cos_alpha{ XMScalarCos(pi - smoothing_angle * pi / 180.0f) };
+			const bool is_hard_edge{ XMScalarNearEqual(smoothing_angle, 180.0f, epsilon) };
+			const bool is_soft_edge{ XMScalarNearEqual(smoothing_angle, 0.0f, epsilon) };
+			const u32 num_indices{ (u32)m.raw_indices.size() };
+			const u32 num_vertices{ (u32)m.positions.size() };
 
-			assert(numIndices && numVertices);
+			assert(num_indices && num_vertices);
 
-			m.indices.resize(numIndices);
-			Utils::vector<Utils::vector<u32>> idxRef(numVertices);
+			m.indices.resize(num_indices);
+			utl::vector<utl::vector<u32>> idx_ref(num_vertices);
 			
-			for (u32 i{ 0 }; i < numIndices; i++)
+			for (u32 i{ 0 }; i < num_indices; ++i)
 			{
-				idxRef[m.rawIndices[i]].emplace_back(i);
+				idx_ref[m.raw_indices[i]].emplace_back(i);
 			}
 
-			for (u32 i{ 0 }; i < numVertices; i++)
+			for (u32 i{ 0 }; i < num_vertices; ++i)
 			{
-				auto& refs{ idxRef[i] };
-				u32 numRefs{ (u32)refs.size() };
+				auto& refs{ idx_ref[i] };
+				u32 num_refs{ (u32)refs.size() };
 
-				for (u32 j{ 0 }; j < numRefs; j++)
+				for (u32 j{ 0 }; j < num_refs; ++j)
 				{
 					m.indices[refs[j]] = (u32)m.vertices.size();
-					Vertex& v{ m.vertices.emplace_back() };
-					v.position = m.positions[m.rawIndices[refs[j]]];
+					vertex& v{ m.vertices.emplace_back() };
+					v.position = m.positions[m.raw_indices[refs[j]]];
 
 					// calculate where this is a hard edge or a soft edge
 					XMVECTOR n1{ XMLoadFloat3(&m.normals[refs[j]]) };
-					if (!isHardEdge)
+					if (!is_hard_edge)
 					{
-						for (u32 k{ j + 1 }; k < numRefs; k++)
+						for (u32 k{ j + 1 }; k < num_refs; ++k)
 						{
 							// This value represents the cosine of the angle between the normals
-							f32 cosTheta{ 0.0f };
+							f32 cos_theta{ 0.0f };
 							XMVECTOR n2{ XMLoadFloat3(&m.normals[refs[k]]) };
-							if (!isSoftEdge)
+							if (!is_soft_edge)
 							{
 								// NOTE: n2 is already normalized, so it's lenth is 1, so we don't divide
 								// by it's length to get the cosine
 								// cos(angle) = dot(n1, n2) / (||n1|| * ||n2||)
-								XMStoreFloat(&cosTheta, XMVector3Dot(n1, n2) * XMVector3ReciprocalLength(n1));
+								XMStoreFloat(&cos_theta, XMVector3Dot(n1, n2) * XMVector3ReciprocalLength(n1));
 							}
 
-							if (isSoftEdge || cosTheta >= cosAlpha)
+							if (is_soft_edge || cos_theta >= cos_alpha)
 							{
 								n1 += n2;
 								m.indices[refs[k]] = m.indices[refs[j]];
 								refs.erase(refs.begin() + k);
-								numRefs--;
-								k--;
+								--num_refs;
+								--k;
 							}
 						}
 					}
@@ -94,358 +96,365 @@ namespace Havana::Tools
 			}
 		}
 
-		void ProcessUVs(Mesh& m)
+		void
+		process_uvs(mesh& m)
 		{
-			Utils::vector<Vertex> oldVertices;
-			oldVertices.swap(m.vertices);
-			Utils::vector<u32> oldIndices(m.indices.size());
-			oldIndices.swap(m.indices);
-			const u32 numIndices{ (u32)oldIndices.size() };
-			const u32 numVertices{ (u32)oldVertices.size() };
+			utl::vector<vertex> old_vertices;
+			old_vertices.swap(m.vertices);
+			utl::vector<u32> old_indices(m.indices.size());
+			old_indices.swap(m.indices);
+			const u32 num_indices{ (u32)old_indices.size() };
+			const u32 num_vertices{ (u32)old_vertices.size() };
 
-			assert(numVertices && numIndices);
+			assert(num_vertices && num_indices);
 
-			Utils::vector<Utils::vector<u32>> idxRef(numVertices);
+			utl::vector<utl::vector<u32>> idx_ref(num_vertices);
 
-			for (u32 i{ 0 }; i < numIndices; i++)
+			for (u32 i{ 0 }; i < num_indices; ++i)
 			{
-				idxRef[oldIndices[i]].emplace_back(i);
+				idx_ref[old_indices[i]].emplace_back(i);
 			}
 
-			for (u32 i{ 0 }; i < numVertices; i++)
+			for (u32 i{ 0 }; i < num_vertices; ++i)
 			{
-				auto& refs{ idxRef[i] };
-				u32 numRefs{ (u32)refs.size() };
+				auto& refs{ idx_ref[i] };
+				u32 num_refs{ (u32)refs.size() };
 
-				for (u32 j{ 0 }; j < numRefs; j++)
+				for (u32 j{ 0 }; j < num_refs; ++j)
 				{
 					m.indices[refs[j]] = (u32)m.vertices.size();
-					Vertex& v{ oldVertices[oldIndices[refs[j]]] };
-					v.uv = m.uvSets[0][refs[j]];
+					vertex& v{ old_vertices[old_indices[refs[j]]] };
+					v.uv = m.uv_sets[0][refs[j]];
 					m.vertices.emplace_back(v);
 
-					for (u32 k{ j + 1 }; k < numRefs; k++)
+					for (u32 k{ j + 1 }; k < num_refs; ++k)
 					{
-						Vec2 uv1{ m.uvSets[0][refs[k]] };
+						v2 uv1{ m.uv_sets[0][refs[k]] };
 						
 						if (XMScalarNearEqual(v.uv.x, uv1.x, epsilon) &&
 							XMScalarNearEqual(v.uv.y, uv1.y, epsilon))
 						{
 							m.indices[refs[k]] = m.indices[refs[j]];
 							refs.erase(refs.begin() + k);
-							numRefs--;
-							k--;
+							--num_refs;
+							--k;
 						}
 					}
 				}
 			}
 		}
 
-		u64 GetVertexElementSize(Elements::ElementsType::Type elementsType)
+		u64
+		get_vertex_element_size(elements::elements_type::type elements_type)
 		{
-			using namespace Elements;
+			using namespace elements;
 
-			switch (elementsType)
+			switch (elements_type)
 			{
-			case ElementsType::StaticNormal:
-				return sizeof(StaticNormal);
-			case ElementsType::StaticNormalTexture:
-				return sizeof(StaticNormalTexture);
-			case ElementsType::StaticColor:
-				return sizeof(StaticColor);
-			case ElementsType::Skeletal:
-				return sizeof(Skeletal);
-			case ElementsType::SkeletalColor:
-				return sizeof(SkeletalColor);
-			case ElementsType::SkeletalNormal:
-				return sizeof(SkeletalNormal);
-			case ElementsType::SkeletalNormalColor:
-				return sizeof(SkeletalNormalColor);
-			case ElementsType::SkeletalNormalTexture:
-				return sizeof(SkeletalNormalTexture);
-			case ElementsType::SkeletalNormalTextureColor:
-				return sizeof(SkeletalNormalTextureColor);
+			case elements_type::static_normal:
+				return sizeof(static_normal);
+			case elements_type::static_normal_texture:
+				return sizeof(static_normal_texture);
+			case elements_type::static_color:
+				return sizeof(static_color);
+			case elements_type::skeletal:
+				return sizeof(skeletal);
+			case elements_type::skeletal_color:
+				return sizeof(skeletal_color);
+			case elements_type::skeletal_normal:
+				return sizeof(skeletal_normal);
+			case elements_type::skeletal_normal_color:
+				return sizeof(skeletal_normal_color);
+			case elements_type::skeletal_normal_texture:
+				return sizeof(skeletal_normal_texture);
+			case elements_type::skeletal_normal_texture_color:
+				return sizeof(skeletal_normal_texture_color);
 			}
 			
 			return 0;
 		}
 
-		void PackVertices(Mesh& m)
+		void
+		pack_vertices(mesh& m)
 		{
-			const u32 numVertices{ (u32)m.vertices.size() };
-			assert(numVertices);
+			const u32 num_vertices{ (u32)m.vertices.size() };
+			assert(num_vertices);
 
-			m.positionBuffer.resize(sizeof(Math::Vec3) * numVertices);
-			Math::Vec3* const positionBuffer{ (Math::Vec3* const)m.positionBuffer.data() };
+			m.position_buffer.resize(sizeof(math::v3) * num_vertices);
+			math::v3* const position_buffer{ (math::v3* const)m.position_buffer.data() };
 
-			for (u32 i{ 0 }; i < numVertices; i++)
+			for (u32 i{ 0 }; i < num_vertices; ++i)
 			{
-				positionBuffer[i] = m.vertices[i].position;
+				position_buffer[i] = m.vertices[i].position;
 			}
 
 			struct u16v2 { u16 x, y; };
 			struct u8v3 { u8 x, y, z; };
 
-			Utils::vector<u8>		tSigns(numVertices);
-			Utils::vector<u16v2>	normals(numVertices);
-			Utils::vector<u16v2>	tangents(numVertices);
-			Utils::vector<u8v3>		jointWeights(numVertices);
+			utl::vector<u8>	t_signs(num_vertices);
+			utl::vector<u16v2> normals(num_vertices);
+			utl::vector<u16v2> tangents(num_vertices);
+			utl::vector<u8v3> joint_weights(num_vertices);
 
-			if (m.elementsType & Elements::ElementsType::StaticNormal)
+			if (m.elements_type & elements::elements_type::static_normal)
 			{
 				// normals only
-				for (u32 i{ 0 }; i < numVertices; i++)
+				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
-					Vertex& v{ m.vertices[i] };
-					tSigns[i] = (u8)((v.normal.z > 0.0f) << 1);
-					normals[i] = { (u16)PackFloat<16>(v.normal.x, -1.0f, 1.0f), (u16)PackFloat<16>(v.normal.y, -1.0f, 1.0f) };
+					vertex& v{ m.vertices[i] };
+					t_signs[i] = (u8)((v.normal.z > 0.0f) << 1);
+					normals[i] = { (u16)pack_float<16>(v.normal.x, -1.0f, 1.0f), (u16)pack_float<16>(v.normal.y, -1.0f, 1.0f) };
 				}
 
-				if (m.elementsType & Elements::ElementsType::StaticNormalTexture)
+				if (m.elements_type & elements::elements_type::static_normal_texture)
 				{
 					// full t-space
-					for (u32 i{ 0 }; i < numVertices; i++)
+					for (u32 i{ 0 }; i < num_vertices; i++)
 					{
-						Vertex& v{ m.vertices[i] };
-						tSigns[i] |= (u8)((v.tangent.w > 0.0f) && (v.tangent.z > 0.0f));
-						tangents[i] = { (u16)PackFloat<16>(v.tangent.x, -1.0f, 1.0f), (u16)PackFloat<16>(v.tangent.y, -1.0f, 1.0f) };
+						vertex& v{ m.vertices[i] };
+						t_signs[i] |= (u8)((v.tangent.w > 0.0f) && (v.tangent.z > 0.0f));
+						tangents[i] = { (u16)pack_float<16>(v.tangent.x, -1.0f, 1.0f), (u16)pack_float<16>(v.tangent.y, -1.0f, 1.0f) };
 					}
 				}
 			}
 
-			if (m.elementsType & Elements::ElementsType::Skeletal)
+			if (m.elements_type & elements::elements_type::skeletal)
 			{
-				for (u32 i{ 0 }; i < numVertices; i++)
+				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
-					Vertex& v{ m.vertices[i] };
+					vertex& v{ m.vertices[i] };
 					// pack joint weights (from [0.0, 1.0] to [0...255])
-					jointWeights[i] =
+					joint_weights[i] =
 					{
-						(u8)PackUnitFloat<8>(v.jointWeights.x),
-						(u8)PackUnitFloat<8>(v.jointWeights.y),
-						(u8)PackUnitFloat<8>(v.jointWeights.z)
+						(u8)pack_unit_float<8>(v.joint_weights.x),
+						(u8)pack_unit_float<8>(v.joint_weights.y),
+						(u8)pack_unit_float<8>(v.joint_weights.z)
 					};
 					// NOTE: w3 will be calculated in the shader since joint weights sum to one(1).
 				}
 			}
 
-			m.elementBuffer.resize(GetVertexElementSize(m.elementsType) * numVertices);
-			using namespace Elements;
+			m.element_buffer.resize(get_vertex_element_size(m.elements_type) * num_vertices);
+			using namespace elements;
 
-			switch (m.elementsType)
+			switch (m.elements_type)
 			{
-			case ElementsType::StaticColor:
+			case elements_type::static_color:
 			{
-				StaticColor* const elementBuffer{ (StaticColor* const)m.elementBuffer.data() };
-				for (u32 i{ 0 }; i < numVertices; i++)
+				static_color* const element_buffer{ (static_color* const)m.element_buffer.data() };
+				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
-					Vertex& v{ m.vertices[i] };
-					elementBuffer[i] = { { v.red, v.green, v.blue }, {/*pad*/}};
+					vertex& v{ m.vertices[i] };
+					element_buffer[i] = { { v.red, v.green, v.blue }, {/*pad*/}};
 				}
 			}
-				break;
-			case ElementsType::StaticNormal:
+			break;
+			case elements_type::static_normal:
 			{
-				StaticNormal* const elementBuffer{ (StaticNormal* const)m.elementBuffer.data() };
-				for (u32 i{ 0 }; i < numVertices; i++)
+				static_normal* const element_buffer{ (static_normal* const)m.element_buffer.data() };
+				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
-					Vertex& v{ m.vertices[i] };
-					elementBuffer[i] = { { v.red, v.green, v.blue }, tSigns[i], {normals[i].x, normals[i].y} };
+					vertex& v{ m.vertices[i] };
+					element_buffer[i] = { { v.red, v.green, v.blue }, t_signs[i], {normals[i].x, normals[i].y} };
 				}
 			}
-				break;
-			case ElementsType::StaticNormalTexture:
+			break;
+			case elements_type::static_normal_texture:
 			{
-				StaticNormalTexture* const elementBuffer{ (StaticNormalTexture* const)m.elementBuffer.data() };
-				for (u32 i{ 0 }; i < numVertices; i++)
+				static_normal_texture* const element_buffer{ (static_normal_texture* const)m.element_buffer.data() };
+				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
-					Vertex& v{ m.vertices[i] };
-					elementBuffer[i] = { { v.red, v.green, v.blue }, tSigns[i],
+					vertex& v{ m.vertices[i] };
+					element_buffer[i] = { { v.red, v.green, v.blue }, t_signs[i],
 										 {normals[i].x, normals[i].y}, {tangents[i].x, tangents[i].y},
 										 v.uv };
 				}
 			}
-				break;
-			case ElementsType::Skeletal:
+			break;
+			case elements_type::skeletal:
 			{
-				Skeletal* const elementBuffer{ (Skeletal* const)m.elementBuffer.data() };
-				for (u32 i{ 0 }; i < numVertices; i++)
+				skeletal* const element_buffer{ (skeletal* const)m.element_buffer.data() };
+				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
-					Vertex& v{ m.vertices[i] };
-					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
-					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, {/*pad*/},
+					vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.joint_indices.x, (u16)v.joint_indices.y, (u16)v.joint_indices.z, (u16)v.joint_indices.w };
+					element_buffer[i] = { {joint_weights[i].x, joint_weights[i].y, joint_weights[i].z}, {/*pad*/},
 										 {indices[0], indices[1], indices[2], indices[3]} };
 				}
 			}
-				break;
-			case ElementsType::SkeletalColor:
+			break;
+			case elements_type::skeletal_color:
 			{
-				SkeletalColor* const elementBuffer{ (SkeletalColor* const)m.elementBuffer.data() };
-				for (u32 i{ 0 }; i < numVertices; i++)
+				skeletal_color* const element_buffer{ (skeletal_color* const)m.element_buffer.data() };
+				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
-					Vertex& v{ m.vertices[i] };
-					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
-					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, {/*pad*/},
+					vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.joint_indices.x, (u16)v.joint_indices.y, (u16)v.joint_indices.z, (u16)v.joint_indices.w };
+					element_buffer[i] = { {joint_weights[i].x, joint_weights[i].y, joint_weights[i].z}, {/*pad*/},
 										 {indices[0], indices[1], indices[2], indices[3]},
 										 {v.red, v.green, v.blue}, {/*pad*/}};
 				}
 			}
-				break;
-			case ElementsType::SkeletalNormal:
+			break;
+			case elements_type::skeletal_normal:
 			{
-				SkeletalNormal* const elementBuffer{ (SkeletalNormal* const)m.elementBuffer.data() };
-				for (u32 i{ 0 }; i < numVertices; i++)
+				skeletal_normal* const element_buffer{ (skeletal_normal* const)m.element_buffer.data() };
+				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
-					Vertex& v{ m.vertices[i] };
-					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
-					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, tSigns[i],
+					vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.joint_indices.x, (u16)v.joint_indices.y, (u16)v.joint_indices.z, (u16)v.joint_indices.w };
+					element_buffer[i] = { {joint_weights[i].x, joint_weights[i].y, joint_weights[i].z}, t_signs[i],
 										 {indices[0], indices[1], indices[2], indices[3]},
 										 {normals[i].x, normals[i].y} };
 				}
 			}
-				break;
-			case ElementsType::SkeletalNormalColor:
+			break;
+			case elements_type::skeletal_normal_color:
 			{
-				SkeletalNormalColor* const elementBuffer{ (SkeletalNormalColor* const)m.elementBuffer.data() };
-				for (u32 i{ 0 }; i < numVertices; i++)
+				skeletal_normal_color* const element_buffer{ (skeletal_normal_color* const)m.element_buffer.data() };
+				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
-					Vertex& v{ m.vertices[i] };
-					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
-					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, tSigns[i],
+					vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.joint_indices.x, (u16)v.joint_indices.y, (u16)v.joint_indices.z, (u16)v.joint_indices.w };
+					element_buffer[i] = { {joint_weights[i].x, joint_weights[i].y, joint_weights[i].z}, t_signs[i],
 										 {indices[0], indices[1], indices[2], indices[3]},
 										 {normals[i].x, normals[i].y}, {v.red, v.green, v.blue}, {/*pad*/} };
 				}
 			}
-				break;
-			case ElementsType::SkeletalNormalTexture:
+			break;
+			case elements_type::skeletal_normal_texture:
 			{
-				SkeletalNormalTexture* const elementBuffer{ (SkeletalNormalTexture* const)m.elementBuffer.data() };
-				for (u32 i{ 0 }; i < numVertices; i++)
+				skeletal_normal_texture* const element_buffer{ (skeletal_normal_texture* const)m.element_buffer.data() };
+				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
-					Vertex& v{ m.vertices[i] };
-					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
-					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, tSigns[i],
+					vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.joint_indices.x, (u16)v.joint_indices.y, (u16)v.joint_indices.z, (u16)v.joint_indices.w };
+					element_buffer[i] = { {joint_weights[i].x, joint_weights[i].y, joint_weights[i].z}, t_signs[i],
 										 {indices[0], indices[1], indices[2], indices[3]},
 										 {normals[i].x, normals[i].y}, {tangents[i].x, tangents[i].y}, v.uv };
 				}
 			}
-				break;
-			case ElementsType::SkeletalNormalTextureColor:
+			break;
+			case elements_type::skeletal_normal_texture_color:
 			{
-				SkeletalNormalTextureColor* const elementBuffer{ (SkeletalNormalTextureColor* const)m.elementBuffer.data() };
-				for (u32 i{ 0 }; i < numVertices; i++)
+				skeletal_normal_texture_color* const element_buffer{ (skeletal_normal_texture_color* const)m.element_buffer.data() };
+				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
-					Vertex& v{ m.vertices[i] };
-					const u16 indices[4]{ (u16)v.jointIndices.x, (u16)v.jointIndices.y, (u16)v.jointIndices.z, (u16)v.jointIndices.w };
-					elementBuffer[i] = { {jointWeights[i].x, jointWeights[i].y, jointWeights[i].z}, tSigns[i],
+					vertex& v{ m.vertices[i] };
+					const u16 indices[4]{ (u16)v.joint_indices.x, (u16)v.joint_indices.y, (u16)v.joint_indices.z, (u16)v.joint_indices.w };
+					element_buffer[i] = { {joint_weights[i].x, joint_weights[i].y, joint_weights[i].z}, t_signs[i],
 										 {indices[0], indices[1], indices[2], indices[3]},
 										 {normals[i].x, normals[i].y}, {tangents[i].x, tangents[i].y}, v.uv,
 										 {v.red, v.green, v.blue}, {/*pad*/} };
 				}
 			}
-				break;
+			break;
 			}
 		}
 
-		void DetermineElementsType(Mesh& m)
+		void
+		determine_elements_type(mesh& m)
 		{
-			using namespace Elements;
+			using namespace elements;
 
 			if (m.normals.size())
 			{
-				if (m.uvSets.size() && m.uvSets[0].size())
+				if (m.uv_sets.size() && m.uv_sets[0].size())
 				{
-					m.elementsType = ElementsType::StaticNormalTexture;
+					m.elements_type = elements_type::static_normal_texture;
 				}
 				else
 				{
-					m.elementsType = ElementsType::StaticNormal;
+					m.elements_type = elements_type::static_normal;
 				}
 			}
 			else if (m.colors.size())
 			{
-				m.elementsType = ElementsType::StaticColor;
+				m.elements_type = elements_type::static_color;
 			}
 
 			// TODO: We lack data for skeletal meshes. Expand for skeletal meshes later.
 		}
 
-		void ProcessVertices(Mesh& m, const GeometryImportSettings& settings)
+		void
+		process_vertices(mesh& m, const geometry_import_settings& settings)
 		{
-			assert((m.rawIndices.size() % 3) == 0);
+			assert((m.raw_indices.size() % 3) == 0);
 			
-			if (settings.calculateNormals || m.normals.empty())
+			if (settings.calculate_normals || m.normals.empty())
 			{
-				RecalculateNormals(m);
+				recalculate_normals(m);
 			}
 
-			ProcessNormals(m, settings.smoothingAngle);
+			process_normals(m, settings.smoothing_angle);
 
-			if (!m.uvSets.empty())
+			if (!m.uv_sets.empty())
 			{
-				ProcessUVs(m);
+				process_uvs(m);
 			}
 
-			DetermineElementsType(m);
-			PackVertices(m);
+			determine_elements_type(m);
+			pack_vertices(m);
 		}
 
-		void PackMeshData(const Mesh& m, Utils::BlobStreamWriter& blob)
+		void
+		pack_mesh_data(const mesh& m, utl::blob_stream_writer& blob)
 		{
 			// Mesh name
-			blob.Write((u32)m.name.size());
-			blob.Write(m.name.c_str(), m.name.size());
+			blob.write((u32)m.name.size());
+			blob.write(m.name.c_str(), m.name.size());
 			// LoD ID
-			blob.Write(m.lodID);
-			// Vertex element size
-			const u32 elementsSize{ (u32)GetVertexElementSize(m.elementsType) };
-			blob.Write(elementsSize);
-			// Elements type enumeration
-			blob.Write((u32)m.elementsType);
+			blob.write(m.lod_id);
+			// vertex element size
+			const u32 elements_size{ (u32)get_vertex_element_size(m.elements_type) };
+			blob.write(elements_size);
+			// elements type enumeration
+			blob.write((u32)m.elements_type);
 			// Number of vertices
-			const u32 numVertices{ (u32)m.vertices.size() };
-			blob.Write(numVertices);
+			const u32 num_vertices{ (u32)m.vertices.size() };
+			blob.write(num_vertices);
 			// Index size (16 bit or 32 bit)
-			const u32 indexSize{ (numVertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
-			blob.Write(indexSize);
+			const u32 index_size{ (num_vertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
+			blob.write(index_size);
 			// Number of indices
-			const u32 numIndices{ (u32)m.indices.size() };
-			blob.Write(numIndices);
+			const u32 num_indices{ (u32)m.indices.size() };
+			blob.write(num_indices);
 			// LoD threshold
-			blob.Write(m.lodThreshold);
+			blob.write(m.lod_threshold);
 			// Position buffer
-			assert(m.positionBuffer.size() == sizeof(Math::Vec3) * numVertices);
-			blob.Write(m.positionBuffer.data(), m.positionBuffer.size());
+			assert(m.position_buffer.size() == sizeof(math::v3) * num_vertices);
+			blob.write(m.position_buffer.data(), m.position_buffer.size());
 			// Element buffer
-			assert(m.elementBuffer.size() == elementsSize * numVertices);
-			blob.Write(m.elementBuffer.data(), m.elementBuffer.size());
+			assert(m.element_buffer.size() == elements_size * num_vertices);
+			blob.write(m.element_buffer.data(), m.element_buffer.size());
 			// Index data
-			const u32 indexBufferSize{ indexSize * numIndices };
+			const u32 index_buffer_size{ index_size * num_indices };
 			const u8* data{ (const u8*)m.indices.data() };
-			Utils::vector<u16> indices;
+			utl::vector<u16> indices;
 
-			if (indexSize == sizeof(u16))
+			if (index_size == sizeof(u16))
 			{
-				indices.resize(numIndices);
-				for (u32 i{ 0 }; i < numIndices; i++)
+				indices.resize(num_indices);
+				for (u32 i{ 0 }; i < num_indices; ++i)
 				{
 					indices[i] = (u16)m.indices[i];
 					data = (const u8*)indices.data();
 				}
 			}
 
-			blob.Write(data, indexBufferSize);
+			blob.write(data, index_buffer_size);
 		}
 
-		u64 GetMeshSize(const Mesh& m)
+		u64
+		get_mesh_size(const mesh& m)
 		{
-			const u64 numVertices{ m.vertices.size() };
-			const u64 positionBufferSize{ m.positionBuffer.size() };
-			assert(positionBufferSize == sizeof(Math::Vec3) * numVertices);
-			const u64 elementBufferSize{ m.elementBuffer.size() };
-			assert(elementBufferSize == GetVertexElementSize(m.elementsType) * numVertices);
-			const u64 indexSize{ (numVertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
-			const u64 indexBufferSize{ indexSize * m.indices.size() };
+			const u64 num_vertices{ m.vertices.size() };
+			const u64 position_buffer_size{ m.position_buffer.size() };
+			assert(position_buffer_size == sizeof(math::v3) * num_vertices);
+			const u64 element_buffer_size{ m.element_buffer.size() };
+			assert(element_buffer_size == get_vertex_element_size(m.elements_type) * num_vertices);
+			const u64 index_size{ (num_vertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
+			const u64 index_buffer_size{ index_size * m.indices.size() };
 			constexpr u64 su32{ sizeof(u32) };
 			const u64 size
 			{
@@ -458,15 +467,16 @@ namespace Havana::Tools
 				su32 +					// index size (16 bit or 32 bit)
 				su32 +					// number of indices
 				sizeof(f32) +			// LoD threshold
-				positionBufferSize +	// room for verticex positions
-				elementBufferSize +		// room for verticex elements
-				indexBufferSize			// room for the indices
+				position_buffer_size +	// room for verticex positions
+				element_buffer_size +	// room for verticex elements
+				index_buffer_size		// room for the indices
 			};
 
 			return size;
 		}
 
-		u64 GetSceneSize(const Scene& scene)
+		u64
+		get_scene_size(const scene& scene)
 		{
 			constexpr u64 su32{ sizeof(u32) };
 			u64 size
@@ -476,9 +486,9 @@ namespace Havana::Tools
 				su32				// number of LoDs
 			};
 
-			for (auto& lod : scene.lodGroups)
+			for (auto& lod : scene.lod_groups)
 			{
-				u64 lodSize
+				u64 lod_size
 				{
 					su32 + lod.name.size() +	// LoD name length (number of characters) and room for LoD name string
 					su32						// number of meshes in this LoD
@@ -486,44 +496,45 @@ namespace Havana::Tools
 
 				for (auto& m : lod.meshes)
 				{
-					lodSize += GetMeshSize(m);
+					lod_size += get_mesh_size(m);
 				}
 
-				size += lodSize;
+				size += lod_size;
 			}
 
 			return size;
 		}
 
-		bool SplitMeshesByMaterial(u32 materialIdx, const Mesh& m, Mesh& submesh)
+		bool
+		split_meshes_by_material(u32 material_idx, const mesh& m, mesh& submesh)
 		{
 			submesh.name = m.name;
-			submesh.lodThreshold = m.lodThreshold;
-			submesh.lodID = m.lodID;
-			submesh.materialUsed.emplace_back(materialIdx);
-			submesh.uvSets.resize(m.uvSets.size());
+			submesh.lod_threshold = m.lod_threshold;
+			submesh.lod_id = m.lod_id;
+			submesh.material_used.emplace_back(material_idx);
+			submesh.uv_sets.resize(m.uv_sets.size());
 
-			const u32 numPolys{ (u32)m.rawIndices.size() / 3 };
-			Utils::vector<u32> vertexRef(m.positions.size(), U32_INVALID_ID);
+			const u32 num_polys{ (u32)m.raw_indices.size() / 3 };
+			utl::vector<u32> vertex_ref(m.positions.size(), u32_invalid_id);
 
-			for (u32 i{ 0 }; i < numPolys; i++)
+			for (u32 i{ 0 }; i < num_polys; ++i)
 			{
-				const u32 mtlIdx{ m.materialIndices[i] };
-				if (mtlIdx != materialIdx) continue;
+				const u32 mtl_idx{ m.material_indices[i] };
+				if (mtl_idx != material_idx) continue;
 
 				const u32 index{ i * 3 };
-				for (u32 j = index; j < index + 3; j++)
+				for (u32 j = index; j < index + 3; ++j)
 				{
-					const u32 vIdx{ m.rawIndices[j] };
-					if (vertexRef[vIdx] != U32_INVALID_ID)
+					const u32 v_idx{ m.raw_indices[j] };
+					if (vertex_ref[v_idx] != u32_invalid_id)
 					{
-						submesh.rawIndices.emplace_back(vertexRef[vIdx]);
+						submesh.raw_indices.emplace_back(vertex_ref[v_idx]);
 					}
 					else
 					{
-						submesh.rawIndices.emplace_back((u32)submesh.positions.size());
-						vertexRef[vIdx] = submesh.rawIndices.back();
-						submesh.positions.emplace_back(m.positions[vIdx]);
+						submesh.raw_indices.emplace_back((u32)submesh.positions.size());
+						vertex_ref[v_idx] = submesh.raw_indices.back();
+						submesh.positions.emplace_back(m.positions[v_idx]);
 					}
 
 					if (m.normals.size())
@@ -536,95 +547,97 @@ namespace Havana::Tools
 						submesh.tangents.emplace_back(m.tangents[j]);
 					}
 
-					for (u32 k{ 0 }; k < m.uvSets.size(); k++)
+					for (u32 k{ 0 }; k < m.uv_sets.size(); ++k)
 					{
-						if (m.uvSets[k].size())
+						if (m.uv_sets[k].size())
 						{
-							submesh.uvSets[k].emplace_back(m.uvSets[k][j]);
+							submesh.uv_sets[k].emplace_back(m.uv_sets[k][j]);
 						}
 					}
 				}
 			}
 
-			assert((submesh.rawIndices.size() % 3) == 0);
-			return !submesh.rawIndices.empty();
+			assert((submesh.raw_indices.size() % 3) == 0);
+			return !submesh.raw_indices.empty();
 		}
 
-		void SplitMeshesByMaterial(Scene& scene)
+		void
+		split_meshes_by_material(scene& scene)
 		{
-			for (auto& lod : scene.lodGroups)
+			for (auto& lod : scene.lod_groups)
 			{
-				Utils::vector<Mesh> newMeshes;
+				utl::vector<mesh> new_meshes;
 				for (auto& m : lod.meshes)
 				{
 					// If moew than one material is used in this mesh
 					// then split it into submeshes
-					const u32 numMaterials{ (u32)m.materialUsed.size() };
-					if (numMaterials > 1)
+					const u32 num_materials{ (u32)m.material_used.size() };
+					if (num_materials > 1)
 					{
-						for (u32 i{ 0 }; i < numMaterials; i++)
+						for (u32 i{ 0 }; i < num_materials; i++)
 						{
-							Mesh submesh{};
-							if (SplitMeshesByMaterial(m.materialUsed[i], m, submesh))
+							mesh submesh{};
+							if (split_meshes_by_material(m.material_used[i], m, submesh))
 							{
-								newMeshes.emplace_back(submesh);
+								new_meshes.emplace_back(submesh);
 							}
 						}
 					}
 					else
 					{
-						newMeshes.emplace_back(m);
+						new_meshes.emplace_back(m);
 					}
 				}
 
-				newMeshes.swap(lod.meshes);
+				new_meshes.swap(lod.meshes);
 			}
 		}
 	} // anonymous namespace
 
-	void ProcessScene(Scene& scene, const GeometryImportSettings& settings)
+	void
+	process_scene(scene& scene, const geometry_import_settings& settings)
 	{
-		SplitMeshesByMaterial(scene);
+		split_meshes_by_material(scene);
 		
-		for (auto& lod : scene.lodGroups)
+		for (auto& lod : scene.lod_groups)
 		{
 			for (auto& m : lod.meshes)
 			{
-				ProcessVertices(m, settings);
+				process_vertices(m, settings);
 			}
 		}
 	}
 
-	void PackData(const Scene& scene, SceneData& data)
+	void
+	pack_data(const scene& scene, scene_data& data)
 	{
-		constexpr u64 su32(sizeof(u32));
-		const u64 sceneSize{ GetSceneSize(scene) };
-		data.bufferSize = (u32)sceneSize;
-		data.buffer = (u8*)CoTaskMemAlloc(sceneSize);
+		const u64 scene_size{ get_scene_size(scene) };
+		data.buffer_size = (u32)scene_size;
+		data.buffer = (u8*)CoTaskMemAlloc(scene_size);
 		assert(data.buffer);
 
-		Utils::BlobStreamWriter blob{ data.buffer, data.bufferSize };
+		utl::blob_stream_writer blob{ data.buffer, data.buffer_size };
 
 		// Scene name
-		blob.Write((u32)scene.name.size());
-		blob.Write(scene.name.c_str(), scene.name.size());
+		blob.write((u32)scene.name.size());
+		blob.write(scene.name.c_str(), scene.name.size());
 		// Number of LoDs
-		blob.Write((u32)scene.lodGroups.size());
+		blob.write((u32)scene.lod_groups.size());
 
-		for (auto& lod : scene.lodGroups)
+		for (auto& lod : scene.lod_groups)
 		{
 			// LoD name
-			blob.Write((u32)lod.name.size());
-			blob.Write(lod.name.c_str(), lod.name.size());
+			blob.write((u32)lod.name.size());
+			blob.write(lod.name.c_str(), lod.name.size());
 			// Number of meshes in this LoD
-			blob.Write((u32)lod.meshes.size());
+			blob.write((u32)lod.meshes.size());
 
 			for (auto& m : lod.meshes)
 			{
-				PackMeshData(m, blob);
+				pack_mesh_data(m, blob);
 			}
 		}
 
-		assert(sceneSize == blob.Offset());
+		assert(scene_size == blob.offset());
 	}
 }

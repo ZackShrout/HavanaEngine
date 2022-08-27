@@ -1,7 +1,7 @@
 #include "D3D12Surface.h"
 #include "D3D12Core.h"
 
-namespace Havana::Graphics::D3D12
+namespace havana::Graphics::D3D12
 {
 	namespace
 	{

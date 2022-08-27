@@ -7,7 +7,7 @@
 #include "../Platforms/Platform.h" 
 #include "../Graphics/Renderer.h"
 
-using namespace Havana;
+using namespace havana;
 
 #ifdef _WIN64
 
@@ -54,21 +54,21 @@ bool EngineInitialize()
 
 	gameWindow.window = Platform::MakeWindow(&info);
 
-	if (!gameWindow.window.IsValid()) return false;
+	if (!gameWindow.window.is_valid()) return false;
 
 	return true;
 }
 
 void EngineUpdate()
 {
-	Havana::Script::Update(10.0f);
+	havana::Script::Update(10.0f);
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 void EngineShutdown()
 {
 	Platform::RemoveWindow(gameWindow.window.GetID());
-	Havana::Content::UnloadGame();
+	havana::Content::UnloadGame();
 }
 
 #endif // _Win64

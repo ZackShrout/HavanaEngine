@@ -5,7 +5,7 @@
 #include "D3D12Camera.h"
 #include "Graphics/GraphicsPlatformInterface.h"
 
-namespace Havana::Graphics
+namespace havana::Graphics
 {
 	namespace D3D12
 	{

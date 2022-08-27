@@ -1,7 +1,7 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace Havana::Graphics::D3D12
+namespace havana::Graphics::D3D12
 {
 	class D3D12Surface
 	{

@@ -17,43 +17,45 @@
 // LNK4899 PDB not found warnings can be resolved either by installing FBX SDK PDBs (separate download) or
 // by disabling this warning in linker options (Linker command line: /ignore:4899).
 
-namespace Havana::Tools
+namespace havana::tools
 {
 	namespace
 	{
-		std::mutex fbxMutex{};
+		std::mutex fbx_mutex{};
 	} // anonymous namespace
 
-	bool FbxContext::InitializeFbx()
+	bool
+	fbx_context::initialize_fbx()
 	{
-		assert(!IsValid());
+		assert(!is_valid());
 
-		m_fbxManager = FbxManager::Create();
-		if (!m_fbxManager)
+		_fbx_manager = FbxManager::Create();
+		if (!_fbx_manager)
 		{
 			return false;
 		}
 
-		FbxIOSettings* ios{ FbxIOSettings::Create(m_fbxManager, IOSROOT) };
+		FbxIOSettings* ios{ FbxIOSettings::Create(_fbx_manager, IOSROOT) };
 		assert(ios);
-		m_fbxManager->SetIOSettings(ios);
+		_fbx_manager->SetIOSettings(ios);
 
 		return true;
 	}
 
-	void FbxContext::LoadFbxFile(const char* file)
+	void
+	fbx_context::load_fbx_file(const char* file)
 	{
-		assert(m_fbxManager && !m_fbxScene);
-		m_fbxScene = FbxScene::Create(m_fbxManager, "Importer Scene");
-		if (!m_fbxScene)
+		assert(_fbx_manager && !_fbx_scene);
+		_fbx_scene = FbxScene::Create(_fbx_manager, "Importer Scene");
+		if (!_fbx_scene)
 		{
 			return;
 		}
 
-		FbxImporter* importer{ FbxImporter::Create(m_fbxManager, "Importer") };
+		FbxImporter* importer{ FbxImporter::Create(_fbx_manager, "Importer") };
 		if (!(importer &&
-			importer->Initialize(file, -1, m_fbxManager->GetIOSettings()) &&
-			importer->Import(m_fbxScene)))
+			importer->Initialize(file, -1, _fbx_manager->GetIOSettings()) &&
+			importer->Import(_fbx_scene)))
 		{
 			return;
 		}
@@ -61,208 +63,213 @@ namespace Havana::Tools
 		importer->Destroy();
 
 		// Get scene scale in meters
-		m_sceneScale = (f32)m_fbxScene->GetGlobalSettings().GetSystemUnit().GetConversionFactorTo(FbxSystemUnit::m);
+		_scene_scale = (f32)_fbx_scene->GetGlobalSettings().GetSystemUnit().GetConversionFactorTo(FbxSystemUnit::m);
 	}
 
-	void FbxContext::GetScene(FbxNode* root /*= nullptr*/)
+	void
+	fbx_context::get_scene(FbxNode* root /*= nullptr*/)
 	{
-		assert(IsValid());
+		assert(is_valid());
 
 		if (!root)
 		{
-			root = m_fbxScene->GetRootNode();
+			root = _fbx_scene->GetRootNode();
 			if (!root) return;
 		}
 
-		const s32 numNodes{ root->GetChildCount() };
-		for (s32 i{ 0 }; i < numNodes; i++)
+		const s32 num_nodes{ root->GetChildCount() };
+		for (s32 i{ 0 }; i < num_nodes; ++i)
 		{
 			FbxNode* node{ root->GetChild(i) };
 			if (!node) continue;
 
-			LoDGroup lod{};
-			GetMeshes(node, lod.meshes, 0, -1.0f);
+			lod_group lod{};
+			get_meshes(node, lod.meshes, 0, -1.0f);
 			if (lod.meshes.size())
 			{
 				lod.name = lod.meshes[0].name;
-				m_scene->lodGroups.emplace_back(lod);
+				_scene->lod_groups.emplace_back(lod);
 			}
 		}
 	}
 
-	void FbxContext::GetMeshes(FbxNode* node, Utils::vector<Mesh>& meshes, u32 lodID, f32 lodThreshold)
+	void
+	fbx_context::get_meshes(FbxNode* node, utl::vector<mesh>& meshes, u32 lod_id, f32 lod_threshold)
 	{
-		assert(node && lodID != U32_INVALID_ID);
-		bool isLODGroup{ false };
+		assert(node && lod_id != u32_invalid_id);
+		bool is_lod_group{ false };
 
-		if (const s32 numAttributes{ node->GetNodeAttributeCount() })
+		if (const s32 num_attributes{ node->GetNodeAttributeCount() })
 		{
-			for (s32 i{ 0 }; i < numAttributes; i++)
+			for (s32 i{ 0 }; i < num_attributes; ++i)
 			{
 				FbxNodeAttribute* attribute{ node->GetNodeAttributeByIndex(i) };
-				const FbxNodeAttribute::EType attributeType{ attribute->GetAttributeType() };
-				if (attributeType == FbxNodeAttribute::eMesh)
+				const FbxNodeAttribute::EType attribute_type{ attribute->GetAttributeType() };
+				if (attribute_type == FbxNodeAttribute::eMesh)
 				{
-					GetMesh(attribute, meshes, lodID, lodThreshold);
+					get_mesh(attribute, meshes, lod_id, lod_threshold);
 				}
-				else if (attributeType == FbxNodeAttribute::eLODGroup)
+				else if (attribute_type == FbxNodeAttribute::eLODGroup)
 				{
-					GetLoDGroup(attribute);
-					isLODGroup = true;
+					get_lod_group(attribute);
+					is_lod_group = true;
 				}
 			}
 		}
 
-		if (!isLODGroup)
+		if (!is_lod_group)
 		{
-			if (const s32 numChildren{ node->GetChildCount() })
+			if (const s32 num_children{ node->GetChildCount() })
 			{
-				for (s32 i{ 0 }; i < numChildren; i++)
+				for (s32 i{ 0 }; i < num_children; ++i)
 				{
-					GetMeshes(node->GetChild(i), meshes, lodID, lodThreshold);
+					get_meshes(node->GetChild(i), meshes, lod_id, lod_threshold);
 				}
 			}
 		}
 	}
 
-	void FbxContext::GetMesh(FbxNodeAttribute* attribute, Utils::vector<Mesh>& meshes, u32 lodID, f32 lodThreshold)
+	void
+	fbx_context::get_mesh(FbxNodeAttribute* attribute, utl::vector<mesh>& meshes, u32 lod_id, f32 lod_threshold)
 	{
 		assert(attribute);
 
-		FbxMesh* fbxMesh{ (FbxMesh*)attribute };
-		if (fbxMesh->RemoveBadPolygons() < 0) return;
+		FbxMesh* fbx_mesh{ (FbxMesh*)attribute };
+		if (fbx_mesh->RemoveBadPolygons() < 0) return;
 
 		// Triangulate the mesh if needed
-		FbxGeometryConverter gc{ m_fbxManager };
-		fbxMesh = (FbxMesh*)gc.Triangulate(fbxMesh, true);
-		if (!fbxMesh || fbxMesh->RemoveBadPolygons() < 0) return;
+		FbxGeometryConverter gc{ _fbx_manager };
+		fbx_mesh = (FbxMesh*)gc.Triangulate(fbx_mesh, true);
+		if (!fbx_mesh || fbx_mesh->RemoveBadPolygons() < 0) return;
 
-		FbxNode* const node{ fbxMesh->GetNode() };
+		FbxNode* const node{ fbx_mesh->GetNode() };
 
-		Mesh m;
-		m.lodID = lodID;
-		m.lodThreshold = lodThreshold;
-		m.name = (node->GetName()[0] != '\0') ? node->GetName() : fbxMesh->GetName();
+		mesh m;
+		m.lod_id = lod_id;
+		m.lod_threshold = lod_threshold;
+		m.name = (node->GetName()[0] != '\0') ? node->GetName() : fbx_mesh->GetName();
 
-		if (GetMeshData(fbxMesh, m))
+		if (get_mesh_data(fbx_mesh, m))
 		{
 			meshes.emplace_back(m);
 		}
 
 		// See if there is a mesh somewhere further down the hierarchy
-		GetScene(node);
+		get_scene(node);
 	}
 
-	void FbxContext::GetLoDGroup(FbxNodeAttribute* attribute)
+	void
+	fbx_context::get_lod_group(FbxNodeAttribute* attribute)
 	{
 		assert(attribute);
 
-		FbxLODGroup* lodGrp{ (FbxLODGroup*)attribute };
-		FbxNode* const node{ lodGrp->GetNode() };
-		LoDGroup lod{};
-		lod.name = (node->GetName()[0] != '\0' ? node->GetName() : lodGrp->GetName());
+		FbxLODGroup* lod_grp{ (FbxLODGroup*)attribute };
+		FbxNode* const node{ lod_grp->GetNode() };
+		lod_group lod{};
+		lod.name = (node->GetName()[0] != '\0' ? node->GetName() : lod_grp->GetName());
 		// NOTE: number of LODs is exlusive the base mesh (LOD 0)
-		const s32 numNodes{ node->GetChildCount() };
-		assert(numNodes > 0 && lodGrp->GetNumThresholds() == (numNodes - 1));
+		const s32 num_nodes{ node->GetChildCount() };
+		assert(num_nodes > 0 && lod_grp->GetNumThresholds() == (num_nodes - 1));
 
-		for (s32 i{ 0 }; i < numNodes; i++)
+		for (s32 i{ 0 }; i < num_nodes; ++i)
 		{
-			f32 lodThreshold{ -1.0f };
+			f32 lod_threshold{ -1.0f };
 			if (i > 0)
 			{
 				FbxDistance threshold;
-				lodGrp->GetThreshold(i - 1, threshold);
-				lodThreshold = threshold.value() * m_sceneScale;
+				lod_grp->GetThreshold(i - 1, threshold);
+				lod_threshold = threshold.value() * _scene_scale;
 			}
 			
-			GetMeshes(node->GetChild(i), lod.meshes, (u32)lod.meshes.size(), lodThreshold);
+			get_meshes(node->GetChild(i), lod.meshes, (u32)lod.meshes.size(), lod_threshold);
 		}
 
-		if (lod.meshes.size()) m_scene->lodGroups.emplace_back(lod);
+		if (lod.meshes.size()) _scene->lod_groups.emplace_back(lod);
 	}
 
-	bool FbxContext::GetMeshData(FbxMesh* fbxMesh, Mesh& m)
+	bool
+	fbx_context::get_mesh_data(FbxMesh* fbx_mesh, mesh& m)
 	{
-		assert(fbxMesh);
+		assert(fbx_mesh);
 
-		FbxNode* const node{ fbxMesh->GetNode() };
-		FbxAMatrix geometricTransform;
+		FbxNode* const node{ fbx_mesh->GetNode() };
+		FbxAMatrix geometric_transform;
 
-		geometricTransform.SetT(node->GetGeometricTranslation(FbxNode::eSourcePivot));
-		geometricTransform.SetR(node->GetGeometricRotation(FbxNode::eSourcePivot));
-		geometricTransform.SetS(node->GetGeometricScaling(FbxNode::eSourcePivot));
+		geometric_transform.SetT(node->GetGeometricTranslation(FbxNode::eSourcePivot));
+		geometric_transform.SetR(node->GetGeometricRotation(FbxNode::eSourcePivot));
+		geometric_transform.SetS(node->GetGeometricScaling(FbxNode::eSourcePivot));
 
-		FbxAMatrix transform{ node->EvaluateGlobalTransform() * geometricTransform };
-		FbxAMatrix inverseTranspose{ transform.Inverse().Transpose() };
+		FbxAMatrix transform{ node->EvaluateGlobalTransform() * geometric_transform };
+		FbxAMatrix inverse_transpose{ transform.Inverse().Transpose() };
 
-		const s32 numPolys{ fbxMesh->GetPolygonCount() };
-		if (numPolys <= 0) return false;
+		const s32 num_polys{ fbx_mesh->GetPolygonCount() };
+		if (num_polys <= 0) return false;
 
 		// Get vertices
-		const s32 numVertices{ fbxMesh->GetControlPointsCount() };
-		FbxVector4* vertices{ fbxMesh->GetControlPoints() };
-		const s32 numIndices{ fbxMesh->GetPolygonVertexCount() };
-		s32* indices{ fbxMesh->GetPolygonVertices() };
+		const s32 num_vertices{ fbx_mesh->GetControlPointsCount() };
+		FbxVector4* vertices{ fbx_mesh->GetControlPoints() };
+		const s32 num_indices{ fbx_mesh->GetPolygonVertexCount() };
+		s32* indices{ fbx_mesh->GetPolygonVertices() };
 
-		assert(numVertices > 0 && vertices && numIndices > 0 && indices);
-		if (!(numVertices > 0 && vertices && numIndices > 0 && indices)) return false;
+		assert(num_vertices > 0 && vertices && num_indices > 0 && indices);
+		if (!(num_vertices > 0 && vertices && num_indices > 0 && indices)) return false;
 
-		m.rawIndices.resize(numIndices);
-		Utils::vector vertexRef(numVertices, U32_INVALID_ID);
+		m.raw_indices.resize(num_indices);
+		utl::vector vertex_ref(num_vertices, u32_invalid_id);
 
-		for (s32 i{ 0 }; i < numIndices; i++)
+		for (s32 i{ 0 }; i < num_indices; ++i)
 		{
-			const u32 vIdx{ (u32)indices[i] };
+			const u32 v_idx{ (u32)indices[i] };
 			// Did we encounter this vertex before? If so, just add it's index.
 			// If not, add the vertex and a new index.
-			if (vertexRef[vIdx] != U32_INVALID_ID)
+			if (vertex_ref[v_idx] != u32_invalid_id)
 			{
-				m.rawIndices[i] = vertexRef[vIdx];
+				m.raw_indices[i] = vertex_ref[v_idx];
 			}
 			else
 			{
-				FbxVector4 v = transform.MultT(vertices[vIdx]) * m_sceneScale;
-				m.rawIndices[i] = (u32)m.positions.size();
-				vertexRef[vIdx] = m.rawIndices[i];
+				FbxVector4 v = transform.MultT(vertices[v_idx]) * _scene_scale;
+				m.raw_indices[i] = (u32)m.positions.size();
+				vertex_ref[v_idx] = m.raw_indices[i];
 				m.positions.emplace_back((f32)v[0], (f32)v[1], (f32)v[2]);
 			}
 		}
 
-		assert(m.rawIndices.size() % 3 == 0);
+		assert(m.raw_indices.size() % 3 == 0);
 
 		// Get material index per polygon
-		assert(numPolys > 0);
-		FbxLayerElementArrayTemplate<s32>* mtlIndices;
-		if (fbxMesh->GetMaterialIndices(&mtlIndices))
+		assert(num_polys > 0);
+		FbxLayerElementArrayTemplate<s32>* mtl_indices;
+		if (fbx_mesh->GetMaterialIndices(&mtl_indices))
 		{
-			for (s32 i{ 0 }; i < numPolys; i++)
+			for (s32 i{ 0 }; i < num_polys; ++i)
 			{
-				const s32 mtlIndex{ mtlIndices->GetAt(i) };
-				assert(mtlIndex >= 0);
-				m.materialIndices.emplace_back((u32)mtlIndex);
-				if (std::find(m.materialUsed.begin(), m.materialUsed.end(), (u32)mtlIndex) == m.materialUsed.end())
+				const s32 mtl_index{ mtl_indices->GetAt(i) };
+				assert(mtl_index >= 0);
+				m.material_indices.emplace_back((u32)mtl_index);
+				if (std::find(m.material_used.begin(), m.material_used.end(), (u32)mtl_index) == m.material_used.end())
 				{
-					m.materialUsed.emplace_back((u32)mtlIndex);
+					m.material_used.emplace_back((u32)mtl_index);
 				}
 			}
 		}
 
 		// Importing normals in ON by default
-		const bool importNormals{ !m_sceneData->settings.calculateNormals };
+		const bool import_normals{ !_scene_data->settings.calculate_normals };
 		// Importing tangents is OFF by default
-		const bool importTangents{ !m_sceneData->settings.calculateTangents };
+		const bool import_tangents{ !_scene_data->settings.calculate_tangents };
 
 		// Import normals
-		if (importNormals)
+		if (import_normals)
 		{
 			FbxArray<FbxVector4> normals;
 			// Calculate normals using FBX's built-in method, but only if no normal data is already there
-			if (fbxMesh->GenerateNormals() && fbxMesh->GetPolygonVertexNormals(normals) && normals.Size() > 0)
+			if (fbx_mesh->GenerateNormals() && fbx_mesh->GetPolygonVertexNormals(normals) && normals.Size() > 0)
 			{
-				const s32 numNormals{ normals.Size() };
-				for (s32 i{ 0 }; i < numNormals; i++)
+				const s32 num_normals{ normals.Size() };
+				for (s32 i{ 0 }; i < num_normals; ++i)
 				{
-					FbxVector4 n{ inverseTranspose.MultT(normals[i]) };
+					FbxVector4 n{ inverse_transpose.MultT(normals[i]) };
 					n.Normalize();
 					m.normals.emplace_back((f32)n[0], (f32)n[1], (f32)n[2]);
 				}
@@ -272,19 +279,19 @@ namespace Havana::Tools
 				// Something went wrong with importing normals from FBX.
 				// Fall back to our own calculation method. This will cause us to lose
 				// information regarding which edges are hard and soft
-				m_sceneData->settings.calculateNormals = true;
+				_scene_data->settings.calculate_normals = true;
 			}
 		}
 
 		// Import tangents
-		if (importTangents)
+		if (import_tangents)
 		{
 			FbxLayerElementArrayTemplate<FbxVector4>* tangents{ nullptr };
 			// Calculate tangents using FBX's built-in method, but only if no tangent data is already there.
-			if (fbxMesh->GenerateTangentsData() && fbxMesh->GetTangents(&tangents) && tangents && tangents->GetCount() > 0)
+			if (fbx_mesh->GenerateTangentsData() && fbx_mesh->GetTangents(&tangents) && tangents && tangents->GetCount() > 0)
 			{
-				const s32 numTangents{ tangents->GetCount() };
-				for (s32 i{0}; i < numTangents; i++)
+				const s32 num_tangents{ tangents->GetCount() };
+				for (s32 i{0}; i < num_tangents; ++i)
 				{
 					// TODO: not sure if this transformation is correct.
 					FbxVector4 t{ tangents->GetAt(i) };
@@ -299,26 +306,26 @@ namespace Havana::Tools
 			{
 				// Something went wrong with importing tangents from FBX.
 				// Fall back to our own calculation method.
-				m_sceneData->settings.calculateTangents = true;
+				_scene_data->settings.calculate_tangents = true;
 			}
 		}
 
 		// Get UV coordinates
-		FbxStringList uvNames;
-		fbxMesh->GetUVSetNames(uvNames);
-		const s32 uvSetCount{ uvNames.GetCount() };
+		FbxStringList uv_names;
+		fbx_mesh->GetUVSetNames(uv_names);
+		const s32 uv_set_count{ uv_names.GetCount() };
 		// NOTE: it's OK if we don't have a uv set. For example, some emissive objects don't need a uv map
-		m.uvSets.resize(uvSetCount);
+		m.uv_sets.resize(uv_set_count);
 
-		for (s32 i{ 0 }; i < uvSetCount; i++)
+		for (s32 i{ 0 }; i < uv_set_count; ++i)
 		{
 			FbxArray<FbxVector2> uvs;
-			if (fbxMesh->GetPolygonVertexUVs(uvNames.GetStringAt(i), uvs))
+			if (fbx_mesh->GetPolygonVertexUVs(uv_names.GetStringAt(i), uvs))
 			{
-				const s32 numUVs{ uvs.Size() };
-				for (s32 j{ 0 }; j < numUVs; j++)
+				const s32 num_uvs{ uvs.Size() };
+				for (s32 j{ 0 }; j < num_uvs; ++j)
 				{
-					m.uvSets[i].emplace_back((f32)uvs[j][0], (f32)uvs[j][1]);
+					m.uv_sets[i].emplace_back((f32)uvs[j][0], (f32)uvs[j][1]);
 				}
 			}
 		}
@@ -326,18 +333,19 @@ namespace Havana::Tools
 		return true;
 	}
 
-	EDITOR_INTERFACE void ImportFbx(const char* file, SceneData* data)
+	EDITOR_INTERFACE void
+	ImportFbx(const char* file, scene_data* data)
 	{
 		assert(file && data);
-		Scene scene{};
+		scene scene{};
 
 		// NOTE: anything that involves using the FBX SDK should be single-threaded
 		{
-			std::lock_guard lock{ fbxMutex };
-			FbxContext fbxContext{ file, &scene, data };
-			if (fbxContext.IsValid())
+			std::lock_guard lock{ fbx_mutex };
+			fbx_context fbx_context{ file, &scene, data };
+			if (fbx_context.is_valid())
 			{
-				fbxContext.GetScene();
+				fbx_context.get_scene();
 			}
 			else
 			{
@@ -346,8 +354,8 @@ namespace Havana::Tools
 			}
 		}
 
-		ProcessScene(scene, data->settings);
-		PackData(scene, *data);
+		process_scene(scene, data->settings);
+		pack_data(scene, *data);
 
 	}
-} // namespace Havana::Tools
+} // namespace havana::tools

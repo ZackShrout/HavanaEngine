@@ -1,7 +1,7 @@
 #pragma once
 #include "CommonHeaders.h"
 
-namespace Havana::Utils
+namespace havana::utl
 {
 //#ifndef _WIN64
 //	#include <type_traits>

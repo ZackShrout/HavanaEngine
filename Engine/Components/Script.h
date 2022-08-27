@@ -4,7 +4,7 @@
 #include <atlsafe.h>
 #endif // !__linux__
 
-namespace Havana::Script
+namespace havana::Script
 {
 	struct InitInfo
 	{

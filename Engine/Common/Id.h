@@ -1,7 +1,7 @@
 #pragma once
 #include "CommonHeaders.h"
 
-namespace Havana::Id
+namespace havana::Id
 {
 	// Define ID type for ECS system
 	using id_type = u32;
@@ -25,7 +25,7 @@ namespace Havana::Id
 	static_assert(sizeof(id_type) - sizeof(generation_type) > 0); // Enforces id_type larger than generation_type
 
 	// METHODS
-	constexpr bool IsValid(id_type id)
+	constexpr bool is_valid(id_type id)
 	{
 		return id != INVALID_ID;
 	}

@@ -2,46 +2,46 @@
 #include "ToolsCommon.h"
 #include <fbxsdk.h>
 
-namespace Havana::Tools
+namespace havana::tools
 {
-	struct SceneData;
-	struct Scene;
-	struct Mesh;
-	struct GeometryImportSettings;
+	struct scene_data;
+	struct scene;
+	struct mesh;
+	struct geometry_import_settings;
 	
-	class FbxContext
+	class fbx_context
 	{
 	public:
-		FbxContext(const char* file, Scene* scene, SceneData* data) : m_scene{ scene }, m_sceneData{ data }
+		fbx_context(const char* file, scene* scene, scene_data* data) : _scene{ scene }, _scene_data{ data }
 		{
-			assert(file&& m_scene&& m_sceneData);
-			if (InitializeFbx())
+			assert(file&& _scene&& _scene_data);
+			if (initialize_fbx())
 			{
-				LoadFbxFile(file);
-				assert(IsValid());
+				load_fbx_file(file);
+				assert(is_valid());
 			}
 		}
-		~FbxContext()
+		~fbx_context()
 		{
-			m_fbxScene->Destroy();
-			m_fbxManager->Destroy();
-			ZeroMemory(this, sizeof(FbxContext));
+			_fbx_scene->Destroy();
+			_fbx_manager->Destroy();
+			ZeroMemory(this, sizeof(fbx_context));
 		}
-		void GetScene(FbxNode* root = nullptr);
-		constexpr bool IsValid() const { return m_fbxManager && m_fbxScene; }
-		constexpr f32 SceneScale() const { return m_sceneScale; }
+		void get_scene(FbxNode* root = nullptr);
+		constexpr bool is_valid() const { return _fbx_manager && _fbx_scene; }
+		constexpr f32 scane_scale() const { return _scene_scale; }
 	private:
-		bool InitializeFbx();
-		void LoadFbxFile(const char* file);
-		void GetMeshes(FbxNode* node, Utils::vector<Mesh>& meshes, u32 lodID, f32 lodThreshold);
-		void GetMesh(FbxNodeAttribute* attribute, Utils::vector<Mesh>& meshes, u32 lodID, f32 lodThreshold);
-		void GetLoDGroup(FbxNodeAttribute* attribute);
-		bool GetMeshData(FbxMesh* fbxMesh, Mesh& m);
+		bool initialize_fbx();
+		void load_fbx_file(const char* file);
+		void get_meshes(FbxNode* node, utl::vector<mesh>& meshes, u32 lod_id, f32 lod_threshold);
+		void get_mesh(FbxNodeAttribute* attribute, utl::vector<mesh>& meshes, u32 lod_id, f32 lod_threshold);
+		void get_lod_group(FbxNodeAttribute* attribute);
+		bool get_mesh_data(FbxMesh* fbx_mesh, mesh& m);
 
-		Scene*			m_scene{ nullptr };
-		SceneData*		m_sceneData{ nullptr };
-		FbxManager*		m_fbxManager{ nullptr };
-		FbxScene*		m_fbxScene{ nullptr };
-		f32				m_sceneScale{ 1.0f };
+		scene*			_scene{ nullptr };
+		scene_data*		_scene_data{ nullptr };
+		FbxManager*		_fbx_manager{ nullptr };
+		FbxScene*		_fbx_scene{ nullptr };
+		f32				_scene_scale{ 1.0f };
 	};
 }

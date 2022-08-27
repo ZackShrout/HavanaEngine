@@ -1,7 +1,7 @@
 #include "D3D12Upload.h"
 #include "D3D12Core.h"
 
-namespace Havana::Graphics::D3D12::Upload
+namespace havana::Graphics::D3D12::Upload
 {
 	namespace
 	{
@@ -50,7 +50,7 @@ namespace Havana::Graphics::D3D12::Upload
 		// NOTE: frames should be locked before this function is called.
 		u32 GetAvailableUploadFrame()
 		{
-			u32 index{ U32_INVALID_ID };
+			u32 index{ u32_invalid_id };
 			const u32 count{ uploadFrameCount };
 			UploadFrame* const frames{ &uploadFrames[0] };
 
@@ -65,7 +65,7 @@ namespace Havana::Graphics::D3D12::Upload
 
 			// None of the frames were done uploading. We're the only thread here, so
 			// we can iterate through the frames unril we find one that is ready
-			if (index == U32_INVALID_ID)
+			if (index == u32_invalid_id)
 			{
 				index = 0;
 				while (!frames[index].IsReady())
@@ -93,7 +93,7 @@ namespace Havana::Graphics::D3D12::Upload
 			// We don't want to lock this function for longer than necessary, so we scope this lock
 			std::lock_guard lock{ frameMutex };
 			m_frameIndex = GetAvailableUploadFrame();
-			assert(m_frameIndex != U32_INVALID_ID);
+			assert(m_frameIndex != u32_invalid_id);
 			// Before unlocking, we prevent other threads from picking
 			// this frame by making IsReady() return false.
 			uploadFrames[m_frameIndex].uploadBuffer = (ID3D12Resource*)1;
@@ -118,7 +118,7 @@ namespace Havana::Graphics::D3D12::Upload
 
 	void D3D12UploadContext::EndUpload()
 	{
-		assert(m_frameIndex != U32_INVALID_ID);
+		assert(m_frameIndex != u32_invalid_id);
 		UploadFrame& frame{ uploadFrames[m_frameIndex] };
 		id3d12GraphicsCommandList* const cmdList{frame.cmdList};
 		DXCall(cmdList->Close());

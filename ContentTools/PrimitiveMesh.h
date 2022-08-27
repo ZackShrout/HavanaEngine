@@ -1,26 +1,25 @@
 #pragma once
-
 #include "ToolsCommon.h"
 
-namespace Havana::Tools
+namespace havana::tools
 {
-	enum PrimitiveMeshType : u32
+	enum primitive_mesh_type : u32
 	{
-		Plane,
-		Cube,
-		UVSphere,
-		ICOSphere,
-		Cylinder,
-		Capsule,
+		plane,
+		cube,
+		uv_sphere,
+		ico_sphere,
+		cylinder,
+		capsule,
 
-		Count
+		count
 	};
 
-	struct PrimitiveInitInfo
+	struct primitive_init_info
 	{
-		PrimitiveMeshType	type;
+		primitive_mesh_type	type;
 		u32					segments[3]{ 1, 1, 1 };
-		Math::Vec3			size{ 1,1,1 };
-		u32					LoD{ 0 };
+		math::v3			size{ 1,1,1 };
+		u32					lod{ 0 };
 	};
 }

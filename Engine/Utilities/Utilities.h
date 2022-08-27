@@ -15,7 +15,7 @@ size_t constexpr _countof( T ( & arr )[ N ] )
 
 #if USE_STL_VECTOR
 	#include <vector>
-	namespace Havana::Utils
+	namespace havana::utl
 	{
 		template<typename T>
 		using vector = std::vector<T>;
@@ -36,7 +36,7 @@ size_t constexpr _countof( T ( & arr )[ N ] )
 	}
 #else
 	#include "Vector.h"
-	namespace Havana::Utils
+	namespace havana::utl
 	{
 		template<typename T>
 		void EraseUnordered(T& v, size_t index)
@@ -48,14 +48,14 @@ size_t constexpr _countof( T ( & arr )[ N ] )
 
 #if USE_STL_DEQUE
 	#include <deque>
-	namespace Havana::Utils
+	namespace havana::utl
 	{
 		template<typename T>
 		using deque = std::deque<T>;
 	}
 #endif
 
-namespace Havana::Utils
+namespace havana::utl
 {
 	// TODO: implement our own containers
 }

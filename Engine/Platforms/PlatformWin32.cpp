@@ -3,7 +3,7 @@
 #include "Platform.h"
 #include "PlatformTypes.h"
 
-namespace Havana::Platform
+namespace havana::Platform
 {
 	namespace
 	{
@@ -20,7 +20,7 @@ namespace Havana::Platform
 			bool isClosed{false};
 		};
 
-		Utils::free_list<WindowInfo> windows;
+		utl::free_list<WindowInfo> windows;
 
 		WindowInfo &GetFromId(window_id id)
 		{
@@ -161,7 +161,7 @@ namespace Havana::Platform
 			SetWindowText(info.hwnd, caption);
 		}
 
-		Math::Vec4u32 GetWindowSize(window_id id)
+		math::u32v4 GetWindowSize(window_id id)
 		{
 			WindowInfo &info{GetFromId(id)};
 			RECT &area{info.isFullscreen ? info.fullScreenArea : info.clientArea};
@@ -183,7 +183,7 @@ namespace Havana::Platform
 	/// Create a new window.
 	/// </summary>
 	/// <param name="initInfo"> - Initialization information for the new window.</param>
-	/// <returns>A Havana::Platform::Window object.</returns>
+	/// <returns>A havana::Platform::Window object.</returns>
 	Window MakeWindow(const WindowInitInfo* initInfo /*= nullptr*/, void* disp /*= nullptr*/) // NOTEL CreateWindow collides with Windows.h
 	{
 		window_proc callback{initInfo ? initInfo->callback : nullptr};

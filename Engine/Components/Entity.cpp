@@ -2,14 +2,14 @@
 #include "Transform.h"
 #include "Script.h"
 
-namespace Havana::Entity
+namespace havana::Entity
 {
 	namespace // anonymous namespace
 	{
-		Utils::vector <Transform::Component>	transforms;
-		Utils::vector <Script::Component>		scripts;
-		Utils::vector<Id::generation_type>		generations;
-		Utils::deque<entity_id>					freeIDs;
+		utl::vector <Transform::Component>	transforms;
+		utl::vector <Script::Component>		scripts;
+		utl::vector<Id::generation_type>		generations;
+		utl::deque<entity_id>					freeIDs;
 	}
 	
 	Entity CreateEntity(EntityInfo info)
@@ -42,16 +42,16 @@ namespace Havana::Entity
 		const Id::id_type index{ Id::Index(id) };
 
 		// Create transform component
-		assert(!transforms[index].IsValid());
+		assert(!transforms[index].is_valid());
 		transforms[index] = Transform::Create(*info.transform, newEntity);
-		if (!transforms[index].IsValid()) return {};
+		if (!transforms[index].is_valid()) return {};
 		
 		// Create script component
 		if (info.script && info.script->script_creator)
 		{
-			assert(!scripts[index].IsValid());
+			assert(!scripts[index].is_valid());
 			scripts[index] = Script::Create(*info.script, newEntity);
-			assert(scripts[index].IsValid());
+			assert(scripts[index].is_valid());
 		}
 
 		return newEntity;
@@ -62,7 +62,7 @@ namespace Havana::Entity
 		const Id::id_type index{ Id::Index(id) };
 		assert(IsAlive(id));
 
-		if (scripts[index].IsValid())
+		if (scripts[index].is_valid())
 		{
 			Script::Remove(scripts[index]);
 			scripts[index] = {};
@@ -75,10 +75,10 @@ namespace Havana::Entity
 
 	bool IsAlive(entity_id id)
 	{
-		assert(Id::IsValid(id));
+		assert(Id::is_valid(id));
 		const Id::id_type index{ Id::Index(id) };
 		assert(index < generations.size());
-		return (generations[index] == Id::Generation(id) && transforms[index].IsValid());
+		return (generations[index] == Id::Generation(id) && transforms[index].is_valid());
 	}
 
 	// Entity class method implementations

@@ -2,11 +2,11 @@
 #include <iostream>
 #include "VulkanCommonHeaders.h"
 
-namespace Havana::Graphics::Vulkan
+namespace havana::Graphics::Vulkan
 {
 	// List of validation layers to use
 	// VK_LAYER_KHRONOS_validation = All standard validation layers
-	const Utils::vector<const char*> validationLayers { 1, "VK_LAYER_KHRONOS_validation" };
+	const utl::vector<const char*> validationLayers { 1, "VK_LAYER_KHRONOS_validation" };
 
 	// Only enable validation layers if in debug mode
 #ifdef NDEBUG
@@ -20,7 +20,7 @@ namespace Havana::Graphics::Vulkan
 		uint32_t layerCount{ 0 };
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-		Utils::vector<VkLayerProperties> availableLayers(layerCount);
+		utl::vector<VkLayerProperties> availableLayers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
 		for (const auto& layerName : validationLayers)

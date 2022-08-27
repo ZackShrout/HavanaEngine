@@ -1,14 +1,14 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace Havana::Graphics::D3D12::D3DX
+namespace havana::Graphics::D3D12::D3DX
 {
 	
 	constexpr struct
 	{
 		D3D12_HEAP_PROPERTIES defaultHeap
 		{
-			D3D12_HEAP_TYPE_DEFAULT,					// Type
+			D3D12_HEAP_TYPE_DEFAULT,					// type
 			D3D12_CPU_PAGE_PROPERTY_UNKNOWN,			// CPUPageProperty
 			D3D12_MEMORY_POOL_UNKNOWN,					// MemoryPoolPreference
 			0,											// CreationNodeMask
@@ -17,7 +17,7 @@ namespace Havana::Graphics::D3D12::D3DX
 
 		D3D12_HEAP_PROPERTIES uploadHeap
 		{
-			D3D12_HEAP_TYPE_UPLOAD,						// Type
+			D3D12_HEAP_TYPE_UPLOAD,						// type
 			D3D12_CPU_PAGE_PROPERTY_UNKNOWN,			// CPUPageProperty
 			D3D12_MEMORY_POOL_UNKNOWN,					// MemoryPoolPreference
 			0,											// CreationNodeMask
@@ -314,7 +314,7 @@ namespace Havana::Graphics::D3D12::D3DX
 	ID3D12PipelineState* CreatePipelineState(D3D12_PIPELINE_STATE_STREAM_DESC desc);
 	ID3D12PipelineState* CreatePipelineState(void* stream, u64 streamSize);
 
-	ID3D12Resource* CreateBuffer(const void* data, u32 bufferSize, bool isCPUAccessible = false,
+	ID3D12Resource* CreateBuffer(const void* data, u32 buffer_size, bool isCPUAccessible = false,
 								 D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON,
 								 D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
 								 ID3D12Heap* heap = nullptr, u64 heapOffset = 0);

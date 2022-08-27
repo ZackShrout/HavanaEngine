@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Havana::Graphics
+namespace havana::Graphics
 {
 	struct PlatformInterface;
 

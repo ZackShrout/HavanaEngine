@@ -2,7 +2,7 @@
 #include "D3D12Core.h"
 #include "D3D12Shaders.h"
 
-namespace Havana::Graphics::D3D12::GPass
+namespace havana::Graphics::D3D12::GPass
 {
 	namespace
 	{
@@ -18,11 +18,11 @@ namespace Havana::Graphics::D3D12::GPass
 
 		constexpr DXGI_FORMAT			mainBufferFormat{ DXGI_FORMAT_R16G16B16A16_FLOAT };
 		constexpr DXGI_FORMAT			depthBufferFormat{ DXGI_FORMAT_D32_FLOAT };
-		constexpr Math::Vec2u32			initialDimensions{ 100, 100 };
+		constexpr math::Vec2u32			initialDimensions{ 100, 100 };
 		
 		D3D12RenderTexture				gpassMainBuffer{};
 		D3D12DepthBuffer				gpassDepthBuffer{};
-		Math::Vec2u32					dimensions{ initialDimensions };
+		math::Vec2u32					dimensions{ initialDimensions };
 		D3D12_RESOURCE_BARRIER_FLAGS	flags{};
 
 		ID3D12RootSignature*			gpassRootSig{ nullptr };
@@ -34,7 +34,7 @@ namespace Havana::Graphics::D3D12::GPass
 		constexpr f32					clearValue[4]{ };
 #endif
 
-		bool CreateBuffers(Math::Vec2u32 size)
+		bool CreateBuffers(math::Vec2u32 size)
 		{
 			assert(size.x && size.y);
 			gpassMainBuffer.Release();
@@ -151,9 +151,9 @@ namespace Havana::Graphics::D3D12::GPass
 		return gpassDepthBuffer;
 	}
 
-	void SetSize(Math::Vec2u32 size)
+	void SetSize(math::Vec2u32 size)
 	{
-		Math::Vec2u32& d{ dimensions };
+		math::Vec2u32& d{ dimensions };
 		if (size.x > d.x || size.y > d.y)
 		{
 			d = { std::max(size.x, d.x), std::max(size.y, d.y) };

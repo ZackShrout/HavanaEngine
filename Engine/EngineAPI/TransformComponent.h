@@ -1,7 +1,7 @@
 #pragma once
 #include "../Components/ComponentsCommon.h"
 
-namespace Havana::Transform
+namespace havana::Transform
 {
 	DEFINE_TYPED_ID(transform_id);
 	
@@ -11,11 +11,11 @@ namespace Havana::Transform
 		constexpr Component() : m_id{ Id::INVALID_ID } {}
 		constexpr explicit Component(transform_id id) : m_id{ id } {}		
 		constexpr transform_id GetID() const { return m_id; }
-		constexpr bool IsValid() const { return Id::IsValid(m_id); }
-		Math::Vec4 Rotation() const;
-		Math::Vec3 Orientation() const;
-		Math::Vec3 Position() const;
-		Math::Vec3 Scale() const;
+		constexpr bool is_valid() const { return Id::is_valid(m_id); }
+		math::v4 Rotation() const;
+		math::v3 Orientation() const;
+		math::v3 Position() const;
+		math::v3 Scale() const;
 	private:
 		transform_id m_id;
 	};

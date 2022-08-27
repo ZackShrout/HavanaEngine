@@ -1,11 +1,11 @@
 #pragma once
 #include "VulkanCommonHeaders.h"
 
-namespace Havana::Graphics::Vulkan::Shaders
+namespace havana::Graphics::Vulkan::Shaders
 {
 	struct ShaderType
 	{
-		enum Type : u32
+		enum type : u32
 		{
 			vertex = 0,
 			hull,

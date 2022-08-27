@@ -2,10 +2,10 @@
 
 #include "CommonHeaders.h"
 
-namespace Havana::Utils
+namespace havana::utl
 {
 #if USE_STL_VECTOR
-	#pragma message("WARNING: using Utils::free_list with std::vector results in duplicate calls to class constructor!")
+	#pragma message("WARNING: using utl::free_list with std::vector results in duplicate calls to class constructor!")
 #endif
 
 	template<typename T>
@@ -26,8 +26,8 @@ namespace Havana::Utils
 		template<class... params>
 		constexpr u32 add(params&&... p)
 		{
-			u32 id{ U32_INVALID_ID };
-			if (m_nextFreeIndex == U32_INVALID_ID)
+			u32 id{ u32_invalid_id };
+			if (m_nextFreeIndex == u32_invalid_id)
 			{
 				id = (u32)m_array.size();
 				m_array.emplace_back(std::forward<params>(p)...);
@@ -98,11 +98,11 @@ namespace Havana::Utils
 			}
 		}
 #if USE_STL_VECTOR
-		Utils::vector<T>			m_array;
+		utl::vector<T>			m_array;
 #else
-		Utils::vector<T, false>		m_array;
+		utl::vector<T, false>		m_array;
 #endif
-		u32							m_nextFreeIndex{ U32_INVALID_ID };
+		u32							m_nextFreeIndex{ u32_invalid_id };
 		u32							m_size{ 0 };
 	};
 }

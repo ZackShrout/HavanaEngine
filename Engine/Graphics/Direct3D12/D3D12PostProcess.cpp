@@ -4,7 +4,7 @@
 #include "D3D12Surface.h"
 #include "D3D12GPass.h"
 
-namespace Havana::Graphics::D3D12::FX
+namespace havana::Graphics::D3D12::FX
 {
 	namespace
 	{

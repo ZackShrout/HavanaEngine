@@ -3,7 +3,7 @@
 #include "VulkanResources.h"
 #include "VulkanExtensionLoader.h"
 
-namespace Havana::Graphics::Vulkan
+namespace havana::Graphics::Vulkan
 {
 	// Indices (locations) of Queue Families (if they exist at all)
 	struct QueueFamilyIndices
@@ -12,14 +12,14 @@ namespace Havana::Graphics::Vulkan
 		int presentationFamily = -1;		// Location of Presentation Queue Family
 
 		// Check if queue families are valid
-		bool IsValid() { return graphicsFamily >= 0 && presentationFamily >= 0; }
+		bool is_valid() { return graphicsFamily >= 0 && presentationFamily >= 0; }
 	};
 
 	struct SwapChainDetails
 	{
 		VkSurfaceCapabilitiesKHR surfaceCapabilities;			// Surface properties, e.g. image size/extent
-		Utils::vector<VkSurfaceFormatKHR> formats;				// Surface image formats supported, e.g. RGBA, size of each color
-		Utils::vector<VkPresentModeKHR> presentationModes;		// How images should be presented to screen
+		utl::vector<VkSurfaceFormatKHR> formats;				// Surface image formats supported, e.g. RGBA, size of each color
+		utl::vector<VkPresentModeKHR> presentationModes;		// How images should be presented to screen
 	};
 
 	struct SwapchainImage
@@ -99,9 +99,9 @@ namespace Havana::Graphics::Vulkan
 		VkQueue m_presentationQueue;
 		VkSurfaceKHR m_surface;
 		VkSwapchainKHR m_swapchain;
-		Utils::vector<SwapchainImage> m_swapchainImages;
-		Utils::vector<VkFramebuffer>m_swapchainFramebuffers;
-		Utils::vector<VkCommandBuffer>m_commandBuffers;
+		utl::vector<SwapchainImage> m_swapchainImages;
+		utl::vector<VkFramebuffer>m_swapchainFramebuffers;
+		utl::vector<VkCommandBuffer>m_commandBuffers;
 		// - Pipeline
 		VkPipeline m_graphicsPipeline;
 		VkPipelineLayout m_pipelineLayout;
@@ -114,9 +114,9 @@ namespace Havana::Graphics::Vulkan
 		VkFormat m_swapChainImageFormat;
 		VkExtent2D m_swapChainExtent;
 		// - Syncronisation
-		Utils::vector<VkSemaphore> m_imageAvailable;
-		Utils::vector<VkSemaphore> m_renderFinished;
-		Utils::vector<VkFence> m_drawFences;
+		utl::vector<VkSemaphore> m_imageAvailable;
+		utl::vector<VkSemaphore> m_renderFinished;
+		utl::vector<VkFence> m_drawFences;
 
 
 		void CreateLogicalDevice();
@@ -141,12 +141,12 @@ namespace Havana::Graphics::Vulkan
 		QueueFamilyIndices GetQueueFamilies(VkPhysicalDevice device);
 		SwapChainDetails GetSwapChainDetails(VkPhysicalDevice device);
 		// -- Choose functions
-		VkSurfaceFormatKHR ChooseBestSurfaceFormat(const Utils::vector<VkSurfaceFormatKHR>& formats);
-		VkPresentModeKHR ChooseBestPresentationMode(const Utils::vector<VkPresentModeKHR> presentationModes);
+		VkSurfaceFormatKHR ChooseBestSurfaceFormat(const utl::vector<VkSurfaceFormatKHR>& formats);
+		VkPresentModeKHR ChooseBestPresentationMode(const utl::vector<VkPresentModeKHR> presentationModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities, int width, int height);
 		// -- Create functions
 		VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
-		VkShaderModule CreateShaderModule(const Utils::vector<char>& code);
+		VkShaderModule CreateShaderModule(const utl::vector<char>& code);
 
 		void RecreateSwapChain();
 		void CleanupSwapChain();

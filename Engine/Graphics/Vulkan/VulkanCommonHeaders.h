@@ -19,7 +19,7 @@
 #include "CommonHeaders.h"
 #include "../Graphics/Renderer.h"
 
-namespace Havana::Graphics::Vulkan
+namespace havana::Graphics::Vulkan
 {
 	constexpr u32 frameBufferCount{ 3 };
 }

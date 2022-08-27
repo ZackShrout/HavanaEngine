@@ -1,7 +1,7 @@
 #pragma once
 #include "ComponentsCommon.h"
 
-namespace Havana
+namespace havana
 {
 
 #define INIT_INFO(component) namespace component { struct InitInfo; }

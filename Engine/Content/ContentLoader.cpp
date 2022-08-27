@@ -13,7 +13,7 @@
 //
 #endif
 
-namespace Havana::Content
+namespace havana::Content
 {
 	namespace
 	{
@@ -22,10 +22,10 @@ namespace Havana::Content
 			Transform,
 			Script,
 
-			Count
+			count
 		};
 
-		Utils::vector<Entity::Entity> entities;
+		utl::vector<Entity::Entity> entities;
 		Transform::InitInfo transformInfo{};
 		Script::InitInfo scriptInfo{};
 
@@ -80,7 +80,7 @@ namespace Havana::Content
 
 		using component_reader = bool(*)(const u8*&, Entity::EntityInfo&);
 		component_reader componentReaders[]{ ReadTransform, ReadScript };
-		static_assert(_countof(componentReaders) == ComponentType::Count);
+		static_assert(_countof(componentReaders) == ComponentType::count);
 
 		bool ReadFile(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
 		{
@@ -127,14 +127,14 @@ namespace Havana::Content
 			for (u32 componentIndex{ 0 }; componentIndex < numComponents; componentIndex++)
 			{
 				const u32 componentType{ *at }; at += su32;
-				assert(componentType < ComponentType::Count);
+				assert(componentType < ComponentType::count);
 				if (!componentReaders[componentType](at, info)) return false;
 			}
 
 			// create entity
 			assert(info.transform);
 			Entity::Entity entity{ Entity::CreateEntity(info) };
-			if (!entity.IsValid()) return false;
+			if (!entity.is_valid()) return false;
 			entities.emplace_back(entity);
 		}
 

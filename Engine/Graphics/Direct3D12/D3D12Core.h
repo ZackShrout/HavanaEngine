@@ -1,7 +1,7 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace Havana::Graphics::D3D12
+namespace havana::Graphics::D3D12
 {
 	struct D3D12FrameInfo
 	{
@@ -10,7 +10,7 @@ namespace Havana::Graphics::D3D12
 	};
 }
 
-namespace Havana::Graphics::D3D12::Core
+namespace havana::Graphics::D3D12::Core
 {
 	bool Initialize();
 	void Shutdown();

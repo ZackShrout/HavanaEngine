@@ -1,7 +1,7 @@
 #include "VulkanShaders.h"
 #include "../Content/ContentLoader.h"
 
-namespace Havana::Graphics::Vulkan::Shaders
+namespace havana::Graphics::Vulkan::Shaders
 {
 	namespace
 	{

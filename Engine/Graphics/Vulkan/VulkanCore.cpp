@@ -5,17 +5,17 @@
 #include "VulkanHelpers.h"
 #include "VulkanValidation.h"
 
-namespace Havana::Graphics::Vulkan::Core
+namespace havana::Graphics::Vulkan::Core
 {
 	namespace
 	{
-		using surface_collection = Utils::free_list<VulkanSurface>;
+		using surface_collection = utl::free_list<VulkanSurface>;
 		
 		surface_collection			surfaces;
 		VkInstance					instance{ nullptr };
 		VkDebugUtilsMessengerEXT	debugMessanger{ 0 };
 		
-		bool CheckInstanceExtensionSupport(Utils::vector<const char*>* checkExtensions)
+		bool CheckInstanceExtensionSupport(utl::vector<const char*>* checkExtensions)
 		{
 			// Need to get number of extensions to create array of correct size to hold extensions
 			uint32_t extensionCount{ 0 };
@@ -25,7 +25,7 @@ namespace Havana::Graphics::Vulkan::Core
 			if (extensionCount == 0) return false;
 
 			// Create a list of vkExtensionProperties using extensionCount
-			Utils::vector<VkExtensionProperties> extensions(extensionCount);
+			utl::vector<VkExtensionProperties> extensions(extensionCount);
 			vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
 			// Check if given extensions are in the list of available extensions
@@ -82,7 +82,7 @@ namespace Havana::Graphics::Vulkan::Core
 			createInfo.pApplicationInfo = &appInfo;
 
 			// Create list to hold instance extensions
-			Utils::vector<const char*> instanceExtensions{ 1, VK_KHR_SURFACE_EXTENSION_NAME };
+			utl::vector<const char*> instanceExtensions{ 1, VK_KHR_SURFACE_EXTENSION_NAME };
 
 #ifdef _WIN32
 			instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);

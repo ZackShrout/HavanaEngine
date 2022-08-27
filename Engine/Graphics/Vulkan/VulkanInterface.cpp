@@ -3,7 +3,7 @@
 #include "VulkanInterface.h"
 #include "VulkanCore.h"
 
-namespace Havana::Graphics
+namespace havana::Graphics
 {
 	namespace Vulkan
 	{

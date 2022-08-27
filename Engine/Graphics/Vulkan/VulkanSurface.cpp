@@ -4,11 +4,11 @@
 #include "VulkanSurface.h"
 #include "VulkanCore.h"
 
-namespace Havana::Graphics::Vulkan
+namespace havana::Graphics::Vulkan
 {
 	namespace
 	{
-		const Utils::vector<const char*> deviceExtensions{ 1, VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+		const utl::vector<const char*> deviceExtensions{ 1, VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	} // anonymous namespace
 	
 	// PUBLIC
@@ -130,7 +130,7 @@ namespace Havana::Graphics::Vulkan
 		}
 
 		// Create a list of physical devices the instance can access
-		Utils::vector<VkPhysicalDevice> deviceList(deviceCount);
+		utl::vector<VkPhysicalDevice> deviceList(deviceCount);
 		VkCall(vkEnumeratePhysicalDevices(m_instance, &deviceCount, deviceList.data()), "Failed to get a list of physical devices!");
 
 		// Choose physical device based on it's suitability
@@ -167,7 +167,7 @@ namespace Havana::Graphics::Vulkan
 		if (extensionCount == 0) return false;
 
 		// Create a list of vkExtensionProperties using extensionCount
-		Utils::vector<VkExtensionProperties> extensions(extensionCount);
+		utl::vector<VkExtensionProperties> extensions(extensionCount);
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, extensions.data());
 
 		// Check if given extensions are in the list of available extensions
@@ -202,7 +202,7 @@ namespace Havana::Graphics::Vulkan
 			swapChainValid = !swapChainDetails.formats.empty() && !swapChainDetails.presentationModes.empty();
 		}
 
-		return indices.IsValid() && extensionsSupported && swapChainValid;
+		return indices.is_valid() && extensionsSupported && swapChainValid;
 	}
 
 	QueueFamilyIndices VulkanSurface::GetQueueFamilies(VkPhysicalDevice device)
@@ -213,7 +213,7 @@ namespace Havana::Graphics::Vulkan
 		uint32_t queueFamilyCount{ 0 };
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
-		Utils::vector<VkQueueFamilyProperties> queueFamilyList(queueFamilyCount);
+		utl::vector<VkQueueFamilyProperties> queueFamilyList(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilyList.data());
 
 		// Go through each queue familty and check if it has at least one of the required tupe of queue
@@ -236,7 +236,7 @@ namespace Havana::Graphics::Vulkan
 				indices.presentationFamily = i;
 			}
 
-			if (indices.IsValid()) break;		// If queue family indices are in a valid state, break loop
+			if (indices.is_valid()) break;		// If queue family indices are in a valid state, break loop
 
 			i++;
 		}
@@ -275,7 +275,7 @@ namespace Havana::Graphics::Vulkan
 		return swapChainDetails;
 	}
 
-	VkSurfaceFormatKHR VulkanSurface::ChooseBestSurfaceFormat(const Utils::vector<VkSurfaceFormatKHR>& formats)
+	VkSurfaceFormatKHR VulkanSurface::ChooseBestSurfaceFormat(const utl::vector<VkSurfaceFormatKHR>& formats)
 	{
 		// VK_FORMAT_UNDEFINED means all formats are available
 		if (formats.size() == 1 && formats[0].format == VK_FORMAT_UNDEFINED)
@@ -297,7 +297,7 @@ namespace Havana::Graphics::Vulkan
 		return formats[0];
 	}
 
-	VkPresentModeKHR VulkanSurface::ChooseBestPresentationMode(const Utils::vector<VkPresentModeKHR> presentationModes)
+	VkPresentModeKHR VulkanSurface::ChooseBestPresentationMode(const utl::vector<VkPresentModeKHR> presentationModes)
 	{
 		for (const auto& presentationMode : presentationModes)
 		{
@@ -338,7 +338,7 @@ namespace Havana::Graphics::Vulkan
 		VkImageViewCreateInfo viewCreateInfo{};
 		viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewCreateInfo.image = image;										// Image to create view for
-		viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;					// Type of image (1D, 2D, 3D, cube, etc...
+		viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;					// type of image (1D, 2D, 3D, cube, etc...
 		viewCreateInfo.format = format;										// Format of image data
 		viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;		// Allows remapping of rgba components to other rgba values
 		viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -359,7 +359,7 @@ namespace Havana::Graphics::Vulkan
 		return imageView;
 	}
 
-	VkShaderModule VulkanSurface::CreateShaderModule(const Utils::vector<char>& code)
+	VkShaderModule VulkanSurface::CreateShaderModule(const utl::vector<char>& code)
 	{
 		// Shader Module createion information
 		VkShaderModuleCreateInfo shaderModuleCreateInfo{};
@@ -454,7 +454,7 @@ namespace Havana::Graphics::Vulkan
 		QueueFamilyIndices indices{ GetQueueFamilies(m_mainDevice.physicalDevice) };
 
 		// Vector for queue creation information, and set for family indices
-		Utils::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
+		utl::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
 		std::set<int> queueFamilyIndices{ indices.graphicsFamily, indices.presentationFamily };
 
 		// Queues the logical device needs to create and info to do so
@@ -578,7 +578,7 @@ namespace Havana::Graphics::Vulkan
 		// Get swap chain images (first count, then values)
 		u32 swapChainImageCount{ 0 };
 		vkGetSwapchainImagesKHR(m_mainDevice.logicalDevice, m_swapchain, &swapChainImageCount, nullptr);
-		Utils::vector<VkImage> images(swapChainImageCount);
+		utl::vector<VkImage> images(swapChainImageCount);
 		vkGetSwapchainImagesKHR(m_mainDevice.logicalDevice, m_swapchain, &swapChainImageCount, images.data());
 
 		for (const auto& image : images)
@@ -664,7 +664,7 @@ namespace Havana::Graphics::Vulkan
 		// *************************************** //
 		// -- Shader Stage Creation Information -- //
 		// *************************************** //
-		// Vertex Stage creation information
+		// vertex Stage creation information
 		VkPipelineShaderStageCreateInfo vertexShaderCreateInfo{};
 		vertexShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vertexShaderCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;					// Shader stage name
@@ -682,15 +682,15 @@ namespace Havana::Graphics::Vulkan
 		VkPipelineShaderStageCreateInfo shaderStages[]{ vertexShaderCreateInfo, fragmentShaderCreateInfo };
 
 		// ********************************************* //
-		// -- Vertex Input State Creation Information -- //
+		// -- vertex Input State Creation Information -- //
 		// ********************************************* //
 		// TODO: Put in vertex descriptions when resources created
 		VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo{};
 		vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		vertexInputCreateInfo.vertexBindingDescriptionCount = 0;
-		vertexInputCreateInfo.pVertexAttributeDescriptions = nullptr;				// List of Vertex Binding Descriptions (data spacing/stride info/etc...)
+		vertexInputCreateInfo.pVertexAttributeDescriptions = nullptr;				// List of vertex Binding Descriptions (data spacing/stride info/etc...)
 		vertexInputCreateInfo.vertexAttributeDescriptionCount = 0;
-		vertexInputCreateInfo.pVertexAttributeDescriptions = nullptr;				// List of Vertex Attribute Descriptions (data format and hwere to bind to/from)
+		vertexInputCreateInfo.pVertexAttributeDescriptions = nullptr;				// List of vertex Attribute Descriptions (data format and hwere to bind to/from)
 
 		// *********************************************** //
 		// -- Input Assembly State Creation Information -- //

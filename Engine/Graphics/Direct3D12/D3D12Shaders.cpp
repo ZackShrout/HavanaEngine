@@ -1,7 +1,7 @@
 #include "D3D12Shaders.h"
 #include "Content/ContentLoader.h"
 
-namespace Havana::Graphics::D3D12::Shaders
+namespace havana::Graphics::D3D12::Shaders
 {
 	namespace
 	{

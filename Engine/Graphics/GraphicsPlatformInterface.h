@@ -3,7 +3,7 @@
 #include "Renderer.h"
 //#include "../Platforms/Window.h"
 
-namespace Havana::Graphics
+namespace havana::Graphics
 {
 	struct PlatformInterface
 	{

@@ -1,7 +1,7 @@
 #pragma once
 #include "VulkanCommonHeaders.h"
 
-namespace Havana::Graphics::Vulkan
+namespace havana::Graphics::Vulkan
 {
 #define GET_INSTANCE_PROC_ADDR(inst, entry)												\
 	{																					\

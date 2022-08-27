@@ -1,14 +1,14 @@
 #include "Script.h"
 #include "Entity.h"
 
-namespace Havana::Script
+namespace havana::Script
 {
 	namespace // anonymous namespace
 	{
-		Utils::vector<Detail::script_ptr>		entityScripts;
-		Utils::vector<Id::id_type>				idMapping;
-		Utils::vector<Id::generation_type>		generations;
-		Utils::deque<script_id>				freeIDs;
+		utl::vector<Detail::script_ptr>		entityScripts;
+		utl::vector<Id::id_type>				idMapping;
+		utl::vector<Id::generation_type>		generations;
+		utl::deque<script_id>				freeIDs;
 
 		using script_registry = std::unordered_map<size_t, Detail::script_creator>;
 
@@ -22,12 +22,12 @@ namespace Havana::Script
 		}
 
 #ifdef USE_WITH_EDITOR
-		Utils::vector<std::string>& ScriptNames()
+		utl::vector<std::string>& ScriptNames()
 		{
 			// note: we put this static variable in a function because of the
 			// initialization order of static data. This way, we can be certain
 			// that the data will be initialized before accessing it.
-			static Utils::vector<std::string> names;
+			static utl::vector<std::string> names;
 			return names;
 		}
 #endif // USE_WITH_EDITOR
@@ -35,13 +35,13 @@ namespace Havana::Script
 
 		bool Exists(script_id id)
 		{
-			assert(Id::IsValid(id));
+			assert(Id::is_valid(id));
 			const Id::id_type index{ Id::Index(id) };
 			assert(index < generations.size() && idMapping[index] < entityScripts.size());
 			assert(generations[id] == Id::Generation(id));
 			return (generations[id] == Id::Generation(id)) &&
 				entityScripts[idMapping[index]] &&
-				entityScripts[idMapping[index]]->IsValid();
+				entityScripts[idMapping[index]]->is_valid();
 		}
 	}
 
@@ -57,8 +57,8 @@ namespace Havana::Script
 
 		script_creator GetScriptCreatorDll(size_t tag)
 		{
-			auto script = Havana::Script::Registry().find(tag);
-			assert(script != Havana::Script::Registry().end() && script->first == tag);
+			auto script = havana::Script::Registry().find(tag);
+			assert(script != havana::Script::Registry().end() && script->first == tag);
 			return script->second;
 		}
 
@@ -73,7 +73,7 @@ namespace Havana::Script
 
 	Component Create(InitInfo info, Entity::Entity entity)
 	{
-		assert(entity.IsValid());
+		assert(entity.is_valid());
 		assert(info.script_creator);
 
 		script_id id{};
@@ -92,7 +92,7 @@ namespace Havana::Script
 			generations.push_back(0);
 		}
 
-		assert(Id::IsValid(id));
+		assert(Id::is_valid(id));
 		const Id::id_type index{ (Id::id_type)entityScripts.size() };
 		entityScripts.emplace_back(info.script_creator(entity));
 		assert(entityScripts.back()->GetID() == entity.GetID());
@@ -102,11 +102,11 @@ namespace Havana::Script
 
 	void Remove(Component component)
 	{
-		assert(component.IsValid() && Exists(component.GetID()));
+		assert(component.is_valid() && Exists(component.GetID()));
 		const script_id id{ component.GetID() };
 		const Id::id_type index{ idMapping[Id::Index(id)] };
 		const script_id lastID{ entityScripts.back()->Script().GetID() };
-		Utils::EraseUnordered(entityScripts, index);
+		utl::EraseUnordered(entityScripts, index);
 		idMapping[Id::Index(lastID)] = index;
 		idMapping[Id::Index(id)] = Id::INVALID_ID;
 	}
@@ -125,13 +125,13 @@ namespace Havana::Script
 extern "C" __declspec(dllexport)
 LPSAFEARRAY GetScriptNamesDll()
 {
-	const u32 size{ (u32)Havana::Script::ScriptNames().size() };
+	const u32 size{ (u32)havana::Script::ScriptNames().size() };
 	if (!size) return nullptr; // If there are no script, exit early
 	CComSafeArray<BSTR> names(size);
 	
 	for (u32 i{ 0 }; i < size; i++)
 	{
-		names.SetAt(i, A2BSTR_EX(Havana::Script::ScriptNames()[i].c_str()), false);
+		names.SetAt(i, A2BSTR_EX(havana::Script::ScriptNames()[i].c_str()), false);
 	}
 
 	return names.Detach(); // Detach() will move the memory freeing task to the .NET side for Auto GC

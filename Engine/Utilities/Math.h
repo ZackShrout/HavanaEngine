@@ -3,7 +3,7 @@
 #include "CommonHeaders.h"
 #include "MathTypes.h"
 
-namespace Havana::Math
+namespace havana::math
 {
 	template<typename T>
 	constexpr T clamp(T value, T min, T max)
@@ -12,7 +12,7 @@ namespace Havana::Math
 	}
 
 	template<u32 bits>
-	constexpr u32 PackUnitFloat(f32 f)
+	constexpr u32 pack_unit_float(f32 f)
 	{
 		static_assert(bits <= sizeof(u32) * 8);
 		assert(f >= 0.0f && f <= 1.0f);
@@ -41,7 +41,7 @@ namespace Havana::Math
 	}
 
 	template<u32 bits>
-	constexpr u32 PackFloat(f32 f, f32 min, f32 max)
+	constexpr u32 pack_float(f32 f, f32 min, f32 max)
 	{
 		assert(min < max);
 		assert(f <= max && f >= min);
@@ -49,7 +49,7 @@ namespace Havana::Math
 		// Scale f to a value between 0 and 1
 		const f32 distance{ (f - min) / (max - min) };
 
-		return PackUnitFloat<bits>(distance);
+		return pack_unit_float<bits>(distance);
 	}
 
 	template<u32 bits>

@@ -3,7 +3,7 @@
 #include "TransformComponent.h"
 #include "ScriptComponent.h"
 
-namespace Havana
+namespace havana
 {
 	namespace Entity
 	{
@@ -15,7 +15,7 @@ namespace Havana
 			constexpr Entity() : m_id{ Id::INVALID_ID } {}
 			constexpr explicit Entity(entity_id id) : m_id{ id } {}
 			constexpr entity_id GetID() const { return m_id; }
-			constexpr bool IsValid() const { return Id::IsValid(m_id); }
+			constexpr bool is_valid() const { return Id::is_valid(m_id); }
 			Transform::Component Transform() const;
 			Script::Component Script() const;
 		private:
@@ -50,7 +50,7 @@ namespace Havana
 			template<class ScriptClass>
 			script_ptr CreateScript(Entity::Entity entity)
 			{
-				assert(entity.IsValid());
+				assert(entity.is_valid());
 				return std::make_unique<ScriptClass>(entity);
 			}
 			
@@ -60,20 +60,20 @@ namespace Havana
 			namespace													\
 			{															\
 				const u8 register##TYPE									\
-					{ Havana::Script::Detail::RegisterScript(			\
-					Havana::Script::Detail::string_hash()(#TYPE),		\
-					&Havana::Script::Detail::CreateScript<TYPE>) };		\
+					{ havana::Script::Detail::RegisterScript(			\
+					havana::Script::Detail::string_hash()(#TYPE),		\
+					&havana::Script::Detail::CreateScript<TYPE>) };		\
 				const u8 name##TYPE										\
-					{  Havana::Script::Detail::AddScriptName(#TYPE) };	\
+					{  havana::Script::Detail::AddScriptName(#TYPE) };	\
 			}
 #else
 #define REGISTER_SCRIPT(TYPE)											\
 			namespace													\
 			{															\
 				const u8 register##TYPE									\
-					{ Havana::Script::Detail::RegisterScript(			\
-					Havana::Script::Detail::string_hash()(#TYPE),		\
-					&Havana::Script::Detail::CreateScript<TYPE>) };		\
+					{ havana::Script::Detail::RegisterScript(			\
+					havana::Script::Detail::string_hash()(#TYPE),		\
+					&havana::Script::Detail::CreateScript<TYPE>) };		\
 			}
 #endif // USE_WITH_EDITOR
 		} // namespace detail

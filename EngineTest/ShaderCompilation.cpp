@@ -6,12 +6,12 @@
 
 #pragma comment(lib, "../packages/DirectXShaderCompiler/lib/x64/dxcompiler.lib")
 
-using namespace Havana::Graphics::D3D12::Shaders;
+using namespace havana::Graphics::D3D12::Shaders;
 using namespace Microsoft::WRL;
 #elif __linux__
 
 #include "../Graphics/Vulkan/VulkanShaders.h"
-using namespace Havana::Graphics::Vulkan::Shaders;
+using namespace havana::Graphics::Vulkan::Shaders;
 #endif // _WIN64
 
 #include <glslang/Public/ShaderLang.h>
@@ -24,7 +24,7 @@ using namespace Havana::Graphics::Vulkan::Shaders;
 #define D3D12API 0
 #define VULKANAPI 1
 
-using namespace Havana;
+using namespace havana;
 
 namespace
 {
@@ -78,7 +78,7 @@ namespace
 			assert(m_compiler && m_utils && m_includeHandler);
 			HRESULT hr{ S_OK };
 
-			// Load the source file using Utils interface
+			// Load the source file using utl interface
 			ComPtr<IDxcBlobEncoding> sourceBlob{ nullptr };
 			DXCall(hr = m_utils->LoadFile(fullPath.c_str(), nullptr, &sourceBlob));
 			if (FAILED(hr)) return {};
@@ -225,7 +225,7 @@ namespace
 	}
 
 #ifdef _WIN64
-	bool SaveCompiledShaders(Utils::vector<dxc_compiled_shader>& shaders)
+	bool SaveCompiledShaders(utl::vector<dxc_compiled_shader>& shaders)
 	{
 		auto engineShadersPath = GetEngineShadersPath();
 		std::filesystem::create_directories(engineShadersPath.parent_path());
@@ -249,7 +249,7 @@ namespace
 		return true;
 	}
 #elif __linux__
-	bool SaveCompiledShaders(Utils::vector<u8*> shaders)
+	bool SaveCompiledShaders(utl::vector<u8*> shaders)
 	{
 		auto engineShadersPath = GetEngineShadersPath();
 
@@ -266,7 +266,7 @@ bool CompileShaders()
 	if (CompiledShadersAreUpToData()) return true;
 
 	ShaderCompiler compiler{};
-	Utils::vector<dxc_compiled_shader> shaders;
+	utl::vector<dxc_compiled_shader> shaders;
 	std::filesystem::path fullPath{};
 
 	// Compile shaders put all shaders together in a buffer in the same order of compilation
@@ -295,7 +295,7 @@ bool CompileShaders()
 {
 	if (CompiledShadersAreUpToData()) return true;
 
-	Utils::vector<u8*> shaders;
+	utl::vector<u8*> shaders;
 
 	// TODO: implement
 

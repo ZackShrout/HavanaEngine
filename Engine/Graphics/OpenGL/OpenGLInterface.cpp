@@ -3,7 +3,7 @@
 #include "OpenGLInterface.h"
 #include "OpenGLCore.h"
 
-namespace Havana::Graphics
+namespace havana::Graphics
 {
 	namespace OpenGL
 	{

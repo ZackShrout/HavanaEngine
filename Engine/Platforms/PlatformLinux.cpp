@@ -3,7 +3,7 @@
 #include "Platform.h"
 #include "PlatformTypes.h"
 
-namespace Havana::Platform
+namespace havana::Platform
 {
 		namespace
 		{
@@ -20,7 +20,7 @@ namespace Havana::Platform
 				bool isClosed{ false };
 			};
 
-			Utils::free_list<WindowInfo> windows;
+			utl::free_list<WindowInfo> windows;
 
 			WindowInfo& GetFromId(window_id id)
 			{
@@ -106,7 +106,7 @@ namespace Havana::Platform
 				XStoreName(info.display, info.window, title);
 			}
 
-			Math::Vec4u32 GetWindowSize(window_id id)
+			math::u32v4 GetWindowSize(window_id id)
 			{
 				WindowInfo& info{ GetFromId(id) };
 				return { (u32)info.left, (u32)info.top, (u32)info.width - (u32)info.left, (u32)info.height - (u32)info.top };

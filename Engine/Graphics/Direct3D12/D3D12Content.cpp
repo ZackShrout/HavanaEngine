@@ -4,7 +4,7 @@
 #include "Utilities/IOStream.h"
 #include "Content/ContentToEngine.h"
 
-namespace Havana::Graphics::D3D12::Content
+namespace havana::Graphics::D3D12::Content
 {
 	namespace
 	{
@@ -14,18 +14,18 @@ namespace Havana::Graphics::D3D12::Content
 			D3D12_VERTEX_BUFFER_VIEW		elementBufferView{};
 			D3D12_INDEX_BUFFER_VIEW			indexBufferView{};
 			D3D_PRIMITIVE_TOPOLOGY			primitiveTopology;
-			u32								elementsType{};
+			u32								elements_type{};
 		};
 
-		Utils::free_list<ID3D12Resource*>	submeshBuffers{};
-		Utils::free_list<SubmeshView>		submeshViews{};
+		utl::free_list<ID3D12Resource*>	submeshBuffers{};
+		utl::free_list<SubmeshView>		submeshViews{};
 		std::mutex							submeshMutex{};
 
-		D3D_PRIMITIVE_TOPOLOGY GetD3DPrimitiveTopology(Havana::Content::PrimitiveTopology::Type type)
+		D3D_PRIMITIVE_TOPOLOGY GetD3DPrimitiveTopology(havana::Content::PrimitiveTopology::type type)
 		{
-			using namespace Havana::Content;
+			using namespace havana::Content;
 
-			assert(type < PrimitiveTopology::Count);
+			assert(type < PrimitiveTopology::count);
 
 			switch (type)
 			{
@@ -50,7 +50,7 @@ namespace Havana::Graphics::D3D12::Content
 	{
 		// NOTE: Expects 'data' to contain (in order):
 		//		u32 elementSize, u32 vertexCount,
-		//		u32 indexCount, u32 elementsType, u32 primitiveTopology
+		//		u32 indexCount, u32 elements_type, u32 primitiveTopology
 		//		u8 positions[sizeof(f32) * 3 * vertextCount],		// sizeof(positions) must be a multiple of 4 bytes. Pad if needed.
 		//		u8 elements[sizeof(elementSize) * vertextCount],	// sizeof(elements) must be a multiple of 4 bytes. Pad if needed.
 		//		u8 indices[indexSize * indexCount],
@@ -63,34 +63,34 @@ namespace Havana::Graphics::D3D12::Content
 		/// <returns></returns>
 		Id::id_type Add(const u8*& data)
 		{
-			Utils::BlobStreamReader blob{ (const u8*)data };
+			utl::blob_stream_reader blob{ (const u8*)data };
 
-			const u32 elementSize{ blob.Read<u32>() };
-			const u32 vertexCount{ blob.Read<u32>() };
-			const u32 indexCount{ blob.Read<u32>() };
-			const u32 elementsType{ blob.Read<u32>() };
-			const u32 primitiveTopology{ blob.Read<u32>() };
+			const u32 elementSize{ blob.read<u32>() };
+			const u32 vertexCount{ blob.read<u32>() };
+			const u32 indexCount{ blob.read<u32>() };
+			const u32 elements_type{ blob.read<u32>() };
+			const u32 primitiveTopology{ blob.read<u32>() };
 			const u32 indexSize{ (vertexCount < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
 
 			// NOTE: element size may be 0, for position-only vertex formats.
-			const u32 positionBufferSize{ sizeof(Math::Vec3) * vertexCount };
+			const u32 positionBufferSize{ sizeof(math::v3) * vertexCount };
 			const u32 elementBufferSize{ elementSize * vertexCount };
 			const u32 indexBufferSize{ indexSize * indexCount};
 
 			constexpr u32 alignment{ D3D12_STANDARD_MAXIMUM_ELEMENT_ALIGNMENT_BYTE_MULTIPLE };
-			const u32 alignedPositionBufferSize{ (u32)Math::AlignSizeUp<alignment>(positionBufferSize) };
-			const u32 alignedElementBufferSize{ (u32)Math::AlignSizeUp<alignment>(elementBufferSize) };
+			const u32 alignedPositionBufferSize{ (u32)math::AlignSizeUp<alignment>(positionBufferSize) };
+			const u32 alignedElementBufferSize{ (u32)math::AlignSizeUp<alignment>(elementBufferSize) };
 			const u32 totalBufferSize{ alignedPositionBufferSize + alignedElementBufferSize + indexBufferSize };
 
-			ID3D12Resource* resource{ D3DX::CreateBuffer(blob.Position(), totalBufferSize) };
+			ID3D12Resource* resource{ D3DX::CreateBuffer(blob.position(), totalBufferSize) };
 			
-			blob.Skip(totalBufferSize);
-			data = blob.Position();
+			blob.skip(totalBufferSize);
+			data = blob.position();
 
 			SubmeshView view{};
 			view.positionBufferView.BufferLocation = resource->GetGPUVirtualAddress();
 			view.positionBufferView.SizeInBytes = positionBufferSize;
-			view.positionBufferView.StrideInBytes = sizeof(Math::Vec3);
+			view.positionBufferView.StrideInBytes = sizeof(math::v3);
 
 			if (elementSize)
 			{
@@ -103,8 +103,8 @@ namespace Havana::Graphics::D3D12::Content
 			view.indexBufferView.SizeInBytes = indexBufferSize;
 			view.indexBufferView.Format = (indexSize == sizeof(u16)) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 
-			view.primitiveTopology = GetD3DPrimitiveTopology((Havana::Content::PrimitiveTopology::Type)primitiveTopology);
-			view.elementsType = elementsType;
+			view.primitiveTopology = GetD3DPrimitiveTopology((havana::Content::PrimitiveTopology::type)primitiveTopology);
+			view.elements_type = elements_type;
 
 			std::lock_guard lock{ submeshMutex };
 			submeshBuffers.add(resource);

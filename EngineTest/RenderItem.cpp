@@ -3,7 +3,7 @@
 #include "Content/ContentToEngine.h"
 #include "ShaderCompilation.h"
 
-using namespace Havana;
+using namespace havana;
 
 bool ReadFile(std::filesystem::path, std::unique_ptr<u8[]>&, u64&);
 
@@ -20,7 +20,7 @@ namespace
 		ReadFile("..\\..\\enginetest\\model.model", model, size);
 
 		modelId = Content::CreateResource(model.get(), Content::AssetType::Mesh);
-		assert(Id::IsValid(modelId));
+		assert(Id::is_valid(modelId));
 	}
 
 	void LoadShaders()

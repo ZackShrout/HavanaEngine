@@ -2,9 +2,9 @@
 #include "VulkanCommonHeaders.h"
 #include<fstream>
 
-namespace Havana::Graphics::Vulkan
+namespace havana::Graphics::Vulkan
 {
-	static Utils::vector<char> ReadFile(const std::string& fileName)
+	static utl::vector<char> ReadFile(const std::string& fileName)
 	{
 		// Open stream from given file at the end to get file size
 		std::ifstream file(fileName, std::ios::binary | std::ios::ate);
@@ -14,7 +14,7 @@ namespace Havana::Graphics::Vulkan
 		}
 
 		size_t fileSize = (size_t)file.tellg();
-		Utils::vector<char> fileBuffer(fileSize);
+		utl::vector<char> fileBuffer(fileSize);
 
 		// Go back to begining of file
 		file.seekg(0);

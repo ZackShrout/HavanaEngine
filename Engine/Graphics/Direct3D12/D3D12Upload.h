@@ -1,14 +1,14 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace Havana::Graphics::D3D12::Upload
+namespace havana::Graphics::D3D12::Upload
 {
 	class D3D12UploadContext
 	{
 	public:
 		D3D12UploadContext(u32 alignedSize);
 		DISABLE_COPY_AND_MOVE(D3D12UploadContext);
-		~D3D12UploadContext() { assert(m_frameIndex == U32_INVALID_ID); }
+		~D3D12UploadContext() { assert(m_frameIndex == u32_invalid_id); }
 
 		void EndUpload();
 
@@ -21,7 +21,7 @@ namespace Havana::Graphics::D3D12::Upload
 		id3d12GraphicsCommandList*		m_cmdList{ nullptr };
 		ID3D12Resource*					m_uploadBuffer{ nullptr };
 		void*							m_cpuAddress{ nullptr };
-		u32								m_frameIndex{ U32_INVALID_ID };
+		u32								m_frameIndex{ u32_invalid_id };
 	};
 
 	bool Initialize();

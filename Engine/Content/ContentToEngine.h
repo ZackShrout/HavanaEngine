@@ -1,11 +1,11 @@
 #pragma once
 #include "CommonHeaders.h"
 
-namespace Havana::Content
+namespace havana::Content
 {
 	struct AssetType
 	{
-		enum Type : u32
+		enum type : u32
 		{
 			Unknown = 0,
 			Animation,
@@ -15,13 +15,13 @@ namespace Havana::Content
 			Skeleton,
 			Texture,
 
-			Count
+			count
 		};
 	};
 	
 	struct PrimitiveTopology
 	{
-		enum Type: u32
+		enum type: u32
 		{
 			PointList = 1,
 			LineList,
@@ -29,10 +29,10 @@ namespace Havana::Content
 			TriangleList,
 			TriangleStrip,
 
-			Count
+			count
 		};
 	};
 
-	Id::id_type CreateResource(const void* const data, AssetType::Type type);
-	void DestroyResource(Id::id_type id, AssetType::Type type);
+	Id::id_type CreateResource(const void* const data, AssetType::type type);
+	void DestroyResource(Id::id_type id, AssetType::type type);
 }

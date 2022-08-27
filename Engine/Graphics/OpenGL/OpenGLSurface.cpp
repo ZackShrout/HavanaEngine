@@ -1,7 +1,7 @@
 #include "OpenGLSurface.h"
 #include "OpenGLCore.h"
 
-namespace Havana::Graphics::OpenGL
+namespace havana::Graphics::OpenGL
 {
     void OpenGLSurface::Present() const
     {

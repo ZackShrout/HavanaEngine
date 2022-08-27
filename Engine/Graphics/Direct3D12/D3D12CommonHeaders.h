@@ -13,7 +13,7 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d12.lib")
 
-namespace Havana::Graphics::D3D12
+namespace havana::Graphics::D3D12
 {
 	constexpr u32 frameBufferCount{ 3 };
 	using id3d12Device = ID3D12Device8;
