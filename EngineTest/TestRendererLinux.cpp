@@ -94,9 +94,9 @@ void DestroyRenderSurface(Graphics::RenderSurface &surface)
 	Graphics::RenderSurface temp{ surface };
 	surface = {};
 	if (temp.surface.is_valid())
-		Graphics::RemoveSurface(temp.surface.GetID());
+		Graphics::RemoveSurface(temp.surface.get_id());
 	if (temp.window.is_valid())
-		Platform::RemoveWindow(temp.window.GetID());
+		Platform::RemoveWindow(temp.window.get_id());
 }
 
 bool TestInitialize(void *disp)

@@ -59,7 +59,7 @@ void JointTestWorkers()
 
 struct
 {
-	Entity::Entity entity{};
+	game_entity::entity entity{};
 	Graphics::Camera camera{};
 } camera;
 
@@ -133,7 +133,7 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		Platform::Window win{ Platform::window_id{(id::id_type)GetWindowLongPtr(hwnd, GWLP_USERDATA)} };
 		for (u32 i{ 0 }; i < _countof(surfaces); i++)
 		{
-			if (win.GetID() == surfaces[i].window.GetID())
+			if (win.get_id() == surfaces[i].window.get_id())
 			{
 				if (toggleFullscreen)
 				{
@@ -157,18 +157,18 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-Entity::Entity CreateOneGameEntity()
+game_entity::entity CreateOneGameEntity()
 {
-	Transform::InitInfo transformInfo{};
+	transform::init_info transformInfo{};
 	math::Vec3A rot{ 0, 3.14f, 0 };
 	DirectX::XMVECTOR quat{ DirectX::XMQuaternionRotationRollPitchYawFromVector(DirectX::XMLoadFloat3A(&rot)) };
 	math::Vec4A rotQuat;
 	DirectX::XMStoreFloat4A(&rotQuat, quat);
 	memcpy(&transformInfo.rotation[0], &rotQuat.x, sizeof(transformInfo.rotation));
 
-	Entity::EntityInfo entityInfo{};
+	game_entity::entity_info entityInfo{};
 	entityInfo.transform = &transformInfo;
-	Entity::Entity ntt{ Entity::CreateEntity(entityInfo) };
+	game_entity::entity ntt{ game_entity::create(entityInfo) };
 	assert(ntt.is_valid());
 	return ntt;
 }
@@ -216,9 +216,9 @@ void DestroyRenderSurface(Graphics::RenderSurface &surface)
 	Graphics::RenderSurface temp{ surface };
 	surface = {};
 	if (temp.surface.is_valid())
-		Graphics::RemoveSurface(temp.surface.GetID());
+		Graphics::RemoveSurface(temp.surface.get_id());
 	if (temp.window.is_valid())
-		Platform::RemoveWindow(temp.window.GetID());
+		Platform::RemoveWindow(temp.window.get_id());
 }
 
 bool TestInitialize()
@@ -255,10 +255,10 @@ bool TestInitialize()
 	InitTestWorkers(BufferTestWorker);
 
 	camera.entity = CreateOneGameEntity();
-	camera.camera = Graphics::CreateCamera(Graphics::PerspectiveCameraInitInfo(camera.entity.GetID()));
+	camera.camera = Graphics::CreateCamera(Graphics::PerspectiveCameraInitInfo(camera.entity.get_id()));
 	assert(camera.camera.is_valid());
 
-	itemId = CreateRenderItem(CreateOneGameEntity().GetID());
+	itemId = CreateRenderItem(CreateOneGameEntity().get_id());
 
 	isRestarting = false;
 	return true;
@@ -268,8 +268,8 @@ void TestShutdown()
 {
 	DestroyRenderItem(itemId);
 	
-	if (camera.camera.is_valid()) Graphics::RemoveCamera(camera.camera.GetID());
-	if (camera.entity.is_valid()) Entity::RemoveEntity(camera.entity.GetID());
+	if (camera.camera.is_valid()) Graphics::RemoveCamera(camera.camera.get_id());
+	if (camera.entity.is_valid()) game_entity::remove(camera.entity.get_id());
 	
 	JointTestWorkers();
 

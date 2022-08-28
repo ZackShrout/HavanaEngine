@@ -213,15 +213,15 @@ namespace havana::Graphics::D3D12::Camera
 		m_projectionType{ info.type }, m_entityID{ info.entityId }, m_isDirty{ true }
 	{
 		assert(id::is_valid(m_entityID));
-		Update();
+		update();
 	}
 
-	void D3D12Camera::Update()
+	void D3D12Camera::update()
 	{
-		Entity::Entity entity{ Entity::entity_id{m_entityID} };
+		game_entity::entity entity{ game_entity::entity_id{m_entityID} };
 		using namespace DirectX;
-		math::v3 pos{ entity.Transform().Position() };
-		math::v3 dir{ entity.Transform().Orientation() };
+		math::v3 pos{ entity.transform().position() };
+		math::v3 dir{ entity.transform().orientation() };
 		XMVECTOR position{ XMLoadFloat3(&pos) };
 		XMVECTOR direction{ XMLoadFloat3(&dir) };
 		m_view = XMMatrixLookToRH(position, direction, m_up);

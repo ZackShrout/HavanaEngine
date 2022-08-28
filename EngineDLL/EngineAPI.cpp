@@ -18,10 +18,10 @@ using namespace havana;
 namespace
 {
 	HMODULE gameCodeDll{ nullptr };
-	using get_script_creator = havana::Script::detail::script_creator(*)(size_t);
-	get_script_creator GetScriptCreatorDll{ nullptr };
+	using get_script_creator = havana::script::detail::script_creator(*)(size_t);
+	get_script_creator get_script_creator{ nullptr };
 	using get_script_names = LPSAFEARRAY(*)(void);
-	get_script_names GetScriptNamesDll{ nullptr };
+	get_script_names get_script_names{ nullptr };
 	utl::vector<Graphics::RenderSurface> surfaces;
 } // anonymous namespace
 
@@ -38,10 +38,10 @@ EDITOR_INTERFACE u32 LoadGameCodeDll(const char* dllPath)
 	gameCodeDll = LoadLibraryA(dllPath);
 	assert(gameCodeDll);
 
-	GetScriptCreatorDll = (get_script_creator)GetProcAddress(gameCodeDll, "GetScriptCreatorDll");
-	GetScriptNamesDll = (get_script_names)GetProcAddress(gameCodeDll, "GetScriptNamesDll");
+	get_script_creator = (get_script_creator)GetProcAddress(gameCodeDll, "get_script_creator");
+	get_script_names = (get_script_names)GetProcAddress(gameCodeDll, "get_script_names");
 
-	return (gameCodeDll && GetScriptCreatorDll && GetScriptNamesDll) ? TRUE : FALSE;
+	return (gameCodeDll && get_script_creator && get_script_names) ? TRUE : FALSE;
 }
 
 /// <summary>
@@ -66,9 +66,9 @@ EDITOR_INTERFACE u32 UnloadGameCodeDll()
 /// </summary>
 /// <param name="name">Name of the script to get.</param>
 /// <returns>Function pointer to script.</returns>
-EDITOR_INTERFACE Script::detail::script_creator GetScriptCreator(const char* name)
+EDITOR_INTERFACE script::detail::script_creator GetScriptCreator(const char* name)
 {
-	return (gameCodeDll && GetScriptCreatorDll) ? GetScriptCreatorDll(Script::detail::string_hash()(name)) : nullptr;
+	return (gameCodeDll && get_script_creator) ? get_script_creator(script::detail::string_hash()(name)) : nullptr;
 }
 
 /// <summary>
@@ -77,7 +77,7 @@ EDITOR_INTERFACE Script::detail::script_creator GetScriptCreator(const char* nam
 /// <returns>Array of script names.</returns>
 EDITOR_INTERFACE LPSAFEARRAY GetScriptNames()
 {
-	return (gameCodeDll && GetScriptNamesDll) ? GetScriptNamesDll() : nullptr;
+	return (gameCodeDll && get_script_names) ? get_script_names() : nullptr;
 }
 
 /// <summary>
@@ -104,7 +104,7 @@ EDITOR_INTERFACE u32 CreateRenderSurface(HWND host, s32 width, s32 height)
 EDITOR_INTERFACE void RemoveRenderSurface(u32 id)
 {
 	assert(id < surfaces.size());
-	Platform::RemoveWindow(surfaces[id].window.GetID());
+	Platform::RemoveWindow(surfaces[id].window.get_id());
 }
 
 EDITOR_INTERFACE HWND GetWindowHandle(u32 id)

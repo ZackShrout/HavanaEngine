@@ -1,17 +1,15 @@
 #pragma once
 #include "ComponentsCommon.h"
 
-namespace havana::Transform
+namespace havana::transform
 {
-	
-
-	struct InitInfo
+	struct init_info
 	{
 		f32 position[3]{};
 		f32 rotation[4]{};
 		f32 scale[3]{ 1.f, 1.f, 1.f };
 	};
 
-	Component Create(InitInfo info, Entity::Entity entity);
-	void Remove(Component component);
+	component create(init_info info, game_entity::entity entity);
+	void remove(component c);
 }

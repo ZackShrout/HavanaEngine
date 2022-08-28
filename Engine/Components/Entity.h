@@ -4,21 +4,23 @@
 namespace havana
 {
 
-#define INIT_INFO(component) namespace component { struct InitInfo; }
-	INIT_INFO(Transform);
-	INIT_INFO(Script);
+#define INIT_INFO(component) namespace component { struct init_info; }
+
+	INIT_INFO(transform);
+	INIT_INFO(script);
+
 #undef INIT_INFO
 
-	namespace Entity
+	namespace game_entity
 	{
-		struct EntityInfo
+		struct entity_info
 		{
-			Transform::InitInfo* transform{ nullptr };
-			Script::InitInfo* script{ nullptr };
+			transform::init_info* transform{ nullptr };
+			script::init_info* script{ nullptr };
 		};
 
-		Entity CreateEntity(EntityInfo info);
-		void RemoveEntity(entity_id id);
-		bool IsAlive(entity_id id);
+		entity create(entity_info info);
+		void remove(entity_id id);
+		bool is_alive(entity_id id);
 	}
 }

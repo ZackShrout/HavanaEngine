@@ -21,7 +21,7 @@ size_t constexpr _countof( T ( & arr )[ N ] )
 		using vector = std::vector<T>;
 
 		template<typename T>
-		void EraseUnordered(T& v, size_t index)
+		void erase_unordered(T& v, size_t index)
 		{
 			if (v.size() > 1)
 			{
@@ -39,7 +39,7 @@ size_t constexpr _countof( T ( & arr )[ N ] )
 	namespace havana::utl
 	{
 		template<typename T>
-		void EraseUnordered(T& v, size_t index)
+		void erase_unordered(T& v, size_t index)
 		{
 			v.erase_unordered(index);
 		}

@@ -8,7 +8,7 @@ namespace havana::Graphics::D3D12::Camera
 	public:
 		explicit D3D12Camera(CameraInitInfo info);
 		
-		void Update();
+		void update();
 		void Up(math::v3 up);
 		void FieldOfView(f32 fov);
 		void AspectRatio(f32 aspectRatio);

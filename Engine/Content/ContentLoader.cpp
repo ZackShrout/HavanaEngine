@@ -19,17 +19,17 @@ namespace havana::Content
 	{
 		enum ComponentType
 		{
-			Transform,
-			Script,
+			transform,
+			script,
 
 			count
 		};
 
-		utl::vector<Entity::Entity> entities;
-		Transform::InitInfo transformInfo{};
-		Script::InitInfo scriptInfo{};
+		utl::vector<game_entity::entity> entities;
+		transform::init_info transformInfo{};
+		script::init_info scriptInfo{};
 
-		bool ReadTransform(const u8*& data, Entity::EntityInfo& info)
+		bool ReadTransform(const u8*& data, game_entity::entity_info& info)
 		{
 			f32 rotation[3];
 
@@ -57,7 +57,7 @@ namespace havana::Content
 			return true;
 		}
 
-		bool ReadScript(const u8*& data, Entity::EntityInfo& info)
+		bool ReadScript(const u8*& data, game_entity::entity_info& info)
 		{
 			assert(!info.script);
 			const u32 nameLength{ *data }; data += sizeof(u32);
@@ -71,14 +71,14 @@ namespace havana::Content
 			memcpy(&scriptName, data, nameLength); data += nameLength;
 			// make scriptName a 0-terminated c-string
 			scriptName[nameLength] = 0;
-			scriptInfo.script_creator = Script::detail::GetScriptCreatorDll(Script::detail::string_hash()(scriptName));
+			scriptInfo.script_creator = script::detail::get_script_creator(script::detail::string_hash()(scriptName));
 			
 			info.script = &scriptInfo;
 			
 			return scriptInfo.script_creator != nullptr;
 		}
 
-		using component_reader = bool(*)(const u8*&, Entity::EntityInfo&);
+		using component_reader = bool(*)(const u8*&, game_entity::entity_info&);
 		component_reader componentReaders[]{ ReadTransform, ReadScript };
 		static_assert(_countof(componentReaders) == ComponentType::count);
 
@@ -118,7 +118,7 @@ namespace havana::Content
 
 		for (u32 entityIndex{ 0 }; entityIndex < numEntities; entityIndex++)
 		{
-			Entity::EntityInfo info{};
+			game_entity::entity_info info{};
 			const u32 entityType{ *at }; at += su32;
 			const u32 numComponents{ *at }; at += su32;
 			
@@ -133,7 +133,7 @@ namespace havana::Content
 
 			// create entity
 			assert(info.transform);
-			Entity::Entity entity{ Entity::CreateEntity(info) };
+			game_entity::entity entity{ game_entity::create(info) };
 			if (!entity.is_valid()) return false;
 			entities.emplace_back(entity);
 		}
@@ -146,7 +146,7 @@ namespace havana::Content
 	{
 		for (auto entity : entities)
 		{
-			Entity::RemoveEntity(entity.GetID());
+			game_entity::remove(entity.get_id());
 		}
 	}
 

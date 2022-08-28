@@ -23,11 +23,11 @@ namespace // anonymous namespace
 		f32 rotation[3];
 		f32 scale[3];
 
-		Transform::InitInfo ToInitInfo()
+		transform::init_info ToInitInfo()
 		{
 			using namespace DirectX;
 
-			Transform::InitInfo info{};
+			transform::init_info info{};
 			memcpy(&info.position[0], &position[0], sizeof(position));
 			memcpy(&info.scale[0], &scale[0], sizeof(scale));
 			XMFLOAT3A rot{ &rotation[0] };
@@ -46,11 +46,11 @@ namespace // anonymous namespace
 	/// </summary>
 	struct ScriptComponent
 	{
-		Script::detail::script_creator scriptCreator;
+		script::detail::script_creator scriptCreator;
 
-		Script::InitInfo ToInitInfo()
+		script::init_info ToInitInfo()
 		{
-			Script::InitInfo info{};
+			script::init_info info{};
 			info.script_creator = scriptCreator;
 			return info;
 		}
@@ -66,9 +66,9 @@ namespace // anonymous namespace
 		ScriptComponent script;
 	};
 
-	Entity::Entity EntityFromId(id::id_type id)
+	game_entity::entity EntityFromId(id::id_type id)
 	{
-		return Entity::Entity{ Entity::entity_id{ id } };
+		return game_entity::entity{ game_entity::entity_id{ id } };
 	}
 }
 
@@ -82,11 +82,11 @@ id::id_type CreateGameEntity(GameEntityDescriptor* e)
 {
 	assert(e);
 	GameEntityDescriptor descriptor{ *e };
-	Transform::InitInfo transformInfo{ descriptor.transform.ToInitInfo() };
-	Script::InitInfo scriptInfo{ descriptor.script.ToInitInfo() };
-	Entity::EntityInfo entityInfo{ &transformInfo, &scriptInfo };
+	transform::init_info transformInfo{ descriptor.transform.ToInitInfo() };
+	script::init_info scriptInfo{ descriptor.script.ToInitInfo() };
+	game_entity::entity_info entityInfo{ &transformInfo, &scriptInfo };
 
-	return Entity::CreateEntity(entityInfo).GetID();
+	return game_entity::create(entityInfo).get_id();
 }
 
 /// <summary>
@@ -97,6 +97,6 @@ EDITOR_INTERFACE
 void RemoveGameEntity(id::id_type id)
 {
 	assert(id::is_valid(id));
-	Entity::RemoveEntity(Entity::entity_id{ id });
+	game_entity::remove(game_entity::entity_id{ id });
 }
 

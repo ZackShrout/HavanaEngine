@@ -61,13 +61,13 @@ bool EngineInitialize()
 
 void EngineUpdate()
 {
-	havana::Script::Update(10.0f);
+	havana::script::update(10.0f);
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 void EngineShutdown()
 {
-	Platform::RemoveWindow(gameWindow.window.GetID());
+	Platform::RemoveWindow(gameWindow.window.get_id());
 	havana::Content::UnloadGame();
 }
 

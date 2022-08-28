@@ -11,7 +11,7 @@ namespace havana::Platform
 	public:
 		constexpr Window() = default;
 		constexpr explicit Window(window_id id) : m_id{ id } {}
-		constexpr window_id GetID() const { return m_id; }
+		constexpr window_id get_id() const { return m_id; }
 		constexpr bool is_valid() const { return id::is_valid(m_id); }
 
 		void SetFullscreen(bool isFullscreen) const;

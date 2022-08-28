@@ -1,17 +1,14 @@
 #pragma once
 #include "ComponentsCommon.h"
-#ifndef __linux__
-#include <atlsafe.h>
-#endif // !__linux__
 
-namespace havana::Script
+namespace havana::script
 {
-	struct InitInfo
+	struct init_info
 	{
 		detail::script_creator script_creator;
 	};
 
-	Component Create(InitInfo info, Entity::Entity entity);
-	void Remove(Component component);
-	void Update(float dt);
+	component create(init_info info, game_entity::entity entity);
+	void remove(component c);
+	void update(float dt);
 }

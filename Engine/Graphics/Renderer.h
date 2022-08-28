@@ -12,7 +12,7 @@ namespace havana::Graphics
 	public:
 		constexpr Surface() = default;
 		constexpr explicit Surface(surface_id id) : m_id{ id } {}
-		constexpr surface_id GetID() const { return m_id; }
+		constexpr surface_id get_id() const { return m_id; }
 		constexpr bool is_valid() const { return id::is_valid(m_id); }
 
 		void Resize(u32 width, u32 height) const;

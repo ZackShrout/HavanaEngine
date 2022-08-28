@@ -2,28 +2,29 @@
 #include "Transform.h"
 #include "Script.h"
 
-namespace havana::Entity
+namespace havana::game_entity
 {
 	namespace // anonymous namespace
 	{
-		utl::vector <Transform::Component>	transforms;
-		utl::vector <Script::Component>		scripts;
-		utl::vector<id::generation_type>		generations;
-		utl::deque<entity_id>					freeIDs;
+		utl::vector<transform::component>	transforms;
+		utl::vector<script::component>		scripts;
+		utl::vector<id::generation_type>	generations;
+		utl::deque<entity_id>				free_ids;
 	}
 	
-	Entity CreateEntity(EntityInfo info)
+	entity
+	create(entity_info info)
 	{
 		assert(info.transform); // All entities must have a transform component
-		if (!info.transform) return Entity{};
+		if (!info.transform) return entity{};
 
 		entity_id id;
 
-		if (freeIDs.size() > id::mindeleted_elements)
+		if (free_ids.size() > id::min_deleted_elements)
 		{
-			id = freeIDs.front();
-			assert(!IsAlive(id));
-			freeIDs.pop_front();
+			id = free_ids.front();
+			assert(!is_alive(id));
+			free_ids.pop_front();
 			id = entity_id{ id::new_generation(id) };
 			++generations[id::index(id)];
 		}
@@ -38,42 +39,44 @@ namespace havana::Entity
 			scripts.emplace_back();
 		}
 
-		const Entity newEntity{ id };
+		const entity new_entity{ id };
 		const id::id_type index{ id::index(id) };
 
 		// Create transform component
 		assert(!transforms[index].is_valid());
-		transforms[index] = Transform::Create(*info.transform, newEntity);
+		transforms[index] = transform::create(*info.transform, new_entity);
 		if (!transforms[index].is_valid()) return {};
 		
 		// Create script component
 		if (info.script && info.script->script_creator)
 		{
 			assert(!scripts[index].is_valid());
-			scripts[index] = Script::Create(*info.script, newEntity);
+			scripts[index] = script::create(*info.script, new_entity);
 			assert(scripts[index].is_valid());
 		}
 
-		return newEntity;
+		return new_entity;
 	}
 
-	void RemoveEntity(entity_id id)
+	void
+	remove(entity_id id)
 	{
 		const id::id_type index{ id::index(id) };
-		assert(IsAlive(id));
+		assert(is_alive(id));
 
 		if (scripts[index].is_valid())
 		{
-			Script::Remove(scripts[index]);
+			script::remove(scripts[index]);
 			scripts[index] = {};
 		}
 
-		Transform::Remove(transforms[index]);
+		transform::remove(transforms[index]);
 		transforms[index] = {};
-		freeIDs.push_back(id);
+		free_ids.push_back(id);
 	}
 
-	bool IsAlive(entity_id id)
+	bool
+	is_alive(entity_id id)
 	{
 		assert(id::is_valid(id));
 		const id::id_type index{ id::index(id) };
@@ -82,16 +85,18 @@ namespace havana::Entity
 	}
 
 	// Entity class method implementations
-	Transform::Component Entity::Transform() const
+	transform::component
+	entity::transform() const
 	{
-		assert(IsAlive(m_id));
+		assert(is_alive(m_id));
 		const id::id_type index{ id::index(m_id) };
 		return transforms[index];
 	}
 
-	Script::Component Entity::Script() const
+	script::component
+	entity::script() const
 	{
-		assert(IsAlive(m_id));
+		assert(is_alive(m_id));
 		const id::id_type index{ id::index(m_id) };
 		return scripts[index];
 	}

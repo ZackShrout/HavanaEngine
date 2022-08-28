@@ -61,16 +61,16 @@ private:
 	{
 		u32 count = rand() % 20;
 		if (m_entities.empty()) count = 1000;
-		Transform::InitInfo transformInfo{};
-		Entity::EntityInfo entityInfo { &transformInfo };
+		transform::init_info transformInfo{};
+		game_entity::entity_info entityInfo { &transformInfo };
 
 		while (count > 0)
 		{
 			++m_added;
-			Entity::Entity entity{ Entity::CreateEntity(entityInfo) };
-			assert(entity.is_valid() && id::is_valid(entity.GetID()));
+			game_entity::entity entity{ game_entity::create(entityInfo) };
+			assert(entity.is_valid() && id::is_valid(entity.get_id()));
 			m_entities.push_back(entity);
-			assert(Entity::IsAlive(entity.GetID()));
+			assert(game_entity::is_alive(entity.get_id()));
 			--count;
 		}
 	}
@@ -83,13 +83,13 @@ private:
 		while (count > 0)
 		{
 			const u32 index{ (u32)rand() % ((u32)m_entities.size()) };
-			const Entity::Entity entity{ m_entities[index] };
-			assert(entity.is_valid() && id::is_valid(entity.GetID()));
+			const game_entity::entity entity{ m_entities[index] };
+			assert(entity.is_valid() && id::is_valid(entity.get_id()));
 			if (entity.is_valid())
 			{
-				Entity::RemoveEntity(entity.GetID());
+				game_entity::remove(entity.get_id());
 				m_entities.erase(m_entities.begin() + index);
-				assert(!Entity::IsAlive(entity.GetID()));
+				assert(!game_entity::is_alive(entity.get_id()));
 				++m_removed;
 			}
 			--count;
@@ -102,7 +102,7 @@ private:
 		std::cout << "Entities removed: " << m_removed << std::endl;
 	}
 
-	utl::vector<Entity::Entity> m_entities;
+	utl::vector<game_entity::entity> m_entities;
 	u32 m_added{ 0 };
 	u32 m_removed{ 0 };
 	u32 m_numEntities{ 0 };

@@ -145,7 +145,7 @@ public:
 	{
 		for (u32 i{ 0 }; i < _countof(windows); i++)
 		{
-			Platform::RemoveWindow(windows[i].GetID());
+			Platform::RemoveWindow(windows[i].get_id());
 		}
 	}
 };

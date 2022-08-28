@@ -15,7 +15,7 @@ namespace havana::id
 		constexpr id_type generation_mask{ (id_type{1} << generation_bits) - 1 };
 	}
 	constexpr id_type invalid_id{ id_type(-1) };
-	constexpr u32 mindeleted_elements{ 1024 };
+	constexpr u32 min_deleted_elements{ 1024 };
 
 	// Define generation type for ECS system
 	using generation_type = std::conditional_t<detail::generation_bits <= 16, std::conditional_t<detail::generation_bits <= 8, u8, u16>, u32>;

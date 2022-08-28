@@ -16,7 +16,7 @@ namespace havana::Graphics
 		
 		constexpr explicit Camera(camera_id id) : m_id{ id } {}
 		constexpr Camera() = default;
-		constexpr camera_id GetID() const { return m_id; }
+		constexpr camera_id get_id() const { return m_id; }
 		constexpr bool is_valid() const { return id::is_valid(m_id); }
 
 
