@@ -68,12 +68,12 @@ namespace havana::graphics::d3d12::FX
 		}
 	} //anonymous namespace
 
-	bool Initialize()
+	bool initialize()
 	{
 		return CreateFXPSOAndRootSignature();
 	}
 
-	void Shutdown()
+	void shutdown()
 	{
 		Core::Release(fxRootSig);
 		Core::Release(fxPSO);

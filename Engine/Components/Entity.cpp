@@ -88,16 +88,16 @@ namespace havana::game_entity
 	transform::component
 	entity::transform() const
 	{
-		assert(is_alive(m_id));
-		const id::id_type index{ id::index(m_id) };
+		assert(is_alive(_id));
+		const id::id_type index{ id::index(_id) };
 		return transforms[index];
 	}
 
 	script::component
 	entity::script() const
 	{
-		assert(is_alive(m_id));
-		const id::id_type index{ id::index(m_id) };
+		assert(is_alive(_id));
+		const id::id_type index{ id::index(_id) };
 		return scripts[index];
 	}
 }

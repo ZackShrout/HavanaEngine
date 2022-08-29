@@ -76,7 +76,7 @@ namespace // anonymous namespace
 /// Create a game entity.
 /// </summary>
 /// <param name="e">- Object that describes the entity being added.</param>
-/// <returns>EntityID</returns>
+/// <returns>entity_id</returns>
 EDITOR_INTERFACE
 id::id_type CreateGameEntity(GameEntityDescriptor* e)
 {

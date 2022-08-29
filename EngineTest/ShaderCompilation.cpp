@@ -194,7 +194,7 @@ namespace
 	// Get the path to the compiled shader's binary file
 	decltype(auto) get_engine_shaders_path()
 	{
-		return std::filesystem::path{ graphics::get_engine_shaders_path(graphics::graphics_platform::Direct3D12) };
+		return std::filesystem::path{ graphics::get_engine_shaders_path(graphics::graphics_platform::direct3d12) };
 	}
 
 	bool CompiledShadersAreUpToData()

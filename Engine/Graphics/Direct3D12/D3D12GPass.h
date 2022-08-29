@@ -8,8 +8,8 @@ namespace havana::graphics::d3d12
 
 namespace havana::graphics::d3d12::GPass
 {
-	bool Initialize();
-	void Shutdown();
+	bool initialize();
+	void shutdown();
 
 	[[nodiscard]] const D3D12RenderTexture& MainBuffer();
 	[[nodiscard]] const D3D12DepthBuffer& DepthBuffer();
@@ -17,7 +17,7 @@ namespace havana::graphics::d3d12::GPass
 	// NOTE: call this every frame before rendering anything in gpass
 	void SetSize(math::Vec2u32 size);
 	void DepthPrepass(ID3D12GraphicsCommandList* cmdList, const D3D12FrameInfo& info);
-	void Render(ID3D12GraphicsCommandList* cmdList, const D3D12FrameInfo& info);
+	void render(ID3D12GraphicsCommandList* cmdList, const D3D12FrameInfo& info);
 
 	void AddTransitionsForDepthPrepass(D3DX::ResourceBarrier& barriers);
 	void AddTransitionsForGPass(D3DX::ResourceBarrier& barriers);

@@ -5,14 +5,6 @@
 #define USE_STL_VECTOR 0
 #define USE_STL_DEQUE 1
 
-#ifndef _WIN64
-template < typename T, size_t N >
-size_t constexpr _countof( T ( & arr )[ N ] )
-{
-    return std::extent< T[ N ] >::value;
-}
-#endif // !_WIN64
-
 #if USE_STL_VECTOR
 	#include <vector>
 	namespace havana::utl
@@ -61,3 +53,10 @@ namespace havana::utl
 }
 
 #include "FreeList.h"
+#ifndef _WIN64
+template < typename T, size_t N >
+size_t constexpr _countof(T(&arr)[N])
+{
+	return std::extent< T[N] >::value;
+}
+#endif // !_WIN64

@@ -1,5 +1,5 @@
 #pragma once
-#include "../Components/ComponentsCommon.h"
+#include "Components/ComponentsCommon.h"
 #include "TransformComponent.h"
 #include "ScriptComponent.h"
 
@@ -12,32 +12,32 @@ namespace havana
 		class entity
 		{
 		public:
-			constexpr entity() : m_id{ id::invalid_id } {}
-			constexpr explicit entity(entity_id id) : m_id{ id } {}
-			constexpr entity_id get_id() const { return m_id; }
-			constexpr bool is_valid() const { return id::is_valid(m_id); }
+			constexpr entity() : _id{ id::invalid_id } {}
+			constexpr explicit entity(entity_id id) : _id{ id } {}
+			constexpr entity_id get_id() const { return _id; }
+			constexpr bool is_valid() const { return id::is_valid(_id); }
 			transform::component transform() const;
 			script::component script() const;
 		private:
-			entity_id m_id;
+			entity_id _id;
 		};
 	} // namespace entity
 
 	namespace script
 	{
-		class EntityScript : public game_entity::entity
+		class entity_script : public game_entity::entity
 		{
 		public:
-			virtual ~EntityScript() = default;
-			virtual void BeginPlay() {};
+			virtual ~entity_script() = default;
+			virtual void begin_play() {};
 			virtual void update(float) {};
 		protected:
-			constexpr explicit EntityScript(entity entity) : entity{ entity.get_id() } {};
+			constexpr explicit entity_script(game_entity::entity entity) : game_entity::entity{ entity.get_id() } {};
 		};
 
 		namespace detail
 		{
-			using script_ptr = std::unique_ptr<EntityScript>;
+			using script_ptr = std::unique_ptr<entity_script>;
 			using script_creator = script_ptr(*)(game_entity::entity entity);
 			using string_hash = std::hash<std::string>;
 
@@ -47,11 +47,11 @@ namespace havana
 #endif // USE_WITH_EDITOR
 			script_creator get_script_creator(size_t tag);
 
-			template<class ScriptClass>
-			script_ptr CreateScript(game_entity::entity entity)
+			template<class script_class>
+			script_ptr create_script(game_entity::entity entity)
 			{
 				assert(entity.is_valid());
-				return std::make_unique<ScriptClass>(entity);
+				return std::make_unique<script_class>(entity);
 			}
 			
 #ifdef USE_WITH_EDITOR
@@ -59,21 +59,21 @@ namespace havana
 #define REGISTER_SCRIPT(TYPE)											\
 			namespace													\
 			{															\
-				const u8 register##TYPE									\
-					{ havana::script::detail::register_script(			\
+				const u8 _reg_##TYPE									\
+				{ havana::script::detail::register_script(				\
 					havana::script::detail::string_hash()(#TYPE),		\
-					&havana::script::detail::CreateScript<TYPE>) };		\
-				const u8 name##TYPE										\
-					{  havana::script::detail::add_script_name(#TYPE) };	\
+					&havana::script::detail::create_script<TYPE>) };	\
+				const u8 _name_##TYPE									\
+				{ havana::script::detail::add_script_name(#TYPE) };		\
 			}
 #else
 #define REGISTER_SCRIPT(TYPE)											\
 			namespace													\
 			{															\
-				const u8 register##TYPE									\
-					{ havana::script::detail::register_script(			\
+				const u8 _reg_##TYPE									\
+				{ havana::script::detail::register_script(				\
 					havana::script::detail::string_hash()(#TYPE),		\
-					&havana::script::detail::CreateScript<TYPE>) };		\
+					&havana::script::detail::create_script<TYPE>) };	\
 			}
 #endif // USE_WITH_EDITOR
 		} // namespace detail

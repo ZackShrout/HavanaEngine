@@ -44,6 +44,7 @@
     <ClInclude Include="Graphics\Direct3D12\D3D12Surface.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12Core.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12Upload.h" />
+    <ClInclude Include="Graphics\GraphicsPlatform.h" />
     <ClInclude Include="Graphics\GraphicsPlatformInterface.h" />
     <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="Graphics\Vulkan\VulkanCommandBuffer.h" />
@@ -72,8 +73,8 @@
     <ClCompile Include="Components\Transform.cpp" />
     <ClCompile Include="Content\ContentLoaderWin32.cpp" />
     <ClCompile Include="Content\ContentToEngine.cpp" />
-    <ClCompile Include="Core\Engine.cpp" />
-    <ClCompile Include="Core\Main.cpp" />
+    <ClCompile Include="Core\EngineWin32.cpp" />
+    <ClCompile Include="Core\MainWin32.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Camera.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Content.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Upload.cpp" />
@@ -85,6 +86,7 @@
     <ClCompile Include="Graphics\Direct3D12\D3D12Shaders.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Surface.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Core.cpp" />
+    <ClCompile Include="Graphics\GraphicsPlatform.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="Graphics\Vulkan\VulkanCommandBuffer.cpp" />
     <ClCompile Include="Graphics\Vulkan\VulkanCore.cpp" />

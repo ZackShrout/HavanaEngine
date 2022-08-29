@@ -60,23 +60,23 @@ void JointTestWorkers()
 struct
 {
 	game_entity::entity entity{};
-	graphics::Camera camera{};
+	graphics::camera camera{};
 } camera;
 
 id::id_type itemId{ id::invalid_id };
 id::id_type modelId{ id::invalid_id };
-graphics::RenderSurface surfaces[4];
+graphics::render_surface surfaces[4];
 TimeIt timer{};
 
 bool resized{ false };
 bool isRestarting{ false };
-void DestroyRenderSurface(graphics::RenderSurface &surface);
+void DestroyRenderSurface(graphics::render_surface &surface);
 bool TestInitialize();
 void TestShutdown();
-id::id_type CreateRenderItem(id::id_type entityId);
+id::id_type CreateRenderItem(id::id_type entity_id);
 void DestroyRenderItem(id::id_type itemId);
 
-LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	bool toggleFullscreen{ false };
 
@@ -146,7 +146,7 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				}
 				else
 				{
-					surfaces[i].surface.Resize(win.width(), win.height());
+					surfaces[i].surface.resize(win.width(), win.height());
 					resized = false;
 				}
 				break;
@@ -205,18 +205,18 @@ void ActivateConsole()
 	SetConsoleTitle(TEXT("Render Test"));
 }
 
-void CreateRenderSurface(graphics::RenderSurface &surface, platform::window_init_info info, void* disp)
+void CreateRenderSurface(graphics::render_surface &surface, platform::window_init_info info, void* disp)
 {
 	surface.window = platform::create_window(&info, disp);
-	surface.surface = graphics::CreateSurface(surface.window);
+	surface.surface = graphics::create_surface(surface.window);
 }
 
-void DestroyRenderSurface(graphics::RenderSurface &surface)
+void DestroyRenderSurface(graphics::render_surface &surface)
 {
-	graphics::RenderSurface temp{ surface };
+	graphics::render_surface temp{ surface };
 	surface = {};
 	if (temp.surface.is_valid())
-		graphics::RemoveSurface(temp.surface.get_id());
+		graphics::remove_surface(temp.surface.get_id());
 	if (temp.window.is_valid())
 		platform::remove_window(temp.window.get_id());
 }
@@ -230,13 +230,13 @@ bool TestInitialize()
 			return false;
 	}
 
-	if (!graphics::Initialize(graphics::graphics_platform::Direct3D12)) return false;
+	if (!graphics::initialize(graphics::graphics_platform::direct3d12)) return false;
 
 	platform::window_init_info info[]{
-		{&WinProc, nullptr, L"Render Window 1", 100, 100, 400, 800},
-		{&WinProc, nullptr, L"Render Window 2", 150, 150, 800, 400},
-		{&WinProc, nullptr, L"Render Window 3", 200, 200, 400, 400},
-		{&WinProc, nullptr, L"Render Window 4", 250, 250, 800, 600},
+		{&win_proc, nullptr, L"Render Window 1", 100, 100, 400, 800},
+		{&win_proc, nullptr, L"Render Window 2", 150, 150, 800, 400},
+		{&win_proc, nullptr, L"Render Window 3", 200, 200, 400, 400},
+		{&win_proc, nullptr, L"Render Window 4", 250, 250, 800, 600},
 	};
 
 	static_assert(_countof(info) == _countof(surfaces));
@@ -255,7 +255,7 @@ bool TestInitialize()
 	InitTestWorkers(BufferTestWorker);
 
 	camera.entity = CreateOneGameEntity();
-	camera.camera = graphics::CreateCamera(graphics::PerspectiveCameraInitInfo(camera.entity.get_id()));
+	camera.camera = graphics::create_camera(graphics::perspective_camera_init_info(camera.entity.get_id()));
 	assert(camera.camera.is_valid());
 
 	itemId = CreateRenderItem(CreateOneGameEntity().get_id());
@@ -268,7 +268,7 @@ void TestShutdown()
 {
 	DestroyRenderItem(itemId);
 	
-	if (camera.camera.is_valid()) graphics::RemoveCamera(camera.camera.get_id());
+	if (camera.camera.is_valid()) graphics::remove_camera(camera.camera.get_id());
 	if (camera.entity.is_valid()) game_entity::remove(camera.entity.get_id());
 	
 	JointTestWorkers();
@@ -281,10 +281,10 @@ void TestShutdown()
 	for (u32 i{ 0 }; i < _countof(surfaces); i++)
 		DestroyRenderSurface(surfaces[i]);
 
-	graphics::Shutdown();
+	graphics::shutdown();
 }
 
-bool EngineTest::Initialize()
+bool EngineTest::initialize()
 {
 #if USE_CONSOLE
 	ActivateConsole();
@@ -303,14 +303,14 @@ void EngineTest::Run()
 	{
 		if (surfaces[i].surface.is_valid())
 		{
-			surfaces[i].surface.Render();
+			surfaces[i].surface.render();
 		}
 	}
 
 	timer.End();
 }
 
-void EngineTest::Shutdown()
+void EngineTest::shutdown()
 {
 	TestShutdown();
 }

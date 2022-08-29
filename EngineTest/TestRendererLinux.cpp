@@ -54,12 +54,12 @@ void JointTestWorkers()
 /////////////////////////////////////////////////////////////////////////////
 
 id::id_type modelId{ id::invalid_id };
-Graphics::RenderSurface surfaces[4];
+Graphics::render_surface surfaces[4];
 TimeIt timer{};
 
 bool resized{ false };
 bool isRestarting{ false };
-void DestroyRenderSurface(Graphics::RenderSurface &surface);
+void DestroyRenderSurface(Graphics::render_surface &surface);
 bool TestInitialize();
 void TestShutdown();
 
@@ -83,18 +83,18 @@ bool ReadFile(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size
 	return true;
 }
 
-void CreateRenderSurface(Graphics::RenderSurface &surface, Platform::window_init_info info, void* disp)
+void CreateRenderSurface(Graphics::render_surface &surface, Platform::window_init_info info, void* disp)
 {
 	surface.window = Platform::create_window(&info, disp);
-	surface.surface = Graphics::CreateSurface(surface.window);
+	surface.surface = Graphics::create_surface(surface.window);
 }
 
-void DestroyRenderSurface(Graphics::RenderSurface &surface)
+void DestroyRenderSurface(Graphics::render_surface &surface)
 {
-	Graphics::RenderSurface temp{ surface };
+	Graphics::render_surface temp{ surface };
 	surface = {};
 	if (temp.surface.is_valid())
-		Graphics::RemoveSurface(temp.surface.get_id());
+		Graphics::remove_surface(temp.surface.get_id());
 	if (temp.window.is_valid())
 		Platform::remove_window(temp.window.get_id());
 }
@@ -107,7 +107,7 @@ bool TestInitialize(void *disp)
 	// 	return false;
 	// }
 
-	if (!Graphics::Initialize(Graphics::graphics_platform::VulkanAPI)) return false;
+	if (!Graphics::initialize(Graphics::graphics_platform::VulkanAPI)) return false;
 
 	Platform::window_init_info info[]{
 		{nullptr, nullptr, L"Render Window 1", 100, 100, 400, 800},
@@ -147,10 +147,10 @@ void TestShutdown()
 	for (u32 i{ 0 }; i < _countof(surfaces); i++)
 		DestroyRenderSurface(surfaces[i]);
 
-	Graphics::Shutdown();
+	Graphics::shutdown();
 }
 
-bool EngineTest::Initialize(void *disp)
+bool EngineTest::initialize(void *disp)
 {
 	return TestInitialize(disp);
 }
@@ -165,7 +165,7 @@ void EngineTest::Run(void *disp)
 	{
 		if (surfaces[i].surface.is_valid())
 		{
-			surfaces[i].surface.Render();
+			surfaces[i].surface.render();
 		}
 	}
 
@@ -200,9 +200,9 @@ void EngineTest::Run(void *disp)
 				if (!surfaces[i].window.is_valid()) continue;
 				if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
 				{
-					if ((u32)xce.width != surfaces[i].window.Width() || (u32)xce.height != surfaces[i].window.Height())
+					if ((u32)xce.width != surfaces[i].window.width() || (u32)xce.height != surfaces[i].window.height())
 					{
-						surfaces[i].window.Resize((u32)xce.width, (u32)xce.height);
+						surfaces[i].window.resize((u32)xce.width, (u32)xce.height);
 					}
 				}
 			}
@@ -270,7 +270,7 @@ void EngineTest::Run(void *disp)
 	}
 }
 
-void EngineTest::Shutdown()
+void EngineTest::shutdown()
 {
 	TestShutdown();
 }

@@ -47,13 +47,14 @@
     <ClInclude Include="Graphics\Vulkan\VulkanResources.h" />
     <ClInclude Include="Graphics\Vulkan\VulkanSurface.h" />
     <ClInclude Include="Graphics\Vulkan\VulkanValidation.h" />
+    <ClInclude Include="Graphics\GraphicsPlatform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\Entity.cpp" />
     <ClCompile Include="Components\Transform.cpp" />
     <ClCompile Include="Components\Script.cpp" />
-    <ClCompile Include="Core\Main.cpp" />
-    <ClCompile Include="Core\Engine.cpp" />
+    <ClCompile Include="Core\MainWin32.cpp" />
+    <ClCompile Include="Core\EngineWin32.cpp" />
     <ClCompile Include="Platforms\PlatformWin32.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Interface.cpp" />
@@ -78,5 +79,6 @@
     <ClCompile Include="Graphics\Vulkan\VulkanRenderPass.cpp" />
     <ClCompile Include="Graphics\Vulkan\VulkanResources.cpp" />
     <ClCompile Include="Graphics\Vulkan\VulkanSurface.cpp" />
+    <ClCompile Include="Graphics\GraphicsPlatform.cpp" />
   </ItemGroup>
 </Project>

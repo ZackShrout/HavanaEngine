@@ -76,27 +76,27 @@ namespace havana::transform
 	component::rotation() const
 	{
 		assert(is_valid());
-		return rotations[id::index(m_id)];
+		return rotations[id::index(_id)];
 	}
 
 	math::v3
 	component::orientation() const
 	{
 		assert(is_valid());
-		return orientations[id::index(m_id)];
+		return orientations[id::index(_id)];
 	}
 
 	math::v3
 	component::position() const
 	{
 		assert(is_valid());
-		return positions[id::index(m_id)];
+		return positions[id::index(_id)];
 	}
 
 	math::v3
 	component::scale() const
 	{
 		assert(is_valid());
-		return scales[id::index(m_id)];
+		return scales[id::index(_id)];
 	}
 }

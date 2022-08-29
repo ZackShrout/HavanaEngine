@@ -7,9 +7,9 @@
 class EngineTest : public Test
 {
 public:
-	bool Initialize() override;
+	bool initialize() override;
 	void Run() override;
-	void Shutdown() override;
+	void shutdown() override;
 };
 
 #endif // _WIN64

@@ -21,17 +21,17 @@ namespace havana::graphics
 
 		struct
 		{
-			Camera(*create)(CameraInitInfo);
+			camera(*create)(camera_init_info);
 			void(*remove)(camera_id);
-			void(*set_paramter)(camera_id, CameraParameter::Parameter, const void *const, u32);
-			void(*get_paramter)(camera_id, CameraParameter::Parameter, void *const, u32);
-		} Camera;
+			void(*set_paramter)(camera_id, camera_parameter::parameter, const void *const, u32);
+			void(*get_paramter)(camera_id, camera_parameter::parameter, void *const, u32);
+		} camera;
 
 		struct
 		{
 			id::id_type (*add_submesh)(const u8*&);
 			void (*remove_submesh)(id::id_type);
-		} Resources;
+		} resources;
 
 		graphics_platform platform = (graphics_platform)-1;
 	};

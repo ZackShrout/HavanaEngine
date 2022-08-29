@@ -1,6 +1,6 @@
 #pragma once
 #include "CommonHeaders.h"
-#include "../Platforms/Platform.h"
+#include "Platforms/Platform.h"
 #include "EngineAPI/Camera.h"
 
 namespace havana::graphics
@@ -11,106 +11,101 @@ namespace havana::graphics
 	{
 	public:
 		constexpr surface() = default;
-		constexpr explicit surface(surface_id id) : m_id{ id } {}
-		constexpr surface_id get_id() const { return m_id; }
-		constexpr bool is_valid() const { return id::is_valid(m_id); }
+		constexpr explicit surface(surface_id id) : _id{ id } {}
+		constexpr surface_id get_id() const { return _id; }
+		constexpr bool is_valid() const { return id::is_valid(_id); }
 
-		void Resize(u32 width, u32 height) const;
-		u32 Width() const;
-		u32 Height() const;
-		void Render() const;
+		void resize(u32 width, u32 height) const;
+		u32 width() const;
+		u32 height() const;
+		void render() const;
 
 	private:
-		surface_id m_id{ id::invalid_id };
+		surface_id _id{ id::invalid_id };
 	};
 
-	struct RenderSurface
+	struct render_surface
 	{
 		platform::window window{};
-		surface surface{};
+		havana::graphics::surface surface{};
 	};
 
-	struct CameraParameter
+	struct camera_parameter
 	{
-		enum Parameter : u32
+		enum parameter : u32
 		{
-			UpVector,
-			FieldOfView,
-			AspectRatio,
-			ViewWidth,
-			ViewHeight,
-			NearZ,
-			FarZ,
-			View,
-			Projection,
-			InverseProjection,
-			ViewProjection,
-			InverseViewProjection,
+			up_vector,
+			field_of_view,
+			aspect_ratio,
+			view_width,
+			view_height,
+			near_z,
+			far_z,
+			view,
+			projection,
+			inverse_projection,
+			view_projection,
+			inverse_view_projection,
 			type,
-			EntityID,
+			entity_id,
 
 			count
 		};
 	};
 
-	struct CameraInitInfo
+	struct camera_init_info
 	{
-		id::id_type		entityId{ id::invalid_id };
-		Camera::type	type{};
+		id::id_type		entity_id{ id::invalid_id };
+		camera::type	type{};
 		math::v3		up;
-		f32				nearZ;
-		f32				farZ;
+		f32				near_z;
+		f32				far_z;
 		union
 		{
-			f32	fieldOfView;
-			f32	viewWidth;
+			f32	field_of_view;
+			f32	view_width;
 		};
 		union
 		{
-			f32	aspectRatio;
-			f32	viewHeight;
+			f32	aspect_ratio;
+			f32	view_height;
 		};
 	};
 
-	struct PerspectiveCameraInitInfo : public CameraInitInfo
+	struct perspective_camera_init_info : public camera_init_info
 	{
-		explicit PerspectiveCameraInitInfo(id::id_type id)
+		explicit perspective_camera_init_info(id::id_type id)
 		{
 			assert(id::is_valid(id));
-			entityId = id;
-			type = Camera::Perspective;
+			entity_id = id;
+			type = camera::perspective;
 			up = { 0.0f, 1.0f, 0.0f };
-			nearZ = 0.001f;
-			farZ = 10000.0f;
-			fieldOfView = 0.25f;
-			aspectRatio = 16.0f / 10.0f;
+			near_z = 0.001f;
+			far_z = 10000.0f;
+			field_of_view = 0.25f;
+			aspect_ratio = 16.0f / 10.0f;
 		}
 	};
 
-	struct OrthographicCameraInitInfo : public CameraInitInfo
+	struct orthographic_camera_init_info : public camera_init_info
 	{
-		explicit OrthographicCameraInitInfo(id::id_type id)
+		explicit orthographic_camera_init_info(id::id_type id)
 		{
 			assert(id::is_valid(id));
-			entityId = id;
-			type = Camera::Orthographic;
+			entity_id = id;
+			type = camera::orthographic;
 			up = { 0.0f, 1.0f, 0.0f };
-			nearZ = 0.001f;
-			farZ = 10000.0f;
-			viewHeight = 1920;
-			viewWidth = 1080;
+			near_z = 0.001f;
+			far_z = 10000.0f;
+			view_height = 1920;
+			view_width = 1080;
 		}
 	};
 
-	enum graphics_platform : u32
-	{
-		Direct3D12 = 0,
-		vulkan_1 = 1,
-		OpenGraphicsL = 2
-	};
+	#include "Graphics/GraphicsPlatform.h"
 	
-	bool Initialize(graphics_platform platform);
-	void Shutdown();
+	bool initialize(graphics_platform platform);
+	void shutdown();
 
 	// Get the location of the compiled engine shaders relative to the executable's path.
 	// The path is for the graphics API that is currently in use.
@@ -118,11 +113,11 @@ namespace havana::graphics
 	// Get the location of the compiled engine shaders, for the specified platform, relative to the executable's path.
 	const char* get_engine_shaders_path(graphics_platform platform);
 
-	surface CreateSurface(platform::window window);
-	void RemoveSurface(surface_id id);
+	surface create_surface(platform::window window);
+	void remove_surface(surface_id id);
 
-	Camera CreateCamera(CameraInitInfo info);
-	void RemoveCamera(camera_id id);
+	camera create_camera(camera_init_info info);
+	void remove_camera(camera_id id);
 
 	id::id_type add_submesh(const u8*& data);
 	void remove_submesh(id::id_type id);

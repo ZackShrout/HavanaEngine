@@ -5,11 +5,11 @@
 //{
 //public:
 //#ifdef _WIN64
-//	bool Initialize() override;
+//	bool initialize() override;
 //	void Run() override;
 //#elif __linux__
-//	bool Initialize(void* disp) override;
+//	bool initialize(void* disp) override;
 //	void Run(void* disp) override;
 //#endif
-//	void Shutdown() override;
+//	void shutdown() override;
 //};

@@ -1,0 +1,71 @@
+#if !defined(SHIPPING) && defined(_WIN64)
+
+#include "Content/ContentLoader.h"
+#include "Components/Script.h"
+#include "Platforms/PlatformTypes.h"
+#include "Platforms/Platform.h" 
+#include "Graphics/Renderer.h"
+#include <thread>
+
+using namespace havana;
+
+namespace
+{
+	graphics::render_surface game_window{};
+	
+	LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+	{
+		switch (msg)
+		{
+		case WM_DESTROY:
+		{
+			if (game_window.window.is_closed())
+			{
+				PostQuitMessage(0);
+				return 0;
+			}
+			break;
+		}
+		case WM_SYSCHAR:
+			if (wparam == VK_RETURN && (HIWORD(lparam) & KF_ALTDOWN))
+			{
+				game_window.window.set_fullscreen(!game_window.window.is_fullscreen());
+				return 0;
+			}
+			break;
+		default:
+			break;
+		}
+
+		return DefWindowProc(hwnd, msg, wparam, lparam);
+	}
+} // anonymous namespace
+
+bool engine_initialize()
+{
+	if(!havana::content::load_game()) return false;
+
+	platform::window_init_info info
+	{
+		&win_proc, nullptr, L"Havana Game" // TODO: get the game name from the loaded game file
+	};
+
+	game_window.window = platform::create_window(&info);
+	if (!game_window.window.is_valid()) return false;
+
+	return true;
+}
+
+void engine_update()
+{
+	havana::script::update(10.0f);
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+}
+
+void engine_shutdown()
+{
+	platform::remove_window(game_window.window.get_id());
+	havana::content::unload_game();
+}
+
+#endif // !defined(SHIPPING)

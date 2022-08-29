@@ -30,9 +30,9 @@ namespace
 	}
 } // anonymous namespace
 
-id::id_type CreateRenderItem(id::id_type entityId)
+id::id_type CreateRenderItem(id::id_type entity_id)
 {
-	// load a model, pretend it belongs to entityId
+	// load a model, pretend it belongs to entity_id
 	auto _1 = std::thread{ [] { LoadModel(); } };
 	// load material:
 	// 1) load textures

@@ -207,7 +207,7 @@ namespace havana::graphics::d3d12::Core
 
 		bool FailedInit()
 		{
-			Shutdown();
+			shutdown();
 			return false;
 		}
 
@@ -296,9 +296,9 @@ namespace havana::graphics::d3d12::Core
 		}
 	} // detail namespace
 
-	bool Initialize()
+	bool initialize()
 	{
-		if (mainDevice) Shutdown();
+		if (mainDevice) shutdown();
 
 		u32 dxgiFactoryFlags{ 0 };
 
@@ -352,10 +352,10 @@ namespace havana::graphics::d3d12::Core
 
 		// Initialize Descriptor Heaps
 		bool result{ true };
-		result &= rtvDescHeap.Initialize(512, false);
-		result &= dsvDescHeap.Initialize(512, false);
-		result &= srvDescHeap.Initialize(4896, true);
-		result &= uavDescHeap.Initialize(512, false);
+		result &= rtvDescHeap.initialize(512, false);
+		result &= dsvDescHeap.initialize(512, false);
+		result &= srvDescHeap.initialize(4896, true);
+		result &= uavDescHeap.initialize(512, false);
 		if (!result) return FailedInit();
 
 		// There is nothing in D3D12Command that would cause a memory leak by calling 
@@ -364,10 +364,10 @@ namespace havana::graphics::d3d12::Core
 		if (!gfxCommand.CommandQueue()) return FailedInit();
 
 		// Initialize modules
-		if (!(Shaders::Initialize() && 
-			  GPass::Initialize() &&
-			  FX::Initialize() &&
-			  Upload::Initialize())) 
+		if (!(Shaders::initialize() && 
+			  GPass::initialize() &&
+			  FX::initialize() &&
+			  Upload::initialize())) 
 			return FailedInit();
 
 		NAME_D3D12_OBJECT(mainDevice, L"Main D3D Device");
@@ -379,7 +379,7 @@ namespace havana::graphics::d3d12::Core
 		return true;
 	}
 
-	void Shutdown()
+	void shutdown()
 	{
 		gfxCommand.Release();
 
@@ -392,10 +392,10 @@ namespace havana::graphics::d3d12::Core
 		}
 
 		// Shutdown modules
-		Upload::Shutdown();
-		FX::Shutdown();
-		GPass::Shutdown();
-		Shaders::Shutdown();
+		Upload::shutdown();
+		FX::shutdown();
+		GPass::shutdown();
+		Shaders::shutdown();
 
 		Release(dxgiFactory);
 
@@ -463,14 +463,14 @@ namespace havana::graphics::d3d12::Core
 		deferredReleasesFlag[CurrentFrameIndex()] = 1;
 	}
 
-	surface CreateSurface(platform::window window)
+	surface create_surface(platform::window window)
 	{
 		surface_id id{ surfaces.add(window) };
 		surfaces[id].CreateSwapChain(dxgiFactory, gfxCommand.CommandQueue());
 		return surface{ id };
 	}
 
-	void RemoveSurface(surface_id id)
+	void remove_surface(surface_id id)
 	{
 		gfxCommand.Flush();
 		surfaces.remove(id);
@@ -479,20 +479,20 @@ namespace havana::graphics::d3d12::Core
 	void ResizeSurface(surface_id id, u32, u32)
 	{
 		gfxCommand.Flush();
-		surfaces[id].Resize();
+		surfaces[id].resize();
 	}
 	
 	u32 SurfaceWidth(surface_id id)
 	{
-		return surfaces[id].Width();
+		return surfaces[id].width();
 	}
 
 	u32 SurfaceHeight(surface_id id)
 	{
-		return surfaces[id].Height();
+		return surfaces[id].height();
 	}
 
-	void RenderSurface(surface_id id)
+	void render_surface(surface_id id)
 	{
 		// Wait for the GPU to finish with the command allocator and
 		// reset the allocator once the GPU is done with it.
@@ -512,8 +512,8 @@ namespace havana::graphics::d3d12::Core
 
 		D3D12FrameInfo frameInfo
 		{
-			surface.Width(),
-			surface.Height()
+			surface.width(),
+			surface.height()
 		};
 
 		GPass::SetSize({ frameInfo.surfaceWidth, frameInfo.surfaceHeight });
@@ -540,7 +540,7 @@ namespace havana::graphics::d3d12::Core
 		GPass::AddTransitionsForGPass(barriers);
 		barriers.Apply(cmdList);
 		GPass::SetRenderTargetsForGPass(cmdList);
-		GPass::Render(cmdList, frameInfo);
+		GPass::render(cmdList, frameInfo);
 
 		// Post-process
 		barriers.Add(currentBackBuffer, 

@@ -1,5 +1,5 @@
 #pragma once
-#include "../Components/ComponentsCommon.h"
+#include "Components/ComponentsCommon.h"
 
 namespace havana::script
 {
@@ -8,12 +8,12 @@ namespace havana::script
 	class component final
 	{
 	public:
-		constexpr component() : m_id{ id::invalid_id } {}
-		constexpr explicit component(script_id id) : m_id{ id } {}
-		constexpr script_id get_id() const { return m_id; }
-		constexpr bool is_valid() const { return id::is_valid(m_id); }
+		constexpr component() : _id{ id::invalid_id } {}
+		constexpr explicit component(script_id id) : _id{ id } {}
+		constexpr script_id get_id() const { return _id; }
+		constexpr bool is_valid() const { return id::is_valid(_id); }
 
 	private:
-		script_id m_id;
+		script_id _id;
 	};
 }

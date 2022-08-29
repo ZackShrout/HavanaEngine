@@ -1,14 +1,12 @@
 #include "Renderer.h"
 #include "GraphicsPlatformInterface.h"
-#include "Graphics/Direct3D12/D3D12Interface.h"
-#include "Graphics/Vulkan/VulkanInterface.h"
 
 namespace havana::graphics
 {
 	namespace
 	{
 		// Defines where the compiled engine shaders files is located for each one of the supported APIs.
-		constexpr const char* engineShaderPaths[]
+		constexpr const char* engine_shader_paths[]
 		{
 			"./Shaders/D3D12/shaders.bin",
 			"./Shaders/Vulkan/shaders.bin"
@@ -16,248 +14,266 @@ namespace havana::graphics
 
 		platform_interface gfx{};
 
-		bool set_graphics_platform(graphics_platform platform)
-		{
-			switch (platform)
-			{
-#ifdef _WIN64
-			case graphics_platform::Direct3D12:
-				d3d12::get_platform_interface(gfx);
-				break;
-#endif // _WIN64
-			case graphics_platform::vulkan_1:
-				vulkan::get_platform_interface(gfx);
-				break;
-			default:
-				return false;
-			}
-			assert(gfx.platform == platform);
-			return true;
-		}
 
 	} // anonymous namespace
+	
+	extern bool set_platform_interface(graphics_platform platform, platform_interface& pi);
 
-	bool Initialize(graphics_platform platform)
+	bool
+	initialize(graphics_platform platform)
 	{
-		return set_graphics_platform(platform) && gfx.initialize();
+		return set_platform_interface(platform, gfx) && gfx.initialize();
 	}
 
-	void Shutdown()
+	void
+	shutdown()
 	{
 		if (gfx.platform != (graphics_platform)-1) gfx.shutdown();
 	}
 
-	const char* get_engine_shaders_path()
+	const char*
+	get_engine_shaders_path()
 	{
-		return engineShaderPaths[(u32)gfx.platform];
+		return engine_shader_paths[(u32)gfx.platform];
 	}
 
-	const char* get_engine_shaders_path(graphics_platform platform)
+	const char*
+	get_engine_shaders_path(graphics_platform platform)
 	{
-		return engineShaderPaths[(u32)platform];
+		return engine_shader_paths[(u32)platform];
 	}
 
-	surface CreateSurface(platform::window window)
+	surface
+	create_surface(platform::window window)
 	{
 		return gfx.surface.create(window);
 	}
 
-	void RemoveSurface(surface_id id)
+	void
+	remove_surface(surface_id id)
 	{
 		assert(id::is_valid(id));
 		gfx.surface.remove(id);
 	}
 
-	void surface::Resize(u32 width, u32 height) const
+	void
+	surface::resize(u32 width, u32 height) const
 	{
 		assert(is_valid());
-		return gfx.surface.resize(m_id, width, height);
+		return gfx.surface.resize(_id, width, height);
 	}
 
-	u32 surface::Width() const
+	u32
+	surface::width() const
 	{
 		assert(is_valid());
-		return gfx.surface.width(m_id);
+		return gfx.surface.width(_id);
 	}
 
-	u32 surface::Height() const
+	u32
+	surface::height() const
 	{
 		assert(is_valid());
-		return gfx.surface.height(m_id);
+		return gfx.surface.height(_id);
 	}
 
-	void surface::Render() const
+	void
+	surface::render() const
 	{
 		assert(is_valid());
-		gfx.surface.render(m_id);
+		gfx.surface.render(_id);
 	}
 
-	Camera CreateCamera(CameraInitInfo info)
+	camera
+	create_camera(camera_init_info info)
 	{
-		return gfx.Camera.create(info);
+		return gfx.camera.create(info);
 	}
 
-	void RemoveCamera(camera_id id)
+	void
+	remove_camera(camera_id id)
 	{
-		gfx.Camera.remove(id);
+		gfx.camera.remove(id);
 	}
 
-	void Camera::Up(math::v3 up) const
-	{
-		assert(is_valid());
-		gfx.Camera.set_paramter(m_id, CameraParameter::UpVector, &up, sizeof(up));
-	}
-
-	void Camera::FieldOfView(f32 fov) const
+	void
+	camera::up(math::v3 up) const
 	{
 		assert(is_valid());
-		gfx.Camera.set_paramter(m_id, CameraParameter::FieldOfView, &fov, sizeof(fov));
+		gfx.camera.set_paramter(_id, camera_parameter::up_vector, &up, sizeof(up));
 	}
 
-	void Camera::AspectRatio(f32 aspectRatio) const
+	void
+	camera::field_of_view(f32 fov) const
 	{
 		assert(is_valid());
-		gfx.Camera.set_paramter(m_id, CameraParameter::AspectRatio, &aspectRatio, sizeof(aspectRatio));
+		gfx.camera.set_paramter(_id, camera_parameter::field_of_view, &fov, sizeof(fov));
 	}
 
-	void Camera::ViewWidth(f32 width) const
+	void
+	camera::aspect_ratio(f32 aspect_ratio) const
 	{
 		assert(is_valid());
-		gfx.Camera.set_paramter(m_id, CameraParameter::ViewWidth, &width, sizeof(width));
+		gfx.camera.set_paramter(_id, camera_parameter::aspect_ratio, &aspect_ratio, sizeof(aspect_ratio));
 	}
 
-	void Camera::ViewHeight(f32 height) const
+	void
+	camera::view_width(f32 width) const
 	{
 		assert(is_valid());
-		gfx.Camera.set_paramter(m_id, CameraParameter::ViewHeight, &height, sizeof(height));
+		gfx.camera.set_paramter(_id, camera_parameter::view_width, &width, sizeof(width));
 	}
 
-	void Camera::Range(f32 nearZ, f32 farZ) const
+	void
+	camera::view_height(f32 height) const
 	{
 		assert(is_valid());
-		gfx.Camera.set_paramter(m_id, CameraParameter::NearZ, &nearZ, sizeof(nearZ));
-		gfx.Camera.set_paramter(m_id, CameraParameter::FarZ, &farZ, sizeof(farZ));
+		gfx.camera.set_paramter(_id, camera_parameter::view_height, &height, sizeof(height));
 	}
 
-	math::Mat4 Camera::View() const
+	void
+	camera::range(f32 near_z, f32 far_z) const
 	{
 		assert(is_valid());
-		math::Mat4 matrix;
-		gfx.Camera.get_paramter(m_id, CameraParameter::View, &matrix, sizeof(matrix));
+		gfx.camera.set_paramter(_id, camera_parameter::near_z, &near_z, sizeof(near_z));
+		gfx.camera.set_paramter(_id, camera_parameter::far_z, &far_z, sizeof(far_z));
+	}
+
+	math::m4x4
+	camera::view() const
+	{
+		assert(is_valid());
+		math::m4x4 matrix;
+		gfx.camera.get_paramter(_id, camera_parameter::view, &matrix, sizeof(matrix));
 		return matrix;
 	}
 
-	math::Mat4 Camera::Projection() const
+	math::m4x4
+	camera::projection() const
 	{
 		assert(is_valid());
-		math::Mat4 matrix;
-		gfx.Camera.get_paramter(m_id, CameraParameter::Projection, &matrix, sizeof(matrix));
+		math::m4x4 matrix;
+		gfx.camera.get_paramter(_id, camera_parameter::projection, &matrix, sizeof(matrix));
 		return matrix;
 	}
 
-	math::Mat4 Camera::InverseProjection() const
+	math::m4x4
+	camera::inverse_projection() const
 	{
 		assert(is_valid());
-		math::Mat4 matrix;
-		gfx.Camera.get_paramter(m_id, CameraParameter::InverseProjection, &matrix, sizeof(matrix));
+		math::m4x4 matrix;
+		gfx.camera.get_paramter(_id, camera_parameter::inverse_projection, &matrix, sizeof(matrix));
 		return matrix;
 	}
 
-	math::Mat4 Camera::ViewProjection() const
+	math::m4x4
+	camera::view_projection() const
 	{
 		assert(is_valid());
-		math::Mat4 matrix;
-		gfx.Camera.get_paramter(m_id, CameraParameter::ViewProjection, &matrix, sizeof(matrix));
+		math::m4x4 matrix;
+		gfx.camera.get_paramter(_id, camera_parameter::view_projection, &matrix, sizeof(matrix));
 		return matrix;
 	}
 
-	math::Mat4 Camera::InverseViewProjection() const
+	math::m4x4
+	camera::inverse_view_projection() const
 	{
 		assert(is_valid());
-		math::Mat4 matrix;
-		gfx.Camera.get_paramter(m_id, CameraParameter::InverseViewProjection, &matrix, sizeof(matrix));
+		math::m4x4 matrix;
+		gfx.camera.get_paramter(_id, camera_parameter::inverse_view_projection, &matrix, sizeof(matrix));
 		return matrix;
 	}
 
-	math::v3 Camera::Up() const
+	math::v3
+	camera::up() const
 	{
 		assert(is_valid());
 		math::v3 upVector;
-		gfx.Camera.get_paramter(m_id, CameraParameter::UpVector, &upVector, sizeof(upVector));
+		gfx.camera.get_paramter(_id, camera_parameter::up_vector, &upVector, sizeof(upVector));
 		return upVector;
 	}
 
-	f32 Camera::NearZ() const
+	f32
+	camera::near_z() const
 	{
 		assert(is_valid());
-		f32 nearZ;
-		gfx.Camera.get_paramter(m_id, CameraParameter::NearZ, &nearZ, sizeof(nearZ));
-		return nearZ;
+		f32 near_z;
+		gfx.camera.get_paramter(_id, camera_parameter::near_z, &near_z, sizeof(near_z));
+		return near_z;
 	}
 
-	f32 Camera::FarZ() const
+	f32
+	camera::far_z() const
 	{
 		assert(is_valid());
-		f32 farZ;
-		gfx.Camera.get_paramter(m_id, CameraParameter::FarZ, &farZ, sizeof(farZ));
-		return farZ;
+		f32 far_z;
+		gfx.camera.get_paramter(_id, camera_parameter::far_z, &far_z, sizeof(far_z));
+		return far_z;
 	}
 
-	f32 Camera::FieldOfView() const
+	f32
+	camera::field_of_view() const
 	{
 		assert(is_valid());
 		f32 fov;
-		gfx.Camera.get_paramter(m_id, CameraParameter::FieldOfView, &fov, sizeof(fov));
+		gfx.camera.get_paramter(_id, camera_parameter::field_of_view, &fov, sizeof(fov));
 		return fov;
 	}
 
-	f32 Camera::AspectRatio() const
+	f32
+	camera::aspect_ratio() const
 	{
 		assert(is_valid());
-		f32 aspectRatio;
-		gfx.Camera.get_paramter(m_id, CameraParameter::AspectRatio, &aspectRatio, sizeof(aspectRatio));
-		return aspectRatio;
+		f32 aspect_ratio;
+		gfx.camera.get_paramter(_id, camera_parameter::aspect_ratio, &aspect_ratio, sizeof(aspect_ratio));
+		return aspect_ratio;
 	}
 
-	f32 Camera::ViewWidth() const
+	f32
+	camera::view_width() const
 	{
 		assert(is_valid());
 		f32 width;
-		gfx.Camera.get_paramter(m_id, CameraParameter::ViewWidth, &width, sizeof(width));
+		gfx.camera.get_paramter(_id, camera_parameter::view_width, &width, sizeof(width));
 		return width;
 	}
 
-	f32 Camera::ViewHeight() const
+	f32
+	camera::view_height() const
 	{
 		assert(is_valid());
 		f32 height;
-		gfx.Camera.get_paramter(m_id, CameraParameter::ViewHeight, &height, sizeof(height));
+		gfx.camera.get_paramter(_id, camera_parameter::view_height, &height, sizeof(height));
 		return height;
 	}
 
-	Camera::type Camera::ProjectionType() const
+	camera::type
+	camera::projection_type() const
 	{
 		assert(is_valid());
 		type type;
-		gfx.Camera.get_paramter(m_id, CameraParameter::type, &type, sizeof(type));
+		gfx.camera.get_paramter(_id, camera_parameter::type, &type, sizeof(type));
 		return type;
 	}
 
-	id::id_type Camera::EntityID() const
+	id::id_type
+	camera::entity_id() const
 	{
 		assert(is_valid());
 		id::id_type id;
-		gfx.Camera.get_paramter(m_id, CameraParameter::EntityID, &id, sizeof(id));
+		gfx.camera.get_paramter(_id, camera_parameter::entity_id, &id, sizeof(id));
 		return id;
 	}
 
-	id::id_type add_submesh(const u8*& data)
+	id::id_type
+	add_submesh(const u8*& data)
 	{
-		return gfx.Resources.add_submesh(data);
+		return gfx.resources.add_submesh(data);
 	}
 
-	void remove_submesh(id::id_type id)
+	void
+	remove_submesh(id::id_type id)
 	{
-		gfx.Resources.remove_submesh(id);
+		gfx.resources.remove_submesh(id);
 	}
 }

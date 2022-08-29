@@ -1,36 +1,36 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace havana::graphics::d3d12::Camera
+namespace havana::graphics::d3d12::camera
 {
 	class D3D12Camera
 	{
 	public:
-		explicit D3D12Camera(CameraInitInfo info);
+		explicit D3D12Camera(camera_init_info info);
 		
 		void update();
-		void Up(math::v3 up);
-		void FieldOfView(f32 fov);
-		void AspectRatio(f32 aspectRatio);
-		void ViewWidth(f32 width);
-		void ViewHeight(f32 height);
-		void NearZ(f32 nearZ);
-		void FarZ(f32 farZ);
+		void up(math::v3 up);
+		void field_of_view(f32 fov);
+		void aspect_ratio(f32 aspect_ratio);
+		void view_width(f32 width);
+		void view_height(f32 height);
+		void near_z(f32 near_z);
+		void far_z(f32 far_z);
 
-		[[nodiscard]] constexpr DirectX::XMMATRIX View() const { return m_view; }
-		[[nodiscard]] constexpr DirectX::XMMATRIX Projection() const { return m_projection; }
-		[[nodiscard]] constexpr DirectX::XMMATRIX InverseProjection() const { return m_inverseProjection; }
-		[[nodiscard]] constexpr DirectX::XMMATRIX ViewProjection() const { return m_viewProjection; }
-		[[nodiscard]] constexpr DirectX::XMMATRIX InverseViewProjection() const { return m_inverseViewProjection; }
-		[[nodiscard]] constexpr DirectX::XMVECTOR Up() const { return m_up; }
-		[[nodiscard]] constexpr f32 NearZ() const { return m_nearZ; }
-		[[nodiscard]] constexpr f32 FarZ() const { return m_farZ; }
-		[[nodiscard]] constexpr f32 FieldOfView() const { return m_fieldOfView; }
-		[[nodiscard]] constexpr f32 AspectRatio() const { return m_aspectRatio; }
-		[[nodiscard]] constexpr f32 ViewWidth() const { return m_viewWidth; }
-		[[nodiscard]] constexpr f32 ViewHeight() const { return m_viewHeight; }
-		[[nodiscard]] constexpr graphics::Camera::type ProjectionType() const { return m_projectionType; }
-		[[nodiscard]] constexpr id::id_type EntityID() const { return m_entityID; }
+		[[nodiscard]] constexpr DirectX::XMMATRIX view() const { return m_view; }
+		[[nodiscard]] constexpr DirectX::XMMATRIX projection() const { return m_projection; }
+		[[nodiscard]] constexpr DirectX::XMMATRIX inverse_projection() const { return m_inverseProjection; }
+		[[nodiscard]] constexpr DirectX::XMMATRIX view_projection() const { return m_viewProjection; }
+		[[nodiscard]] constexpr DirectX::XMMATRIX inverse_view_projection() const { return m_inverseViewProjection; }
+		[[nodiscard]] constexpr DirectX::XMVECTOR up() const { return m_up; }
+		[[nodiscard]] constexpr f32 near_z() const { return m_nearZ; }
+		[[nodiscard]] constexpr f32 far_z() const { return m_farZ; }
+		[[nodiscard]] constexpr f32 field_of_view() const { return m_fieldOfView; }
+		[[nodiscard]] constexpr f32 aspect_ratio() const { return m_aspectRatio; }
+		[[nodiscard]] constexpr f32 view_width() const { return m_viewWidth; }
+		[[nodiscard]] constexpr f32 view_height() const { return m_viewHeight; }
+		[[nodiscard]] constexpr graphics::camera::type projection_type() const { return m_projectionType; }
+		[[nodiscard]] constexpr id::id_type entity_id() const { return m_entityID; }
 
 	private:
 		DirectX::XMMATRIX		m_view;
@@ -51,14 +51,14 @@ namespace havana::graphics::d3d12::Camera
 			f32					m_aspectRatio;	// use with perspective camera
 			f32					m_viewHeight;	// use with orthographic camera
 		};
-		graphics::Camera::type	m_projectionType;
+		graphics::camera::type	m_projectionType;
 		id::id_type				m_entityID;
 		bool					m_isDirty;
 	};
 
-	graphics::Camera Create(CameraInitInfo info);
+	graphics::camera Create(camera_init_info info);
 	void Remove(camera_id id);
-	void SetParamter(camera_id id, CameraParameter::Parameter parameter, const void *const data, u32 dataSize);
-	void GetParamter(camera_id id, CameraParameter::Parameter parameter, void *const data, u32 dataSize);
+	void SetParamter(camera_id id, camera_parameter::parameter parameter, const void *const data, u32 dataSize);
+	void GetParamter(camera_id id, camera_parameter::parameter parameter, void *const data, u32 dataSize);
 	[[nodiscard]] D3D12Camera& Get(camera_id id);
 }

@@ -12,8 +12,8 @@ namespace havana::graphics::d3d12
 
 namespace havana::graphics::d3d12::Core
 {
-	bool Initialize();
-	void Shutdown();
+	bool initialize();
+	void shutdown();
 
 	template<typename T>
 	constexpr void Release(T*& resource)
@@ -48,10 +48,10 @@ namespace havana::graphics::d3d12::Core
 	u32 CurrentFrameIndex();
 	void SetDeferredReleasesFlag();
 
-	surface CreateSurface(platform::window window);
-	void RemoveSurface(surface_id id);
+	surface create_surface(platform::window window);
+	void remove_surface(surface_id id);
 	void ResizeSurface(surface_id id, u32, u32);
 	u32 SurfaceWidth(surface_id id);
 	u32 SurfaceHeight(surface_id id);
-	void RenderSurface(surface_id id);
+	void render_surface(surface_id id);
 }

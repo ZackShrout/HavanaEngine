@@ -23,7 +23,7 @@ enum State
 class EngineTest : public Test
 {
 public:
-	bool Initialize(void* disp) override
+	bool initialize(void* disp) override
 	{
 		Platform::window_init_info info[]
 		{
@@ -75,9 +75,9 @@ public:
 				{
 					if (*((Window*)windows[i].Handle()) == xev.xany.window)
 					{
-						if ((u32)xce.width != windows[i].Width() || (u32)xce.height != windows[i].Height())
+						if ((u32)xce.width != windows[i].width() || (u32)xce.height != windows[i].height())
 						{
-							windows[i].Resize((u32)xce.width, (u32)xce.height);
+							windows[i].resize((u32)xce.width, (u32)xce.height);
 						}
 					}
 				}
@@ -141,7 +141,7 @@ public:
 		}
 	}
 
-	void Shutdown() override
+	void shutdown() override
 	{
 		for (u32 i{ 0 }; i < _countof(windows); i++)
 		{

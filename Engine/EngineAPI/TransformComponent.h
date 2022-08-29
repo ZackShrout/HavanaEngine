@@ -1,5 +1,5 @@
 #pragma once
-#include "../Components/ComponentsCommon.h"
+#include "Components/ComponentsCommon.h"
 
 namespace havana::transform
 {
@@ -8,15 +8,15 @@ namespace havana::transform
 	class component final
 	{
 	public:
-		constexpr component() : m_id{ id::invalid_id } {}
-		constexpr explicit component(transform_id id) : m_id{ id } {}		
-		constexpr transform_id get_id() const { return m_id; }
-		constexpr bool is_valid() const { return id::is_valid(m_id); }
+		constexpr component() : _id{ id::invalid_id } {}
+		constexpr explicit component(transform_id id) : _id{ id } {}		
+		constexpr transform_id get_id() const { return _id; }
+		constexpr bool is_valid() const { return id::is_valid(_id); }
 		math::v4 rotation() const;
 		math::v3 orientation() const;
 		math::v3 position() const;
 		math::v3 scale() const;
 	private:
-		transform_id m_id;
+		transform_id _id;
 	};
 }

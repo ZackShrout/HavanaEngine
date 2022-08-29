@@ -126,12 +126,12 @@ namespace havana::graphics::d3d12::GPass
 		return gpassRootSig && gpassPSO;
 	}
 
-	bool Initialize()
+	bool initialize()
 	{
 		return CreateBuffers(initialDimensions) && CreateGPassPSOandRootSignature();
 	}
 
-	void Shutdown()
+	void shutdown()
 	{
 		gpassMainBuffer.Release();
 		gpassDepthBuffer.Release();
@@ -165,7 +165,7 @@ namespace havana::graphics::d3d12::GPass
 
 	}
 
-	void Render(ID3D12GraphicsCommandList* cmdList, const D3D12FrameInfo& info)
+	void render(ID3D12GraphicsCommandList* cmdList, const D3D12FrameInfo& info)
 	{
 		cmdList->SetGraphicsRootSignature(gpassRootSig);
 		cmdList->SetPipelineState(gpassPSO);

@@ -12,7 +12,7 @@ class EngineTest : public Test
 {
 public:
 #ifdef _WIN64
-	virtual bool Initialize() override
+	virtual bool initialize() override
 	{
 		srand((u32)time(nullptr));
 		return true;
@@ -31,7 +31,7 @@ public:
 		} while (getchar() != 'q');
 	}
 #elif __linux__
-	virtual bool Initialize(void* disp) override
+	virtual bool initialize(void* disp) override
 	{
 		srand((u32)time(nullptr));
 		return true;
@@ -52,7 +52,7 @@ public:
 	}
 #endif // _WIN64
 
-	virtual void Shutdown() override
+	virtual void shutdown() override
 	{
 	}
 

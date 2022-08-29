@@ -1,22 +1,20 @@
-//**************
-// Entry point
-//**************
-#include "CommonHeaders.h"
-
+//******************
+// Win32 Entry point
+//******************
 #ifdef _WIN64
+#include "CommonHeaders.h"
+#include <filesystem>
 
 #ifndef WIN_32_LEAN_AND_MEAN
 #define WIN_32_LEAN_AND_MEAN
 #endif // WIN_32_LEAN_AND_MEAN
-
 #include <Windows.h>
 #include <crtdbg.h>
-#include <filesystem>
 
 namespace
 {
     // TODO: we may want to have an IO utility header/library and move this function in there.
-    std::filesystem::path SetCurrentDirectoryToExecutablePath()
+    std::filesystem::path set_current_directory_to_executable_path()
     {
         // set the working directory to the executable path
         wchar_t path[MAX_PATH];
@@ -33,9 +31,9 @@ namespace
 
 #ifndef USE_WITH_EDITOR
 
-extern bool EngineInitialize();
-extern void EngineUpdate();
-extern void EngineShutdown();
+extern bool engine_initialize();
+extern void engine_update();
+extern void engine_shutdown();
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -44,23 +42,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-    SetCurrentDirectoryToExecutablePath();
+    set_current_directory_to_executable_path();
 
-    if (EngineInitialize())
+    if (engine_initialize())
     {
         MSG msg;
-        bool isRunning{ true };
-        while (isRunning)
+        bool is_running{ true };
+        while (is_running)
         {
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
             {
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
-                isRunning &= (msg.message != WM_QUIT);
+                is_running &= (msg.message != WM_QUIT);
             }
-            EngineUpdate();
+            engine_update();
         }
-        EngineShutdown();
+        engine_shutdown();
         return 0;
     }
 }

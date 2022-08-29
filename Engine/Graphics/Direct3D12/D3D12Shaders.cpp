@@ -47,12 +47,12 @@ namespace havana::graphics::d3d12::Shaders
 
 	} // anonymous namespace
 
-	bool Initialize()
+	bool initialize()
 	{
 		return load_engine_shaders();
 	}
 
-	void Shutdown()
+	void shutdown()
 	{
 		for (u32 i{ 0 }; i < EngineShader::count; i++)
 		{

@@ -20,7 +20,7 @@ namespace havana::math
 	using Vec3s32 = DirectX::XMINT3;
 	using Vec4s32 = DirectX::XMINT4;
 	using Mat3 = DirectX::XMFLOAT3X3;
-	using Mat4 = DirectX::XMFLOAT4X4;
+	using m4x4 = DirectX::XMFLOAT4X4;
 	using Mat4A = DirectX::XMFLOAT4X4A;
 #endif
 
@@ -38,7 +38,7 @@ namespace havana::math
 	using Vec3s32 = glm::ivec3;
 	using Vec4s32 = glm::ivec4;
 	using Mat3 = glm::mat3;
-	using Mat4 = glm::mat4;
+	using m4x4 = glm::mat4;
 	using Mat4A = glm::mat4;
 #endif
 

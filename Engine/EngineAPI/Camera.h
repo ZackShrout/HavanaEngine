@@ -5,44 +5,44 @@ namespace havana::graphics
 {
 	DEFINE_TYPED_ID(camera_id);
 
-	class Camera
+	class camera
 	{
 	public:
 		enum type : u32
 		{
-			Perspective,
-			Orthographic
+			perspective,
+			orthographic
 		};
 		
-		constexpr explicit Camera(camera_id id) : m_id{ id } {}
-		constexpr Camera() = default;
-		constexpr camera_id get_id() const { return m_id; }
-		constexpr bool is_valid() const { return id::is_valid(m_id); }
+		constexpr explicit camera(camera_id id) : _id{ id } {}
+		constexpr camera() = default;
+		constexpr camera_id get_id() const { return _id; }
+		constexpr bool is_valid() const { return id::is_valid(_id); }
 
 
-		void Up(math::v3 up) const;
-		void FieldOfView(f32 fov) const;
-		void AspectRatio(f32 aspectRatio) const;
-		void ViewWidth(f32 width) const;
-		void ViewHeight(f32 height) const;
-		void Range(f32 nearZ, f32 farZ) const;
+		void up(math::v3 up) const;
+		void field_of_view(f32 fov) const;
+		void aspect_ratio(f32 aspect_ratio) const;
+		void view_width(f32 width) const;
+		void view_height(f32 height) const;
+		void range(f32 near_z, f32 far_z) const;
 
-		math::Mat4 View() const;
-		math::Mat4 Projection() const;
-		math::Mat4 InverseProjection() const;
-		math::Mat4 ViewProjection() const;
-		math::Mat4 InverseViewProjection() const;
-		math::v3 Up() const;
-		f32 NearZ() const;
-		f32 FarZ() const;
-		f32 FieldOfView() const;
-		f32 AspectRatio() const;
-		f32 ViewWidth() const;
-		f32 ViewHeight() const;
-		type ProjectionType() const;
-		id::id_type EntityID() const;
+		math::m4x4 view() const;
+		math::m4x4 projection() const;
+		math::m4x4 inverse_projection() const;
+		math::m4x4 view_projection() const;
+		math::m4x4 inverse_view_projection() const;
+		math::v3 up() const;
+		f32 near_z() const;
+		f32 far_z() const;
+		f32 field_of_view() const;
+		f32 aspect_ratio() const;
+		f32 view_width() const;
+		f32 view_height() const;
+		type projection_type() const;
+		id::id_type entity_id() const;
 
 	private:
-		camera_id m_id{ id::invalid_id };
+		camera_id _id{ id::invalid_id };
 	};
 }

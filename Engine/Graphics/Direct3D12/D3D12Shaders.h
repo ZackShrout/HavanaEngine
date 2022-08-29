@@ -15,8 +15,8 @@ namespace havana::graphics::d3d12::Shaders
 		};
 	};
 
-	bool Initialize();
-	void Shutdown();
+	bool initialize();
+	void shutdown();
 
 	D3D12_SHADER_BYTECODE GetEngineShader(EngineShader::ID id);
 }

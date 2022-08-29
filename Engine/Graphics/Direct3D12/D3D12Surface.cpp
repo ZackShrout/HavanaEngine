@@ -65,7 +65,7 @@ namespace havana::graphics::d3d12
 		m_currentBBIndex = m_swapChain->GetCurrentBackBufferIndex();
 	}
 
-	void D3D12Surface::Resize()
+	void D3D12Surface::resize()
 	{
 		assert(m_swapChain);
 		for (u32 i{ 0 }; i < bufferCount; i++)

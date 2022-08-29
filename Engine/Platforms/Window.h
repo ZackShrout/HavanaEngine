@@ -10,9 +10,9 @@ namespace havana::platform
 	{
 	public:
 		constexpr window() = default;
-		constexpr explicit window(window_id id) : m_id{ id } {}
-		constexpr window_id get_id() const { return m_id; }
-		constexpr bool is_valid() const { return id::is_valid(m_id); }
+		constexpr explicit window(window_id id) : _id{ id } {}
+		constexpr window_id get_id() const { return _id; }
+		constexpr bool is_valid() const { return id::is_valid(_id); }
 
 		void set_fullscreen(bool isFullscreen) const;
 		bool is_fullscreen() const;
@@ -27,6 +27,6 @@ namespace havana::platform
 		void close();
 
 	private:
-		window_id m_id{ id::invalid_id };
+		window_id _id{ id::invalid_id };
 	};
 }

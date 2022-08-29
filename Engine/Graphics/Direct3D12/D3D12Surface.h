@@ -26,7 +26,7 @@ namespace havana::graphics::d3d12
 				m_renderTargetData[i].rtv = o.m_renderTargetData[i].rtv;
 			}
 
-			o.Reset();
+			o.reset();
 		}
 
 		constexpr D3D12Surface& operator=(D3D12Surface&& o)
@@ -35,7 +35,7 @@ namespace havana::graphics::d3d12
 			if (this != &o)
 			{
 				Release();
-				Move(o);
+				move(o);
 			}
 
 			return *this;
@@ -47,9 +47,9 @@ namespace havana::graphics::d3d12
 
 		void CreateSwapChain(IDXGIFactory7* factory, ID3D12CommandQueue* cmdQueue, DXGI_FORMAT format = defaultBackBufferFormat);
 		void Present() const;
-		void Resize();
-		constexpr u32 Width() const { return (u32)m_viewport.Width; }
-		constexpr u32 Height() const { return (u32)m_viewport.Height; }
+		void resize();
+		constexpr u32 width() const { return (u32)m_viewport.Width; }
+		constexpr u32 height() const { return (u32)m_viewport.Height; }
 		constexpr ID3D12Resource* const BackBuffer() const { return m_renderTargetData[m_currentBBIndex].resource; }
 		constexpr D3D12_CPU_DESCRIPTOR_HANDLE RTV() const { return m_renderTargetData[m_currentBBIndex].rtv.cpu; }
 		constexpr const D3D12_VIEWPORT& Viewport() const { return m_viewport; }
@@ -76,7 +76,7 @@ namespace havana::graphics::d3d12
 		void Release();
 
 #if USE_STL_VECTOR
-		constexpr void Reset()
+		constexpr void reset()
 		{
 			m_window = {};
 			m_swapChain = nullptr;
@@ -91,7 +91,7 @@ namespace havana::graphics::d3d12
 			m_scissorRect = {};
 		}
 
-		constexpr void Move(D3D12Surface& o)
+		constexpr void move(D3D12Surface& o)
 		{
 			m_window = o.m_window;
 			m_swapChain = o.m_swapChain;
@@ -105,7 +105,7 @@ namespace havana::graphics::d3d12
 			m_viewport = o.m_viewport;
 			m_scissorRect = o.m_scissorRect;
 
-			o.Reset();
+			o.reset();
 		}
 #endif // USE_STL_VECTOR
 	};

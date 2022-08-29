@@ -6,9 +6,9 @@
 class EngineTest : public Test
 {
 public:
-	bool Initialize(void* disp) override;
+	bool initialize(void* disp) override;
 	void Run(void* disp) override;
-	void Shutdown() override;
+	void shutdown() override;
 };
 
 #endif // __linux__

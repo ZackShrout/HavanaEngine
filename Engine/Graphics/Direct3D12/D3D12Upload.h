@@ -24,6 +24,6 @@ namespace havana::graphics::d3d12::Upload
 		u32								m_frameIndex{ u32_invalid_id };
 	};
 
-	bool Initialize();
-	void Shutdown();
+	bool initialize();
+	void shutdown();
 }

@@ -53,7 +53,7 @@ namespace havana::utl
 	//	}
 
 		// Destructs the vector and its items as specified in the template argument
-		~vector() { Destroy(); }
+		~vector() { destroy(); }
 
 		// Copy-constructor. Constructs by copying another vector. The items
 		// in the copied vector must be copyable.
@@ -61,7 +61,7 @@ namespace havana::utl
 		
 		// Move-constructor. Constructs by moving another vector.
 		// The original vector will be empty after move.
-		constexpr vector(vector&& o) : m_capacity{ o.m_capacity }, m_size{ o.m_size }, m_data{ o.m_data } {o.Reset(); }
+		constexpr vector(vector&& o) : _capacity{ o._capacity }, _size{ o._size }, _data{ o._data } {o.reset(); }
 
 		// Copy-assignment operator. Clears this vector and copies items
 		// from another vector. The items must be copyable.
@@ -71,12 +71,12 @@ namespace havana::utl
 			if (this != std::addressof(o))
 			{
 				clear();
-				reserve(o.m_size);
+				reserve(o._size);
 				for (auto& item : o)
 				{
 					emplace_back(item);
 				}
-				assert(m_size == o.m_size);
+				assert(_size == o._size);
 			}
 
 			return *this;
@@ -89,8 +89,8 @@ namespace havana::utl
 			assert(this != std::addressof(o));
 			if (this != std::addressof(o))
 			{
-				Destroy();
-				Move(o);
+				destroy();
+				move(o);
 			}
 
 			return *this;
@@ -112,83 +112,83 @@ namespace havana::utl
 		template<typename... params>
 		constexpr decltype(auto) emplace_back(params&&... p)
 		{
-			if (m_size == m_capacity)
+			if (_size == _capacity)
 			{
-				reserve(((m_capacity + 1) * 3) >> 1); // reserves 50% more space
+				reserve(((_capacity + 1) * 3) >> 1); // reserves 50% more space
 			}
-			assert(m_size < m_capacity);
+			assert(_size < _capacity);
 
-			T* const item{ new (std::addressof(m_data[m_size])) T(std::forward<params>(p)...) };
-			++m_size;
+			T* const item{ new (std::addressof(_data[_size])) T(std::forward<params>(p)...) };
+			++_size;
 
 			return *item;
 		}
 
 		// Resizes the vector and initializes new items with their default value.
-		constexpr void resize(u64 newSize)
+		constexpr void resize(u64 new_size)
 		{
 			static_assert(std::is_default_constructible<T>::value, "Type must be default-constructable.");
 
-			if (newSize > m_size)
+			if (new_size > _size)
 			{
-				reserve(newSize);
-				while (m_size < newSize)
+				reserve(new_size);
+				while (_size < new_size)
 				{
 					emplace_back();
 				}
 			}
-			else if (newSize < m_size)
+			else if (new_size < _size)
 			{
 				if constexpr (destruct)
 				{
-					DestructRange(newSize, m_size);
+					destruct_range(new_size, _size);
 				}
 
-				m_size = newSize;
+				_size = new_size;
 			}
 
-			// Do nothing if newSize == m_size
-			assert(newSize == m_size);
+			// Do nothing if new_size == _size
+			assert(new_size == _size);
 		}
 
 		// Resizes the vector and initializes new items by copying 'value'.
-		constexpr void resize(u64 newSize, const T& value)
+		constexpr void resize(u64 new_size, const T& value)
 		{
 			static_assert(std::is_copy_constructible<T>::value, "Type must be copy-constructable.");
-			if (newSize > m_size)
+			if (new_size > _size)
 			{
-				reserve(newSize);
-				while (m_size < newSize)
+				reserve(new_size);
+				while (_size < new_size)
 				{
 					emplace_back(value);
 				}
 			}
-			else if (newSize < m_size)
+			else if (new_size < _size)
 			{
 				if constexpr (destruct)
 				{
-					DestructRange(newSize, m_size);
+					destruct_range(new_size, _size);
 				}
 
-				m_size = newSize;
+				_size = new_size;
 			}
 
-			// Do nothing if newSize == m_size
-			assert(newSize == m_size);
+			// Do nothing if new_size == _size
+			assert(new_size == _size);
 		}
 
 		// Allocates memory to contain the specified number of items.
-		constexpr void reserve(u64 newCapacity)
+		constexpr void reserve(u64 new_capacity)
 		{
-			if (newCapacity > m_capacity)
+			if (new_capacity > _capacity)
 			{
 				// NOTE: realoc() will automatically copy the data in the buffer if a new region of memory is allocated
-				void* newBuffer{ realloc(m_data, newCapacity * sizeof(T)) };
-				assert(newBuffer);
-				if (newBuffer)
+				void* new_buffer{ realloc(_data, new_capacity * sizeof(T)) };
+				assert(new_buffer);
+				if (new_buffer)
 				{
-					m_data = static_cast<T*>(newBuffer);
-					m_capacity = newCapacity;
+					_data = static_cast<T*>(new_buffer);
+					_capacity = new_capacity;
 				}
 			}
 		}
@@ -196,19 +196,19 @@ namespace havana::utl
 		// Removes the item at specified index
 		constexpr T* const erase(u64 index)
 		{
-			assert(m_data && index < m_size);
-			return erase(std::addressof(m_data[index]));
+			assert(_data && index < _size);
+			return erase(std::addressof(_data[index]));
 		}
 
 		// Removes the item at specifies location
 		constexpr T* const erase(T* const item)
 		{
-			assert(m_data && item >= std::addressof(m_data[0]) && item < std::addressof(m_data[m_size]));
+			assert(_data && item >= std::addressof(_data[0]) && item < std::addressof(_data[_size]));
 			if constexpr (destruct) item->~T();
-			--m_size;
-			if (item < std::addressof(m_data[m_size]))
+			--_size;
+			if (item < std::addressof(_data[_size]))
 			{
-				memcpy(item, item + 1, (std::addressof(m_data[m_size]) - item) * sizeof(T));
+				memcpy(item, item + 1, (std::addressof(_data[_size]) - item) * sizeof(T));
 			}
 
 			return item;
@@ -217,19 +217,19 @@ namespace havana::utl
 		// Same as erase() but faster because it just copies the last item
 		constexpr T* const erase_unordered(u64 index)
 		{
-			assert(m_data && index < m_size);
-			return erase_unordered(std::addressof(m_data[index]));
+			assert(_data && index < _size);
+			return erase_unordered(std::addressof(_data[index]));
 		}
 
 		// Same as erase() but faster because it just copies the last item 
 		constexpr T* const erase_unordered(T* const item)
 		{
-			assert(m_data && item >= std::addressof(m_data[0]) && item < std::addressof(m_data[m_size]));
+			assert(_data && item >= std::addressof(_data[0]) && item < std::addressof(_data[_size]));
 			if constexpr (destruct) item->~T();
-			--m_size;
-			if (item < std::addressof(m_data[m_size]))
+			--_size;
+			if (item < std::addressof(_data[_size]))
 			{
-				memcpy(item, std::addressof(m_data[m_size]), sizeof(T));
+				memcpy(item, std::addressof(_data[_size]), sizeof(T));
 			}
 
 			return item;
@@ -240,10 +240,10 @@ namespace havana::utl
 		{
 			if constexpr (destruct)
 			{
-				DestructRange(0, m_size);
+				destruct_range(0, _size);
 			}
 
-			m_size = 0;
+			_size = 0;
 		}
 
 		// Swaps two vectors
@@ -252,149 +252,149 @@ namespace havana::utl
 			if (this != std::addressof(o))
 			{
 				auto temp(std::move(o));
-				o.Move(*this);
-				Move(temp);
+				o.move(*this);
+				move(temp);
 			}
 		}
 
 		// Pointer to the start of data, may be null
 		[[nodiscard]] constexpr T* data()
 		{
-			return m_data;
+			return _data;
 		}
 
 		// Pointer to the start of data, may be null
 		[[nodiscard]] constexpr T* const data() const
 		{
-			return m_data;
+			return _data;
 		}
 
 		// Returns true if empty
 		[[nodiscard]] constexpr bool empty() const
 		{
-			return m_size == 0;
+			return _size == 0;
 		}
 		
 		// Returns number of items in the vector
 		[[nodiscard]] constexpr u64 size() const
 		{
-			return m_size;
+			return _size;
 		}
 
 		// Returns the capacity of the vector
 		[[nodiscard]] constexpr u64 capacity() const
 		{
-			return m_capacity;
+			return _capacity;
 		}
 
 		// Indexing operator - returns a reference to the item at the specified index.
 		[[nodiscard]] constexpr T& operator[](u64 index)
 		{
-			assert(m_data && index < m_size);
-			return m_data[index];
+			assert(_data && index < _size);
+			return _data[index];
 		}
 
 		// Indexing operator - returns a constant reference to the item at the specified index.
 		[[nodiscard]] constexpr const T& operator[](u64 index) const
 		{
-			assert(m_data && index < m_size);
-			return m_data[index];
+			assert(_data && index < _size);
+			return _data[index];
 		}
 
 		// Returns a reference to the first element of the array - will cause access violation if called on an empty vector
 		[[nodiscard]] constexpr T& front()
 		{
-			assert(m_data && m_size);
-			return m_data[0];
+			assert(_data && _size);
+			return _data[0];
 		}
 
 		// Returns a constant reference to the first element of the array - will cause access violaion if called on an empty vector
 		[[nodiscard]] constexpr const T& front() const
 		{
-			assert(m_data && m_size);
-			return m_data[0];
+			assert(_data && _size);
+			return _data[0];
 		}
 
 		// Returns a reference to the last element of the array - will cause access violaion if called on an empty vector
 		[[nodiscard]] constexpr T& back()
 		{
-			assert(m_data && m_size);
-			return m_data[m_size - 1];
+			assert(_data && _size);
+			return _data[_size - 1];
 		}
 
 		// Returns a constant reference to the last element of the array - will cause access violation if called on an empty vector
 		[[nodiscard]] constexpr const T& back() const
 		{
-			assert(m_data && m_size);
-			return m_data[m_size - 1];
+			assert(_data && _size);
+			return _data[_size - 1];
 		}
 
 		// Returns a pointer to the first element of the array - return null when vector is empty
 		[[nodiscard]] constexpr T* begin()
 		{
-			return std::addressof(m_data[0]);
+			return std::addressof(_data[0]);
 		}
 
 		// Returns a constant pointer to the first element of the array - return null when vector is empty
 		[[nodiscard]] constexpr const T* begin() const
 		{
-			return std::addressof(m_data[0]);
+			return std::addressof(_data[0]);
 		}
 
 		// Returns a pointer to the last element of the array - return null when vector is empty
 		[[nodiscard]] constexpr T* end()
 		{
-			assert(!(m_data == nullptr && m_size > 0));
-			return std::addressof(m_data[m_size]);
+			assert(!(_data == nullptr && _size > 0));
+			return std::addressof(_data[_size]);
 		}
 
 		// Returns a constant pointer to the last element of the array - return null when vector is empty
 		[[nodiscard]] constexpr const T* end() const
 		{
-			assert(!(m_data == nullptr && m_size > 0));
-			return std::addressof(m_data[m_size]);
+			assert(!(_data == nullptr && _size > 0));
+			return std::addressof(_data[_size]);
 		}
 
 	private:
-		constexpr void Move(vector& o)
+		constexpr void move(vector& o)
 		{
-			m_capacity = o.m_capacity;
-			m_size = o.m_size;
-			m_data = o.m_data;
-			o.Reset();
+			_capacity = o._capacity;
+			_size = o._size;
+			_data = o._data;
+			o.reset();
 		}
 
-		constexpr void Reset()
+		constexpr void reset()
 		{
-			m_capacity = 0;
-			m_size = 0;
-			m_data = nullptr;
+			_capacity = 0;
+			_size = 0;
+			_data = nullptr;
 		}
 
-		constexpr void DestructRange(u64 first, u64 last)
+		constexpr void destruct_range(u64 first, u64 last)
 		{
 			assert(destruct);
-			assert(first <= m_size && last <= m_size && first <= last);
-			if (m_data)
+			assert(first <= _size && last <= _size && first <= last);
+			if (_data)
 			{
-				for (; first != last; first++)
+				for (; first != last; ++first)
 				{
-					m_data[first].~T();
+					_data[first].~T();
 				}
 			}
 		}
 
-		constexpr void Destroy()
+		constexpr void destroy()
 		{
-			assert([&] { return m_capacity ? m_data != nullptr : m_data == nullptr; }());
+			assert([&] { return _capacity ? _data != nullptr : _data == nullptr; }());
 			clear();
-			m_capacity = 0;
-			if (m_data) free(m_data);
-			m_data = nullptr;
+			_capacity = 0;
+			if (_data) free(_data);
+			_data = nullptr;
 		}
 
-		u64 m_capacity{ 0 };
-		u64 m_size{ 0 };
-		T* m_data{ nullptr };
+		u64 _capacity{ 0 };
+		u64 _size{ 0 };
+		T*	_data{ nullptr };
 	};
 }

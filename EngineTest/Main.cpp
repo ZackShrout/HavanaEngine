@@ -19,7 +19,7 @@
 #include <filesystem>
 
 // TODO: This is a duplicate
-std::filesystem::path SetCurrentDirectoryToExecutablePath()
+std::filesystem::path set_current_directory_to_executable_path()
 {
     // set the working directory to the executable path
     wchar_t path[MAX_PATH];
@@ -40,10 +40,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-    SetCurrentDirectoryToExecutablePath();
+    set_current_directory_to_executable_path();
     EngineTest test{};
 
-    if (test.Initialize())
+    if (test.initialize())
     {
         MSG msg;
         bool isRunning{ true };
@@ -57,7 +57,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
             test.Run();
         }
-        test.Shutdown();
+        test.shutdown();
         return 0;
     }
 }
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
     Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
     Atom quit_msg = XInternAtom(display, "QUIT_MSG", false);
 
-	if (test.Initialize(display))
+	if (test.initialize(display))
 	{
         XEvent xev;
         bool isRunning{ true };
@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
             }
             test.Run(display);
         }
-        test.Shutdown();
+        test.shutdown();
         XCloseDisplay(display);
         return 0;
 	}

@@ -54,17 +54,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //id::id_type modelId{ id::invalid_id };
-//Graphics::RenderSurface surfaces[4];
+//Graphics::render_surface surfaces[4];
 //TimeIt timer{};
 //
 //bool resized{ false };
 //bool isRestarting{ false };
-//void DestroyRenderSurface(Graphics::RenderSurface &surface);
+//void DestroyRenderSurface(Graphics::render_surface &surface);
 //bool TestInitialize();
 //void TestShutdown();
 //
 //#ifdef _WIN64
-//LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+//LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 //{
 //	bool toggleFullscreen{ false };
 //
@@ -134,7 +134,7 @@
 //				}
 //				else
 //				{
-//					surfaces[i].surface.Resize(win.Width(), win.Height());
+//					surfaces[i].surface.resize(win.width(), win.height());
 //					resized = false;
 //				}
 //				break;
@@ -174,24 +174,24 @@
 //	AttachConsole(GetCurrentProcessId());
 //	freopen_s(&out, "CON", "w", stdout);
 //	freopen_s(&err, "CON", "w", stderr);
-//	SetConsoleTitle(TEXT("Render Test"));
+//	SetConsoleTitle(TEXT("render Test"));
 //}
 //
 //
 //#endif // _WIN64
 //
-//void CreateRenderSurface(Graphics::RenderSurface &surface, Platform::window_init_info info, void* disp)
+//void CreateRenderSurface(Graphics::render_surface &surface, Platform::window_init_info info, void* disp)
 //{
 //	surface.window = Platform::create_window(&info, disp);
-//	surface.surface = Graphics::CreateSurface(surface.window);
+//	surface.surface = Graphics::create_surface(surface.window);
 //}
 //
-//void DestroyRenderSurface(Graphics::RenderSurface &surface)
+//void DestroyRenderSurface(Graphics::render_surface &surface)
 //{
-//	Graphics::RenderSurface temp{surface};
+//	Graphics::render_surface temp{surface};
 //	surface = {};
 //	if (temp.surface.is_valid())
-//		Graphics::RemoveSurface(temp.surface.GetID());
+//		Graphics::remove_surface(temp.surface.GetID());
 //	if (temp.window.is_valid())
 //		Platform::remove_window(temp.window.GetID());
 //}
@@ -205,13 +205,13 @@
 //			return false;
 //	}
 //
-//	if (!Graphics::Initialize(Graphics::graphics_platform::Direct3D12)) return false;
+//	if (!Graphics::initialize(Graphics::graphics_platform::Direct3D12)) return false;
 //
 //	Platform::window_init_info info[]{
-//		{&WinProc, nullptr, L"Render Window 1", 100, 100, 400, 800},
-//		{&WinProc, nullptr, L"Render Window 2", 150, 150, 800, 400},
-//		{&WinProc, nullptr, L"Render Window 3", 200, 200, 400, 400},
-//		{&WinProc, nullptr, L"Render Window 4", 250, 250, 800, 600},
+//		{&win_proc, nullptr, L"render Window 1", 100, 100, 400, 800},
+//		{&win_proc, nullptr, L"render Window 2", 150, 150, 800, 400},
+//		{&win_proc, nullptr, L"render Window 3", 200, 200, 400, 400},
+//		{&win_proc, nullptr, L"render Window 4", 250, 250, 800, 600},
 //	};
 //
 //	static_assert(_countof(info) == _countof(surfaces));
@@ -245,12 +245,12 @@
 //	for (u32 i{ 0 }; i < _countof(surfaces); i++)
 //		DestroyRenderSurface(surfaces[i]);
 //
-//	Graphics::Shutdown();
+//	Graphics::shutdown();
 //}
 //
 //
 //#ifdef _WIN64
-//bool EngineTest::Initialize()
+//bool EngineTest::initialize()
 //{
 //#if USE_CONSOLE
 //	ActivateConsole();
@@ -269,7 +269,7 @@
 //	{
 //		if (surfaces[i].surface.is_valid())
 //		{
-//			surfaces[i].surface.Render();
+//			surfaces[i].surface.render();
 //		}
 //	}
 //
@@ -277,7 +277,7 @@
 //}
 //#elif __linux__
 //
-//bool EngineTest::Initialize(void *disp)
+//bool EngineTest::initialize(void *disp)
 //{
 //	// if (!CompileShaders())
 //	// {
@@ -285,16 +285,16 @@
 //	// 	return false;
 //	// }
 //	
-//	bool result{Graphics::Initialize(Graphics::graphics_platform::VulkanAPI)};
+//	bool result{Graphics::initialize(Graphics::graphics_platform::VulkanAPI)};
 //
 //	if (!result)
 //		return result;
 //
 //	Platform::window_init_info info[]{
-//		{nullptr, nullptr, L"Render Window 1", 100, 100, 400, 800},
-//		{nullptr, nullptr, L"Render Window 2", 150, 150, 800, 400},
-//		{nullptr, nullptr, L"Render Window 3", 200, 200, 400, 400},
-//		{nullptr, nullptr, L"Render Window 4", 250, 250, 800, 600},
+//		{nullptr, nullptr, L"render Window 1", 100, 100, 400, 800},
+//		{nullptr, nullptr, L"render Window 2", 150, 150, 800, 400},
+//		{nullptr, nullptr, L"render Window 3", 200, 200, 400, 400},
+//		{nullptr, nullptr, L"render Window 4", 250, 250, 800, 600},
 //	};
 //
 //	static_assert(_countof(info) == _countof(surfaces));
@@ -315,7 +315,7 @@
 //	{
 //		if (surfaces[i].surface.is_valid())
 //		{
-//			surfaces[i].surface.Render();
+//			surfaces[i].surface.render();
 //		}
 //	}
 //
@@ -350,9 +350,9 @@
 //					if (!surfaces[i].window.is_valid()) continue;
 //					if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
 //					{
-//						if ((u32)xce.width != surfaces[i].window.Width() || (u32)xce.height != surfaces[i].window.Height())
+//						if ((u32)xce.width != surfaces[i].window.width() || (u32)xce.height != surfaces[i].window.height())
 //						{
-//							surfaces[i].window.Resize((u32)xce.width, (u32)xce.height);
+//							surfaces[i].window.resize((u32)xce.width, (u32)xce.height);
 //						}
 //					}
 //				}
@@ -422,7 +422,7 @@
 //
 //#endif // _WIN64
 //
-//void EngineTest::Shutdown()
+//void EngineTest::shutdown()
 //{
 //	TestShutdown();
 //}

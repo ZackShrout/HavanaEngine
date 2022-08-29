@@ -80,7 +80,7 @@ namespace havana::graphics::d3d12::Upload
 
 		bool InitFailed()
 		{
-			Shutdown();
+			shutdown();
 			return false;
 		}
 
@@ -139,7 +139,7 @@ namespace havana::graphics::d3d12::Upload
 		DEBUG_OP(new (this) D3D12UploadContext);
 	}
 	
-	bool Initialize()
+	bool initialize()
 	{
 		id3d12Device* const device{ Core::Device() };
 		assert(device && !uploadCmdQueue);
@@ -182,7 +182,7 @@ namespace havana::graphics::d3d12::Upload
 		return true;
 	}
 
-	void Shutdown()
+	void shutdown()
 	{
 		for (u32 i{ 0 }; i < uploadFrameCount; i++)
 		{
