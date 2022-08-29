@@ -224,7 +224,7 @@
 //	u64 size{ 0 };
 //	if (!ReadFile("..\\..\\enginetest\\model.model", model, size)) return false;
 //
-//	modelId = content::CreateResource(model.get(), content::AssetType::Mesh);
+//	modelId = content::create_resource(model.get(), content::asset_type::mesh);
 //	if (!id::is_valid(modelId)) return false;
 //
 //	InitTestWorkers(BufferTestWorker);
@@ -239,7 +239,7 @@
 //
 //	if (id::is_valid(modelId))
 //	{
-//		content::DestroyResource(modelId, content::AssetType::Mesh);
+//		content::destroy_resource(modelId, content::asset_type::mesh);
 //	}
 //
 //	for (u32 i{ 0 }; i < _countof(surfaces); i++)

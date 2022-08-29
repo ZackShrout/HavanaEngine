@@ -3,36 +3,36 @@
 
 namespace havana::content
 {
-	struct AssetType
+	struct asset_type
 	{
 		enum type : u32
 		{
-			Unknown = 0,
-			Animation,
-			Audio,
-			Material,
-			Mesh,
-			Skeleton,
-			Texture,
+			unknown = 0,
+			animation,
+			audio,
+			material,
+			mesh,
+			skeleton,
+			texture,
 
 			count
 		};
 	};
 	
-	struct PrimitiveTopology
+	struct primitive_topology
 	{
 		enum type: u32
 		{
-			PointList = 1,
-			LineList,
-			LineStrip,
-			TriangleList,
-			TriangleStrip,
+			point_list = 1,
+			line_list,
+			line_strip,
+			triangle_list,
+			triangle_strip,
 
 			count
 		};
 	};
 
-	id::id_type CreateResource(const void* const data, AssetType::type type);
-	void DestroyResource(id::id_type id, AssetType::type type);
+	id::id_type create_resource(const void* const data, asset_type::type type);
+	void destroy_resource(id::id_type id, asset_type::type type);
 }

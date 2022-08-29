@@ -47,12 +47,12 @@ namespace havana::graphics
 		if (gfx.platform != (graphics_platform)-1) gfx.shutdown();
 	}
 
-	const char* GetEngineShadersPath()
+	const char* get_engine_shaders_path()
 	{
 		return engineShaderPaths[(u32)gfx.platform];
 	}
 
-	const char* GetEngineShadersPath(graphics_platform platform)
+	const char* get_engine_shaders_path(graphics_platform platform)
 	{
 		return engineShaderPaths[(u32)platform];
 	}
@@ -251,12 +251,12 @@ namespace havana::graphics
 		return id;
 	}
 
-	id::id_type AddSubmesh(const u8*& data)
+	id::id_type add_submesh(const u8*& data)
 	{
 		return gfx.Resources.add_submesh(data);
 	}
 
-	void RemoveSubmesh(id::id_type id)
+	void remove_submesh(id::id_type id)
 	{
 		gfx.Resources.remove_submesh(id);
 	}

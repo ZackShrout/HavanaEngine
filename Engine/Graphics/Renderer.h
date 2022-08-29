@@ -114,9 +114,9 @@ namespace havana::graphics
 
 	// Get the location of the compiled engine shaders relative to the executable's path.
 	// The path is for the graphics API that is currently in use.
-	const char* GetEngineShadersPath();
+	const char* get_engine_shaders_path();
 	// Get the location of the compiled engine shaders, for the specified platform, relative to the executable's path.
-	const char* GetEngineShadersPath(graphics_platform platform);
+	const char* get_engine_shaders_path(graphics_platform platform);
 
 	surface CreateSurface(platform::window window);
 	void RemoveSurface(surface_id id);
@@ -124,6 +124,6 @@ namespace havana::graphics
 	Camera CreateCamera(CameraInitInfo info);
 	void RemoveCamera(camera_id id);
 
-	id::id_type AddSubmesh(const u8*& data);
-	void RemoveSubmesh(id::id_type id);
+	id::id_type add_submesh(const u8*& data);
+	void remove_submesh(id::id_type id);
 }

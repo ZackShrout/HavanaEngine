@@ -143,7 +143,7 @@ namespace havana::content
 
 	bool load_engine_shaders(std::unique_ptr<u8[]>& shaders, u64& size)
 	{
-		auto path = graphics::GetEngineShadersPath();
+		auto path = graphics::get_engine_shaders_path();
 
 		return read_file(path, shaders, size);
 	}

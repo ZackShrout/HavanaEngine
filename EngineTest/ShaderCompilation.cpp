@@ -192,14 +192,14 @@ namespace
 	};
 
 	// Get the path to the compiled shader's binary file
-	decltype(auto) GetEngineShadersPath()
+	decltype(auto) get_engine_shaders_path()
 	{
-		return std::filesystem::path{ graphics::GetEngineShadersPath(graphics::graphics_platform::Direct3D12) };
+		return std::filesystem::path{ graphics::get_engine_shaders_path(graphics::graphics_platform::Direct3D12) };
 	}
 
 	bool CompiledShadersAreUpToData()
 	{
-		auto engineShadersPath = GetEngineShadersPath();
+		auto engineShadersPath = get_engine_shaders_path();
 		if (!std::filesystem::exists(engineShadersPath)) return false;
 		auto shadersCompilationTime = std::filesystem::last_write_time(engineShadersPath);
 
@@ -227,7 +227,7 @@ namespace
 #ifdef _WIN64
 	bool SaveCompiledShaders(utl::vector<dxc_compiled_shader>& shaders)
 	{
-		auto engineShadersPath = GetEngineShadersPath();
+		auto engineShadersPath = get_engine_shaders_path();
 		std::filesystem::create_directories(engineShadersPath.parent_path());
 		std::ofstream file(engineShadersPath, std::ios::out | std::ios::binary);
 		
@@ -251,7 +251,7 @@ namespace
 #elif __linux__
 	bool SaveCompiledShaders(utl::vector<u8*> shaders)
 	{
-		auto engineShadersPath = GetEngineShadersPath();
+		auto engineShadersPath = get_engine_shaders_path();
 
 		// TODO: implement
 

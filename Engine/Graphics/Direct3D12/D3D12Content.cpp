@@ -21,23 +21,23 @@ namespace havana::graphics::d3d12::content
 		utl::free_list<SubmeshView>		submeshViews{};
 		std::mutex							submeshMutex{};
 
-		D3D_PRIMITIVE_TOPOLOGY GetD3DPrimitiveTopology(havana::content::PrimitiveTopology::type type)
+		D3D_PRIMITIVE_TOPOLOGY GetD3DPrimitiveTopology(havana::content::primitive_topology::type type)
 		{
 			using namespace havana::content;
 
-			assert(type < PrimitiveTopology::count);
+			assert(type < primitive_topology::count);
 
 			switch (type)
 			{
-			case PrimitiveTopology::PointList:
+			case primitive_topology::point_list:
 				return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
-			case PrimitiveTopology::LineList:
+			case primitive_topology::line_list:
 				return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
-			case PrimitiveTopology::LineStrip:
+			case primitive_topology::line_strip:
 				return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
-			case PrimitiveTopology::TriangleList:
+			case primitive_topology::triangle_list:
 				return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-			case PrimitiveTopology::TriangleStrip:
+			case primitive_topology::triangle_strip:
 				return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
 			}
 
@@ -103,7 +103,7 @@ namespace havana::graphics::d3d12::content
 			view.indexBufferView.SizeInBytes = indexBufferSize;
 			view.indexBufferView.Format = (indexSize == sizeof(u16)) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 
-			view.primitiveTopology = GetD3DPrimitiveTopology((havana::content::PrimitiveTopology::type)primitiveTopology);
+			view.primitiveTopology = GetD3DPrimitiveTopology((havana::content::primitive_topology::type)primitiveTopology);
 			view.elements_type = elements_type;
 
 			std::lock_guard lock{ submeshMutex };
