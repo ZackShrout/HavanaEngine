@@ -1,202 +1,86 @@
+// Copyright (c) Contributors of Primal+
+// Distributed under the MIT license. See the LICENSE file in the project root for more information.
 #pragma once
 #include "VulkanCommonHeaders.h"
-#include "VulkanResources.h"
-#include "VulkanExtensionLoader.h"
 
-namespace havana::Graphics::Vulkan
+namespace havana::graphics::vulkan
 {
-	// Indices (locations) of Queue Families (if they exist at all)
-	struct QueueFamilyIndices
-	{
-		int graphicsFamily = -1;			// Location of Graphics Queue Family
-		int presentationFamily = -1;		// Location of Presentation Queue Family
+struct swapchain_details
+{
+    VkSurfaceCapabilitiesKHR		surface_capabilities;	// Surface properties, e.g. image size/extent
+    utl::vector<VkSurfaceFormatKHR> formats;				// Surface image formats supported, e.g. RGBA, size of each color
+    utl::vector<VkPresentModeKHR>	presentation_modes;		// How images should be presented to screen
+};
 
-		// Check if queue families are valid
-		bool is_valid() { return graphicsFamily >= 0 && presentationFamily >= 0; }
-	};
+struct swapchain_image
+{
+    VkImage		image;
+    VkImageView image_view;
+};
 
-	struct SwapChainDetails
-	{
-		VkSurfaceCapabilitiesKHR surfaceCapabilities;			// Surface properties, e.g. image size/extent
-		utl::vector<VkSurfaceFormatKHR> formats;				// Surface image formats supported, e.g. RGBA, size of each color
-		utl::vector<VkPresentModeKHR> presentationModes;		// How images should be presented to screen
-	};
+struct vulkan_swapchain
+{
+    swapchain_details				details;
+    VkSwapchainKHR					swapchain;
+    VkFormat						image_format;
+    VkExtent2D						extent;
+    utl::vector<swapchain_image>	images;
+    vulkan_image					depth_attachment;
+};
 
-	struct SwapchainImage
-	{
-		VkImage image;
-		VkImageView imageView;
-	};
+class vulkan_surface
+{
+public:
+    explicit vulkan_surface(platform::window window) : _window{ window }
+    {
+        assert(window.handle());
+    }
+    DISABLE_COPY_AND_MOVE(vulkan_surface);
+    ~vulkan_surface() { release(); }
 
-	struct VulkanDevice
-	{
-		VkPhysicalDevice physicalDevice;
-		VkDevice logicalDevice;
-	};
-	
-	class VulkanSurface
-	{
-	public:
-		explicit VulkanSurface(Platform::Window window) : m_window{ window }
-		{
-			assert(m_window.Handle());
-		}
-#if USE_STL_VECTOR // TODO: This has been cpoied over from D3D12Surface and needs to be altered
-		DISABLE_COPY(VulkanSurface);
-		constexpr VulkanSurface(VulkanSurface&& o)
-			: m_swapChain{ o.m_swapChain }, m_window{ o.m_window }, m_currentBBIndex{ o.m_currentBBIndex },
-			m_viewport{ o.m_viewport }, m_scissorRect{ o.m_scissorRect }, m_allowTearing{ o.m_allowTearing },
-			m_presentFlags{ o.m_presentFlags }
-		{
-			for (u32 i{ 0 }; i < frameBufferCount; i++)
-			{
-				m_renderTargetData[i].resource = o.m_renderTargetData[i].resource;
-				m_renderTargetData[i].rtv = o.m_renderTargetData[i].rtv;
-			}
+    void create(VkInstance instance);
+    void present(VkSemaphore image_available, VkSemaphore render_finished, VkFence fence, VkQueue presentation_queue);
+    void resize();
+    bool recreate_swapchain();
+    bool next_image_index(VkSemaphore image_available, VkFence fence, u64 timeout);
+    constexpr void set_renderpass_render_area(math::u32v4 render_area) { _renderpass.render_area = render_area; }
+    constexpr void set_renderpass_clear_color(math::v4 clear_color) { _renderpass.clear_color = clear_color; }
 
-			o.Reset();
-		}
+    [[nodiscard]] constexpr VkFramebuffer& current_framebuffer() { return _framebuffers[_image_index].framebuffer; }
+    [[nodiscard]] constexpr vulkan_renderpass& renderpass() { return _renderpass; }
+    u32 width() const { return _window.width(); }
+    u32 height() const { return _window.height(); }
+    constexpr u32 current_frame() const { return _frame_index; }
+    constexpr bool is_recreating() const { return _is_recreating; }
+    constexpr bool is_resized() const { return _framebuffer_resized; }
+    /*constexpr const VkViewport& viewport() const {}
+    constexpr const VkRect2D& scissor_rect() const {}*/
 
-		constexpr VulkanSurface& operator=(VulkanSurface&& o)
-		{
-			assert(this != &o);
-			if (this != &o)
-			{
-				Release();
-				Move(o);
-			}
+private:
+    void create_surface(VkInstance instance);
+    void create_render_pass();
+    bool create_swapchain();
+    bool recreate_framebuffers();
+    void clean_swapchain();
+    void release();
 
-			return *this;
-		}
-#else
-		DISABLE_COPY_AND_MOVE(VulkanSurface);
-#endif // USE_STL_VECTOR
-		~VulkanSurface() { Release(); }
+    VkSurfaceKHR					_surface{};
+    vulkan_swapchain				_swapchain{};
+    vulkan_renderpass				_renderpass{};
+    utl::vector<vulkan_framebuffer>	_framebuffers{};
+    platform::window				_window{};
+    bool							_framebuffer_resized{ false };
+    bool							_is_recreating{ false };
+    u32								_image_index{ 0 };
+    u32								_frame_index{ 0 };
 
-		void Create(VkInstance instance);
-		void Present();
-		void Resize();
-		constexpr u32 Width() const { return (u32)m_viewport.width; }
-		constexpr u32 Height() const { return (u32)m_viewport.height; }
-		constexpr const VkViewport& Viewport() const { return m_viewport; }
-		constexpr const VkRect2D& ScissorRect() const { return m_scissorRect; }
-	private:
-		Platform::Window	m_window{};
-		VkViewport			m_viewport{};
-		VkRect2D			m_scissorRect{};
-		int					m_currentFrame{ 0 };
-		const u32			m_maxFrameDraws{ 2 }; // this should ideally be one less than the amount of framebuffers
-		bool				m_framebufferResized{ false };
-		// State
-		// Vulkan components
-		// - Main
-		
-		VkInstance m_instance{ nullptr };
-		//VkDebugUtilsMessengerEXT m_debugMessanger{ 0 };
-		VulkanDevice m_mainDevice;
+    // Function Pointers
+    PFN_vkCreateSwapchainKHR		fpCreateSwapchainKHR;
+    PFN_vkDestroySwapchainKHR		fpDestroySwapchainKHR;
+    PFN_vkGetSwapchainImagesKHR		fpGetSwapchainImagesKHR;
+    PFN_vkAcquireNextImageKHR		fpAcquireNextImageKHR;
+    PFN_vkQueuePresentKHR			fpQueuePresentKHR;
+};
 
-		VkQueue m_graphicsQueue;
-		VkQueue m_presentationQueue;
-		VkSurfaceKHR m_surface;
-		VkSwapchainKHR m_swapchain;
-		utl::vector<SwapchainImage> m_swapchainImages;
-		utl::vector<VkFramebuffer>m_swapchainFramebuffers;
-		utl::vector<VkCommandBuffer>m_commandBuffers;
-		// - Pipeline
-		VkPipeline m_graphicsPipeline;
-		VkPipelineLayout m_pipelineLayout;
-		VkRenderPass m_renderPass;
-		VkShaderModule m_vertexShaderModule;
-		VkShaderModule m_fragmentShaderModule;
-		// - Pools
-		VkCommandPool m_graphicsCommandPool;
-		// - Utility
-		VkFormat m_swapChainImageFormat;
-		VkExtent2D m_swapChainExtent;
-		// - Syncronisation
-		utl::vector<VkSemaphore> m_imageAvailable;
-		utl::vector<VkSemaphore> m_renderFinished;
-		utl::vector<VkFence> m_drawFences;
-
-
-		void CreateLogicalDevice();
-		void CreateSurface();
-		void CreateSwapChain();
-		void CreateRenderPass();
-		void CreateGraphicsPipeline();
-		void CreateFramebuffers();
-		void CreateCommandPool();
-		void CreateCommandBuffers();
-		void CreateSynchronization();
-		// - Record Functions
-		void RecordCommands();
-		// - Get functions
-		void GetPhysicalDevice();
-		void GetVulkanExtensions();
-		// - Support functions
-		// -- Checker functions
-		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-		bool CheckDeviceSuitable(VkPhysicalDevice device);
-		// -- Getter functions
-		QueueFamilyIndices GetQueueFamilies(VkPhysicalDevice device);
-		SwapChainDetails GetSwapChainDetails(VkPhysicalDevice device);
-		// -- Choose functions
-		VkSurfaceFormatKHR ChooseBestSurfaceFormat(const utl::vector<VkSurfaceFormatKHR>& formats);
-		VkPresentModeKHR ChooseBestPresentationMode(const utl::vector<VkPresentModeKHR> presentationModes);
-		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities, int width, int height);
-		// -- Create functions
-		VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
-		VkShaderModule CreateShaderModule(const utl::vector<char>& code);
-
-		void RecreateSwapChain();
-		void CleanupSwapChain();
-
-		void Finalize();
-		void Release();
-
-		// Function Pointers
-		PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
-		PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR;
-		PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR;
-		PFN_vkGetPhysicalDeviceSurfacePresentModesKHR fpGetPhysicalDeviceSurfacePresentModesKHR;
-		PFN_vkCreateSwapchainKHR fpCreateSwapchainKHR;
-		PFN_vkDestroySwapchainKHR fpDestroySwapchainKHR;
-		PFN_vkGetSwapchainImagesKHR fpGetSwapchainImagesKHR;
-		PFN_vkAcquireNextImageKHR fpAcquireNextImageKHR;
-		PFN_vkQueuePresentKHR fpQueuePresentKHR;
-
-#if USE_STL_VECTOR // TODO: This has been cpoied over from D3D12Surface and needs to be altered
-		constexpr void Reset()
-		{
-			m_window = {};
-			m_swapChain = nullptr;
-			for (u32 i{ 0 }; i < bufferCount; i++)
-			{
-				m_renderTargetData[i] = {};
-			}
-			m_currentBBIndex = 0;
-			m_allowTearing = 0;
-			m_presentFlags = 0;
-			m_viewport = {};
-			m_scissorRect = {};
-		}
-
-		constexpr void Move(VulkanSurface& o)
-		{
-			m_window = o.m_window;
-			m_swapChain = o.m_swapChain;
-			for (u32 i{ 0 }; i < frameBufferCount; i++)
-			{
-				m_renderTargetData[i] = o.m_renderTargetData[i];
-			}
-			m_currentBBIndex = o.m_currentBBIndex;
-			m_allowTearing = o.m_allowTearing;
-			m_presentFlags = o.m_presentFlags;
-			m_viewport = o.m_viewport;
-			m_scissorRect = o.m_scissorRect;
-
-			o.Reset();
-		}
-#endif // USE_STL_VECTOR
-	};
+swapchain_details get_swapchain_details(VkPhysicalDevice device, VkSurfaceKHR surface);
 }

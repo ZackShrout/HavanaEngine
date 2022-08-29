@@ -1,7 +1,7 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace havana::Graphics::D3D12::Upload
+namespace havana::graphics::d3d12::Upload
 {
 	class D3D12UploadContext
 	{

@@ -1,7 +1,7 @@
 #include "D3D12Shaders.h"
 #include "Content/ContentLoader.h"
 
-namespace havana::Graphics::D3D12::Shaders
+namespace havana::graphics::d3d12::Shaders
 {
 	namespace
 	{
@@ -19,11 +19,11 @@ namespace havana::Graphics::D3D12::Shaders
 		// and array of bytes.
 		std::unique_ptr<u8[]> shadersBlob{};
 		
-		bool LoadEngineShaders()
+		bool load_engine_shaders()
 		{
 			assert(!shadersBlob);
 			u64 size{ 0 };
-			bool result{ Content::LoadEngineShaders(shadersBlob, size) };
+			bool result{ content::load_engine_shaders(shadersBlob, size) };
 			assert(shadersBlob && size);
 
 			u64 offset{ 0 };
@@ -49,7 +49,7 @@ namespace havana::Graphics::D3D12::Shaders
 
 	bool Initialize()
 	{
-		return LoadEngineShaders();
+		return load_engine_shaders();
 	}
 
 	void Shutdown()

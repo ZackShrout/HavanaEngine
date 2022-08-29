@@ -3,7 +3,7 @@
 #include "Platform.h"
 #include "PlatformTypes.h"
 
-namespace havana::Platform
+namespace havana::platform
 {
 	namespace
 	{
@@ -22,21 +22,21 @@ namespace havana::Platform
 
 		utl::free_list<WindowInfo> windows;
 
-		WindowInfo &GetFromId(window_id id)
+		WindowInfo &get_from_id(window_id id)
 		{
 			assert(windows[id].hwnd);
 			return windows[id];
 		}
 
-		WindowInfo &GetFromHandle(window_handle handle)
+		WindowInfo &get_from_handle(window_handle handle)
 		{
 			const window_id id{(id::id_type)GetWindowLongPtr(handle, GWLP_USERDATA)};
-			return GetFromId(id);
+			return get_from_id(id);
 		}
 
-		HINSTANCE GetDisplay(window_id id)
+		HINSTANCE get_display(window_id id)
 		{
-			return GetFromId(id).hinstance;
+			return get_from_id(id).hinstance;
 		}
 
 		bool resized{ false };
@@ -58,7 +58,7 @@ namespace havana::Platform
 			}
 			break;
 			case WM_DESTROY:
-				GetFromHandle(hwnd).isClosed = true;
+				get_from_handle(hwnd).isClosed = true;
 				break;
 			case WM_SIZE:
 				resized = (wparam != SIZE_MINIMIZED);
@@ -69,7 +69,7 @@ namespace havana::Platform
 
 			if (resized && GetAsyncKeyState(VK_LBUTTON) >= 0)
 			{
-				WindowInfo& info{ GetFromHandle(hwnd) };
+				WindowInfo& info{ get_from_handle(hwnd) };
 				assert(info.hwnd);
 				GetClientRect(info.hwnd, info.isFullscreen ? &info.fullScreenArea : &info.clientArea);
 				resized = false;
@@ -83,7 +83,7 @@ namespace havana::Platform
 		}
 
 		// Windows specific Window class function implementations
-		void ResizeWindow(const WindowInfo &info, const RECT &area)
+		void resize_window(const WindowInfo &info, const RECT &area)
 		{
 			// Adjust the window size for correct device size
 			RECT windowRect{area};
@@ -95,9 +95,9 @@ namespace havana::Platform
 			MoveWindow(info.hwnd, info.topLeft.x, info.topLeft.y, width, height, true);
 		}
 
-		void ResizeWindow(window_id id, u32 width, u32 height)
+		void resize_window(window_id id, u32 width, u32 height)
 		{
-			WindowInfo &info{GetFromId(id)};
+			WindowInfo &info{get_from_id(id)};
 
 			// NOTE: when we host a window in the level editor we just update
 			// the internal data (i.e. the client area dimensions).
@@ -113,13 +113,13 @@ namespace havana::Platform
 				area.bottom = area.top + height;
 				area.right = area.left + width;
 
-				ResizeWindow(info, area);
+				resize_window(info, area);
 			}
 		}
 
-		void SetWindowFullscreen(window_id id, bool isFullscreen)
+		void set_window_fullscreen(window_id id, bool isFullscreen)
 		{
-			WindowInfo &info{GetFromId(id)};
+			WindowInfo &info{get_from_id(id)};
 			if (info.isFullscreen != isFullscreen)
 			{
 				info.isFullscreen = isFullscreen;
@@ -139,43 +139,43 @@ namespace havana::Platform
 				else
 				{
 					SetWindowLongPtr(info.hwnd, GWL_STYLE, info.style);
-					ResizeWindow(info, info.clientArea);
+					resize_window(info, info.clientArea);
 					ShowWindow(info.hwnd, SW_SHOWNORMAL);
 				}
 			}
 		}
 
-		bool IsWindowFullscreen(window_id id)
+		bool is_window_fullscreen(window_id id)
 		{
-			return GetFromId(id).isFullscreen;
+			return get_from_id(id).isFullscreen;
 		}
 
-		window_handle GetWindowHandle(window_id id)
+		window_handle get_window_handle(window_id id)
 		{
-			return GetFromId(id).hwnd;
+			return get_from_id(id).hwnd;
 		}
 
-		void SetWindowCaption(window_id id, const wchar_t *caption)
+		void set_window_caption(window_id id, const wchar_t *caption)
 		{
-			WindowInfo &info{GetFromId(id)};
+			WindowInfo &info{get_from_id(id)};
 			SetWindowText(info.hwnd, caption);
 		}
 
-		math::u32v4 GetWindowSize(window_id id)
+		math::u32v4 get_window_size(window_id id)
 		{
-			WindowInfo &info{GetFromId(id)};
+			WindowInfo &info{get_from_id(id)};
 			RECT &area{info.isFullscreen ? info.fullScreenArea : info.clientArea};
 			return {(u32)area.left, (u32)area.top, (u32)area.right, (u32)area.bottom};
 		}
 
-		bool IsWindowClosed(window_id id)
+		bool is_window_closed(window_id id)
 		{
-			return GetFromId(id).isClosed;
+			return get_from_id(id).isClosed;
 		}
 
-		void SetWindowClosed(window_id id)
+		void set_window_closed(window_id id)
 		{
-			GetFromId(id).isClosed = true;
+			get_from_id(id).isClosed = true;
 		}
 	} // anonymous namespace
 
@@ -184,7 +184,7 @@ namespace havana::Platform
 	/// </summary>
 	/// <param name="initInfo"> - Initialization information for the new window.</param>
 	/// <returns>A havana::Platform::Window object.</returns>
-	Window MakeWindow(const WindowInitInfo* initInfo /*= nullptr*/, void* disp /*= nullptr*/) // NOTEL CreateWindow collides with Windows.h
+	window create_window(const window_init_info* initInfo /*= nullptr*/, void* disp /*= nullptr*/) // NOTEL CreateWindow collides with Windows.h
 	{
 		window_proc callback{initInfo ? initInfo->callback : nullptr};
 		window_handle parent{initInfo ? initInfo->parent : nullptr};
@@ -252,7 +252,7 @@ namespace havana::Platform
 			window_id id{ (id::id_type)GetWindowLongPtr(info.hwnd, GWLP_USERDATA) };
 			windows[id] = info;
 
-			return Window{id};
+			return window{id};
 		}
 
 		return {};
@@ -262,9 +262,9 @@ namespace havana::Platform
 	/// Remove an existing window.
 	/// </summary>
 	/// <param name="id"> - ID number of the window to remove.</param>
-	void RemoveWindow(window_id id)
+	void remove_window(window_id id)
 	{
-		WindowInfo &info{GetFromId(id)};
+		WindowInfo &info{get_from_id(id)};
 		DestroyWindow(info.hwnd);
 		windows.remove(id);
 	}

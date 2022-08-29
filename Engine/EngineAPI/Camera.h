@@ -1,7 +1,7 @@
 #pragma once
 #include "CommonHeaders.h"
 
-namespace havana::Graphics
+namespace havana::graphics
 {
 	DEFINE_TYPED_ID(camera_id);
 

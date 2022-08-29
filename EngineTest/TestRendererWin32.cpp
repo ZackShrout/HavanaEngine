@@ -31,10 +31,10 @@ void BufferTestWorker()
 {
 	while (!close)
 	{
-		auto* resource = Graphics::D3D12::D3DX::CreateBuffer(buffer.data(), (u32)buffer.size());
+		auto* resource = graphics::d3d12::D3DX::CreateBuffer(buffer.data(), (u32)buffer.size());
 		// NOTE: We can also use Core::Release(resource) since we're not using the buffer for rendering.
 		//		 However, this is a nice test for DeferredRelease functionality.
-		Graphics::D3D12::Core::DeferredRelease(resource);
+		graphics::d3d12::Core::DeferredRelease(resource);
 	}
 }
 
@@ -60,17 +60,17 @@ void JointTestWorkers()
 struct
 {
 	game_entity::entity entity{};
-	Graphics::Camera camera{};
+	graphics::Camera camera{};
 } camera;
 
 id::id_type itemId{ id::invalid_id };
 id::id_type modelId{ id::invalid_id };
-Graphics::RenderSurface surfaces[4];
+graphics::RenderSurface surfaces[4];
 TimeIt timer{};
 
 bool resized{ false };
 bool isRestarting{ false };
-void DestroyRenderSurface(Graphics::RenderSurface &surface);
+void DestroyRenderSurface(graphics::RenderSurface &surface);
 bool TestInitialize();
 void TestShutdown();
 id::id_type CreateRenderItem(id::id_type entityId);
@@ -89,7 +89,7 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		{
 			if (surfaces[i].window.is_valid())
 			{
-				if (surfaces[i].window.IsClosed())
+				if (surfaces[i].window.is_closed())
 				{
 					DestroyRenderSurface(surfaces[i]);
 				}
@@ -130,14 +130,14 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 	if ((resized && GetAsyncKeyState(VK_LBUTTON) >= 0) || toggleFullscreen)
 	{
-		Platform::Window win{ Platform::window_id{(id::id_type)GetWindowLongPtr(hwnd, GWLP_USERDATA)} };
+		platform::window win{ platform::window_id{(id::id_type)GetWindowLongPtr(hwnd, GWLP_USERDATA)} };
 		for (u32 i{ 0 }; i < _countof(surfaces); i++)
 		{
 			if (win.get_id() == surfaces[i].window.get_id())
 			{
 				if (toggleFullscreen)
 				{
-					win.SetFullscreen(!win.IsFullscreen());
+					win.set_fullscreen(!win.is_fullscreen());
 					// The default window procedure will play a system notification sound
 					// when presseing the Alt+Enter keyboard combination if WM_SYSCHAR is
 					// not handled. By return 0 we can tell the system that we handled
@@ -146,7 +146,7 @@ LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				}
 				else
 				{
-					surfaces[i].surface.Resize(win.Width(), win.Height());
+					surfaces[i].surface.Resize(win.width(), win.height());
 					resized = false;
 				}
 				break;
@@ -205,20 +205,20 @@ void ActivateConsole()
 	SetConsoleTitle(TEXT("Render Test"));
 }
 
-void CreateRenderSurface(Graphics::RenderSurface &surface, Platform::WindowInitInfo info, void* disp)
+void CreateRenderSurface(graphics::RenderSurface &surface, platform::window_init_info info, void* disp)
 {
-	surface.window = Platform::MakeWindow(&info, disp);
-	surface.surface = Graphics::CreateSurface(surface.window);
+	surface.window = platform::create_window(&info, disp);
+	surface.surface = graphics::CreateSurface(surface.window);
 }
 
-void DestroyRenderSurface(Graphics::RenderSurface &surface)
+void DestroyRenderSurface(graphics::RenderSurface &surface)
 {
-	Graphics::RenderSurface temp{ surface };
+	graphics::RenderSurface temp{ surface };
 	surface = {};
 	if (temp.surface.is_valid())
-		Graphics::RemoveSurface(temp.surface.get_id());
+		graphics::RemoveSurface(temp.surface.get_id());
 	if (temp.window.is_valid())
-		Platform::RemoveWindow(temp.window.get_id());
+		platform::remove_window(temp.window.get_id());
 }
 
 bool TestInitialize()
@@ -230,9 +230,9 @@ bool TestInitialize()
 			return false;
 	}
 
-	if (!Graphics::Initialize(Graphics::GraphicsPlatform::Direct3D12)) return false;
+	if (!graphics::Initialize(graphics::graphics_platform::Direct3D12)) return false;
 
-	Platform::WindowInitInfo info[]{
+	platform::window_init_info info[]{
 		{&WinProc, nullptr, L"Render Window 1", 100, 100, 400, 800},
 		{&WinProc, nullptr, L"Render Window 2", 150, 150, 800, 400},
 		{&WinProc, nullptr, L"Render Window 3", 200, 200, 400, 400},
@@ -249,13 +249,13 @@ bool TestInitialize()
 	u64 size{ 0 };
 	if (!ReadFile("..\\..\\enginetest\\model.model", model, size)) return false;
 
-	modelId = Content::CreateResource(model.get(), Content::AssetType::Mesh);
+	modelId = content::CreateResource(model.get(), content::AssetType::Mesh);
 	if (!id::is_valid(modelId)) return false;
 
 	InitTestWorkers(BufferTestWorker);
 
 	camera.entity = CreateOneGameEntity();
-	camera.camera = Graphics::CreateCamera(Graphics::PerspectiveCameraInitInfo(camera.entity.get_id()));
+	camera.camera = graphics::CreateCamera(graphics::PerspectiveCameraInitInfo(camera.entity.get_id()));
 	assert(camera.camera.is_valid());
 
 	itemId = CreateRenderItem(CreateOneGameEntity().get_id());
@@ -268,20 +268,20 @@ void TestShutdown()
 {
 	DestroyRenderItem(itemId);
 	
-	if (camera.camera.is_valid()) Graphics::RemoveCamera(camera.camera.get_id());
+	if (camera.camera.is_valid()) graphics::RemoveCamera(camera.camera.get_id());
 	if (camera.entity.is_valid()) game_entity::remove(camera.entity.get_id());
 	
 	JointTestWorkers();
 
 	if (id::is_valid(modelId))
 	{
-		Content::DestroyResource(modelId, Content::AssetType::Mesh);
+		content::DestroyResource(modelId, content::AssetType::Mesh);
 	}
 
 	for (u32 i{ 0 }; i < _countof(surfaces); i++)
 		DestroyRenderSurface(surfaces[i]);
 
-	Graphics::Shutdown();
+	graphics::Shutdown();
 }
 
 bool EngineTest::Initialize()

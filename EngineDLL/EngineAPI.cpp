@@ -17,12 +17,12 @@ using namespace havana;
 
 namespace
 {
-	HMODULE gameCodeDll{ nullptr };
-	using get_script_creator = havana::script::detail::script_creator(*)(size_t);
-	get_script_creator get_script_creator{ nullptr };
-	using get_script_names = LPSAFEARRAY(*)(void);
-	get_script_names get_script_names{ nullptr };
-	utl::vector<Graphics::RenderSurface> surfaces;
+	HMODULE game_code_dll{ nullptr };
+	using _get_script_creator = havana::script::detail::script_creator(*)(size_t);
+	_get_script_creator get_script_creator{ nullptr };
+	using _get_script_names = LPSAFEARRAY(*)(void);
+	_get_script_names get_script_names{ nullptr };
+	utl::vector<graphics::RenderSurface> surfaces;
 } // anonymous namespace
 
 /// <summary>
@@ -31,17 +31,18 @@ namespace
 /// </summary>
 /// <param name="dllPath">Path of the .dll file.</param>
 /// <returns>1 if successful, 0 if not.</returns>
-EDITOR_INTERFACE u32 LoadGameCodeDll(const char* dllPath)
+EDITOR_INTERFACE u32
+LoadGameCodeDll(const char* dllPath)
 {
-	if (gameCodeDll) return FALSE; // make sure it's not already loaded
+	if (game_code_dll) return FALSE; // make sure it's not already loaded
 
-	gameCodeDll = LoadLibraryA(dllPath);
-	assert(gameCodeDll);
+	game_code_dll = LoadLibraryA(dllPath);
+	assert(game_code_dll);
 
-	get_script_creator = (get_script_creator)GetProcAddress(gameCodeDll, "get_script_creator");
-	get_script_names = (get_script_names)GetProcAddress(gameCodeDll, "get_script_names");
+	get_script_creator = (_get_script_creator)GetProcAddress(game_code_dll, "get_script_creator");
+	get_script_names = (_get_script_names)GetProcAddress(game_code_dll, "get_script_names");
 
-	return (gameCodeDll && get_script_creator && get_script_names) ? TRUE : FALSE;
+	return (game_code_dll && get_script_creator && get_script_names) ? TRUE : FALSE;
 }
 
 /// <summary>
@@ -49,14 +50,15 @@ EDITOR_INTERFACE u32 LoadGameCodeDll(const char* dllPath)
 /// </summary>
 /// <param name="dllPath">Path of the .dll file.</param>
 /// <returns>1 if successful, 0 if not.</returns>
-EDITOR_INTERFACE u32 UnloadGameCodeDll()
+EDITOR_INTERFACE u32
+UnloadGameCodeDll()
 {
-	if (!gameCodeDll) return FALSE; // make sure it's already loaded
-	assert(gameCodeDll);
+	if (!game_code_dll) return FALSE; // make sure it's already loaded
+	assert(game_code_dll);
 	
-	int result{ FreeLibrary(gameCodeDll) };
+	int result{ FreeLibrary(game_code_dll) };
 	assert(result);
-	gameCodeDll = nullptr;
+	game_code_dll = nullptr;
 	
 	return TRUE;
 }
@@ -66,18 +68,20 @@ EDITOR_INTERFACE u32 UnloadGameCodeDll()
 /// </summary>
 /// <param name="name">Name of the script to get.</param>
 /// <returns>Function pointer to script.</returns>
-EDITOR_INTERFACE script::detail::script_creator GetScriptCreator(const char* name)
+EDITOR_INTERFACE script::detail::script_creator
+GetScriptCreator(const char* name)
 {
-	return (gameCodeDll && get_script_creator) ? get_script_creator(script::detail::string_hash()(name)) : nullptr;
+	return (game_code_dll && get_script_creator) ? get_script_creator(script::detail::string_hash()(name)) : nullptr;
 }
 
 /// <summary>
 /// Get the array of script names for use in the Havana Editor
 /// </summary>
 /// <returns>Array of script names.</returns>
-EDITOR_INTERFACE LPSAFEARRAY GetScriptNames()
+EDITOR_INTERFACE LPSAFEARRAY
+GetScriptNames()
 {
-	return (gameCodeDll && get_script_names) ? get_script_names() : nullptr;
+	return (game_code_dll && get_script_names) ? get_script_names() : nullptr;
 }
 
 /// <summary>
@@ -87,11 +91,12 @@ EDITOR_INTERFACE LPSAFEARRAY GetScriptNames()
 /// <param name="width"> - Width of the window.</param>
 /// <param name="height"> - Height of the window.</param>
 /// <returns>ID of the window.</returns>
-EDITOR_INTERFACE u32 CreateRenderSurface(HWND host, s32 width, s32 height)
+EDITOR_INTERFACE u32
+CreateRenderSurface(HWND host, s32 width, s32 height)
 {
 	assert(host);
-	Platform::WindowInitInfo info{ nullptr, host, nullptr, 0, 0, width, height };
-	Graphics::RenderSurface surface{ Platform::MakeWindow(&info), {} };
+	platform::window_init_info info{ nullptr, host, nullptr, 0, 0, width, height };
+	graphics::RenderSurface surface{ platform::create_window(&info), {} };
 	assert(surface.window.is_valid());
 	surfaces.emplace_back(surface);
 	return (u32)(surfaces.size() - 1);
@@ -101,20 +106,23 @@ EDITOR_INTERFACE u32 CreateRenderSurface(HWND host, s32 width, s32 height)
 /// Remove a graphics rendering window from the editor.
 /// </summary>
 /// <param name="id"> - ID of the window to remove.</param>
-EDITOR_INTERFACE void RemoveRenderSurface(u32 id)
+EDITOR_INTERFACE void
+RemoveRenderSurface(u32 id)
 {
 	assert(id < surfaces.size());
-	Platform::RemoveWindow(surfaces[id].window.get_id());
+	platform::remove_window(surfaces[id].window.get_id());
 }
 
-EDITOR_INTERFACE HWND GetWindowHandle(u32 id)
+EDITOR_INTERFACE HWND
+GetWindowHandle(u32 id)
 {
 	assert(id < surfaces.size());
-	return (HWND)(surfaces[id].window.Handle());
+	return (HWND)(surfaces[id].window.handle());
 }
 
-EDITOR_INTERFACE void ResizeRenderSurface(u32 id)
+EDITOR_INTERFACE void
+ResizeRenderSurface(u32 id)
 {
 	assert(id < surfaces.size());
-	surfaces[id].window.Resize(0, 0);
+	surfaces[id].window.resize(0, 0);
 }

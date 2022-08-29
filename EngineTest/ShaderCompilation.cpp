@@ -6,7 +6,7 @@
 
 #pragma comment(lib, "../packages/DirectXShaderCompiler/lib/x64/dxcompiler.lib")
 
-using namespace havana::Graphics::D3D12::Shaders;
+using namespace havana::graphics::d3d12::Shaders;
 using namespace Microsoft::WRL;
 #elif __linux__
 
@@ -194,7 +194,7 @@ namespace
 	// Get the path to the compiled shader's binary file
 	decltype(auto) GetEngineShadersPath()
 	{
-		return std::filesystem::path{ Graphics::GetEngineShadersPath(Graphics::GraphicsPlatform::Direct3D12) };
+		return std::filesystem::path{ graphics::GetEngineShadersPath(graphics::graphics_platform::Direct3D12) };
 	}
 
 	bool CompiledShadersAreUpToData()

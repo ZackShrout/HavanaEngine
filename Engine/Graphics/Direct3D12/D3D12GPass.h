@@ -1,12 +1,12 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace havana::Graphics::D3D12
+namespace havana::graphics::d3d12
 {
 	struct D3D12FrameInfo;	// forward declaration
 }
 
-namespace havana::Graphics::D3D12::GPass
+namespace havana::graphics::d3d12::GPass
 {
 	bool Initialize();
 	void Shutdown();

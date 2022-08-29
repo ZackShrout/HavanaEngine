@@ -9,12 +9,12 @@
 
 #include <Windows.h>
 
-namespace havana::Platform
+namespace havana::platform
 {
 	using window_proc = LRESULT(*)(HWND, UINT, WPARAM, LPARAM);
 	using window_handle = HWND;
 
-	struct WindowInitInfo
+	struct window_init_info
 	{
 		window_proc		callback{ nullptr };
 		window_handle	parent{ nullptr };
@@ -36,11 +36,11 @@ namespace havana::Platform
 // Prevents collision from our Window class and the XWindow Window define
 using XWindow = Window;
 
-namespace havana::Platform
+namespace havana::platform
 {	
 	using window_handle = XWindow*;
 
-	struct WindowInitInfo
+	struct window_init_info
 	{
 		void*			callback{ nullptr };
 		window_handle	parent{ nullptr };

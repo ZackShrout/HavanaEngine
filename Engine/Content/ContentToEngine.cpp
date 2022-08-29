@@ -2,7 +2,7 @@
 #include "Graphics/Renderer.h"
 #include "Utilities/IOStream.h"
 
-namespace havana::Content
+namespace havana::content
 {
 	namespace
 	{
@@ -116,7 +116,7 @@ namespace havana::Content
 				for (u32 idIdx{ 0 }; idIdx < idCount; idIdx++)
 				{
 					const u8* at{ blob.position() };
-					gpuIds[submeshIndex++] = Graphics::AddSubmesh(at);
+					gpuIds[submeshIndex++] = graphics::AddSubmesh(at);
 					blob.skip((u32)(at - blob.position()));
 					assert(submeshIndex < (1 << 16));
 				}
@@ -147,7 +147,7 @@ namespace havana::Content
 			// skip lodCount, lod_threshold, submeshCount, and sizeOfSubmeshes
 			blob.skip(sizeof(u32) + sizeof(f32) + sizeof(u32) + sizeof(u32));
 			const u8* at{ blob.position() };
-			const id::id_type gpuId{ Graphics::AddSubmesh(at) };
+			const id::id_type gpuId{ graphics::AddSubmesh(at) };
 
 			// Create a fake pointer and put it in the geometryHierarchies
 			static_assert(sizeof(uintptr_t) > sizeof(id::id_type));
@@ -234,7 +234,7 @@ namespace havana::Content
 			u8* const pointer{ geometryHierarchies[id] };
 			if ((uintptr_t)pointer & singleMeshMarker)
 			{
-				Graphics::RemoveSubmesh(GpuIdFromFakePointer(pointer));
+				graphics::RemoveSubmesh(GpuIdFromFakePointer(pointer));
 			}
 			else
 			{
@@ -245,7 +245,7 @@ namespace havana::Content
 				{
 					for (u32 i{ 0 }; i < stream.LoDOffsets()[lod].count; i++)
 					{
-						Graphics::RemoveSubmesh(stream.GpuIds()[idIndex++]);
+						graphics::RemoveSubmesh(stream.GpuIds()[idIndex++]);
 					}
 				}
 				

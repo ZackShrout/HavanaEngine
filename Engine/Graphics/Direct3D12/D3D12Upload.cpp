@@ -1,7 +1,7 @@
 #include "D3D12Upload.h"
 #include "D3D12Core.h"
 
-namespace havana::Graphics::D3D12::Upload
+namespace havana::graphics::d3d12::Upload
 {
 	namespace
 	{

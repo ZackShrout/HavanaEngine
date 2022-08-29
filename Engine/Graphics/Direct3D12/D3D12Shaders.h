@@ -1,7 +1,7 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace havana::Graphics::D3D12::Shaders
+namespace havana::graphics::d3d12::Shaders
 {
 	struct EngineShader
 	{

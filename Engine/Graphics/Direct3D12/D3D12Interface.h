@@ -1,11 +1,11 @@
 #pragma once
 
-namespace havana::Graphics
+namespace havana::graphics
 {
-	struct PlatformInterface;
+	struct platform_interface;
 
-	namespace D3D12
+	namespace d3d12
 	{
-		void GetPlatformInterface(PlatformInterface& platformInterface);
-	} // D3D12 namespace
+		void get_platform_interface(platform_interface& platformInterface);
+	} // d3d12 namespace
 }

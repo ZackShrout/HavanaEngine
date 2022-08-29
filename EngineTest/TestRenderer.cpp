@@ -3,7 +3,7 @@
 //#include "../Platforms/Platform.h"
 //#include "../Graphics/Renderer.h"
 //#include "../Graphics/Direct3D12/D3D12Core.h"
-//#include "../Content/ContentToEngine.h"
+//#include "../content/ContentToEngine.h"
 //#include "ShaderCompilation.h"
 //#include <filesystem>
 //#include <fstream>
@@ -27,10 +27,10 @@
 //{
 //	while (!close)
 //	{
-//		auto* resource = Graphics::D3D12::D3DX::CreateBuffer(buffer.data(), (u32)buffer.size());
+//		auto* resource = Graphics::d3d12::D3DX::CreateBuffer(buffer.data(), (u32)buffer.size());
 //		// NOTE: We can also use Core::Release(resource) since we're not using the buffer for rendering.
 //		//		 However, this is a nice test for DeferredRelease functionality.
-//		Graphics::D3D12::Core::DeferredRelease(resource);
+//		Graphics::d3d12::Core::DeferredRelease(resource);
 //	}
 //}
 //
@@ -180,9 +180,9 @@
 //
 //#endif // _WIN64
 //
-//void CreateRenderSurface(Graphics::RenderSurface &surface, Platform::WindowInitInfo info, void* disp)
+//void CreateRenderSurface(Graphics::RenderSurface &surface, Platform::window_init_info info, void* disp)
 //{
-//	surface.window = Platform::MakeWindow(&info, disp);
+//	surface.window = Platform::create_window(&info, disp);
 //	surface.surface = Graphics::CreateSurface(surface.window);
 //}
 //
@@ -193,7 +193,7 @@
 //	if (temp.surface.is_valid())
 //		Graphics::RemoveSurface(temp.surface.GetID());
 //	if (temp.window.is_valid())
-//		Platform::RemoveWindow(temp.window.GetID());
+//		Platform::remove_window(temp.window.GetID());
 //}
 //
 //bool TestInitialize()
@@ -205,9 +205,9 @@
 //			return false;
 //	}
 //
-//	if (!Graphics::Initialize(Graphics::GraphicsPlatform::Direct3D12)) return false;
+//	if (!Graphics::Initialize(Graphics::graphics_platform::Direct3D12)) return false;
 //
-//	Platform::WindowInitInfo info[]{
+//	Platform::window_init_info info[]{
 //		{&WinProc, nullptr, L"Render Window 1", 100, 100, 400, 800},
 //		{&WinProc, nullptr, L"Render Window 2", 150, 150, 800, 400},
 //		{&WinProc, nullptr, L"Render Window 3", 200, 200, 400, 400},
@@ -224,7 +224,7 @@
 //	u64 size{ 0 };
 //	if (!ReadFile("..\\..\\enginetest\\model.model", model, size)) return false;
 //
-//	modelId = Content::CreateResource(model.get(), Content::AssetType::Mesh);
+//	modelId = content::CreateResource(model.get(), content::AssetType::Mesh);
 //	if (!id::is_valid(modelId)) return false;
 //
 //	InitTestWorkers(BufferTestWorker);
@@ -239,7 +239,7 @@
 //
 //	if (id::is_valid(modelId))
 //	{
-//		Content::DestroyResource(modelId, Content::AssetType::Mesh);
+//		content::DestroyResource(modelId, content::AssetType::Mesh);
 //	}
 //
 //	for (u32 i{ 0 }; i < _countof(surfaces); i++)
@@ -285,12 +285,12 @@
 //	// 	return false;
 //	// }
 //	
-//	bool result{Graphics::Initialize(Graphics::GraphicsPlatform::VulkanAPI)};
+//	bool result{Graphics::Initialize(Graphics::graphics_platform::VulkanAPI)};
 //
 //	if (!result)
 //		return result;
 //
-//	Platform::WindowInitInfo info[]{
+//	Platform::window_init_info info[]{
 //		{nullptr, nullptr, L"Render Window 1", 100, 100, 400, 800},
 //		{nullptr, nullptr, L"Render Window 2", 150, 150, 800, 400},
 //		{nullptr, nullptr, L"Render Window 3", 200, 200, 400, 400},

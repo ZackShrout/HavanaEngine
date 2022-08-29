@@ -1,7 +1,7 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace havana::Graphics::D3D12::D3DX
+namespace havana::graphics::d3d12::D3DX
 {
 	
 	constexpr struct

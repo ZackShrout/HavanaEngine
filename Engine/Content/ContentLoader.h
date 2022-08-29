@@ -1,12 +1,12 @@
 #pragma once
 #include "CommonHeaders.h"
 
-#ifndef SHIPPING
-namespace havana::Content
+#if !defined(SHIPPING) && defined(_WIN64)
+namespace havana::content
 {
-	bool LoadGame();
-	void UnloadGame();
+	bool load_game();
+	void unload_game();
 
-	bool LoadEngineShaders(std::unique_ptr<u8[]>& shaders, u64& size);
+	bool load_engine_shaders(std::unique_ptr<u8[]>& shaders, u64& size);
 }
-#endif // !SHIPPING
+#endif // !defined(SHIPPING)

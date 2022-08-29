@@ -1,7 +1,7 @@
 #pragma once
 #include "CommonHeaders.h"
 
-namespace havana::Content
+namespace havana::content
 {
 	struct AssetType
 	{

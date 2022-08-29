@@ -1,7 +1,7 @@
 #include "D3D12Surface.h"
 #include "D3D12Core.h"
 
-namespace havana::Graphics::D3D12
+namespace havana::graphics::d3d12
 {
 	namespace
 	{
@@ -33,8 +33,8 @@ namespace havana::Graphics::D3D12
 		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		desc.Flags = m_allowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 		desc.Format = ToNonSRGB(format);
-		desc.Height = m_window.Height();
-		desc.Width = m_window.Width();
+		desc.Height = m_window.height();
+		desc.Width = m_window.width();
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 		desc.Scaling = DXGI_SCALING_STRETCH;
@@ -42,7 +42,7 @@ namespace havana::Graphics::D3D12
 		desc.Stereo = false;
 
 		IDXGISwapChain1* swapChain;
-		HWND hwnd{ (HWND)m_window.Handle() };
+		HWND hwnd{ (HWND)m_window.handle() };
 		DXCall(factory->CreateSwapChainForHwnd(cmdQueue, hwnd, &desc, nullptr, nullptr, &swapChain));
 		DXCall(factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER));
 		DXCall(swapChain->QueryInterface(IID_PPV_ARGS(&m_swapChain)));
@@ -79,7 +79,7 @@ namespace havana::Graphics::D3D12
 
 		Finalize();
 
-		DEBUG_OP(OutputDebugString(L"::D3D12 Surface Resized.\n"));
+		DEBUG_OP(OutputDebugString(L"::D3D12 surface Resized.\n"));
 	}
 
 	// PRIVATE
@@ -101,7 +101,7 @@ namespace havana::Graphics::D3D12
 		DXCall(m_swapChain->GetDesc(&desc));
 		const u32 width{ desc.BufferDesc.Width };
 		const u32 height{ desc.BufferDesc.Height };
-		assert(m_window.Width() == width && m_window.Height() == height);
+		assert(m_window.width() == width && m_window.height() == height);
 
 		// Set viewport and scissor rectangle
 		m_viewport.TopLeftX = 0.0f;

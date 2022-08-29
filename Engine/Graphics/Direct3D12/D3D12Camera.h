@@ -1,7 +1,7 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace havana::Graphics::D3D12::Camera
+namespace havana::graphics::d3d12::Camera
 {
 	class D3D12Camera
 	{
@@ -29,7 +29,7 @@ namespace havana::Graphics::D3D12::Camera
 		[[nodiscard]] constexpr f32 AspectRatio() const { return m_aspectRatio; }
 		[[nodiscard]] constexpr f32 ViewWidth() const { return m_viewWidth; }
 		[[nodiscard]] constexpr f32 ViewHeight() const { return m_viewHeight; }
-		[[nodiscard]] constexpr Graphics::Camera::type ProjectionType() const { return m_projectionType; }
+		[[nodiscard]] constexpr graphics::Camera::type ProjectionType() const { return m_projectionType; }
 		[[nodiscard]] constexpr id::id_type EntityID() const { return m_entityID; }
 
 	private:
@@ -51,12 +51,12 @@ namespace havana::Graphics::D3D12::Camera
 			f32					m_aspectRatio;	// use with perspective camera
 			f32					m_viewHeight;	// use with orthographic camera
 		};
-		Graphics::Camera::type	m_projectionType;
+		graphics::Camera::type	m_projectionType;
 		id::id_type				m_entityID;
 		bool					m_isDirty;
 	};
 
-	Graphics::Camera Create(CameraInitInfo info);
+	graphics::Camera Create(CameraInitInfo info);
 	void Remove(camera_id id);
 	void SetParamter(camera_id id, CameraParameter::Parameter parameter, const void *const data, u32 dataSize);
 	void GetParamter(camera_id id, CameraParameter::Parameter parameter, void *const data, u32 dataSize);

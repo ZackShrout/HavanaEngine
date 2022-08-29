@@ -1,7 +1,7 @@
 #include "D3D12Resources.h"
 #include "D3D12Core.h"
 
-namespace havana::Graphics::D3D12
+namespace havana::graphics::d3d12
 {
 	//// DESCRIPTOR HEAP //////////////////////////////////////////////////////////////////////////
 	bool DescriptorHeap::Initialize(u32 capacity, bool isShaderVisible)

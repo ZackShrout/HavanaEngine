@@ -28,16 +28,7 @@
     <ClInclude Include="Utilities\FreeList.h" />
     <ClInclude Include="Utilities\Vector.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12Helpers.h" />
-    <ClInclude Include="Graphics\Vulkan\VulkanCommonHeaders.h" />
-    <ClInclude Include="Graphics\Vulkan\VulkanCore.h" />
-    <ClInclude Include="Graphics\Vulkan\VulkanHelpers.h" />
-    <ClInclude Include="Graphics\Vulkan\VulkanInterface.h" />
-    <ClInclude Include="Graphics\Vulkan\VulkanResources.h" />
-    <ClInclude Include="Graphics\Vulkan\VulkanSurface.h" />
-    <ClInclude Include="Graphics\Vulkan\VulkanExtensionLoader.h" />
-    <ClInclude Include="Graphics\Vulkan\VulkanValidation.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12Shaders.h" />
-    <ClInclude Include="Graphics\Vulkan\VulkanShaders.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12GPass.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12PostProcess.h" />
     <ClInclude Include="Platforms\IncludeWindowCpp.h" />
@@ -47,6 +38,15 @@
     <ClInclude Include="Content\ContentToEngine.h" />
     <ClInclude Include="EngineAPI\Camera.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12Camera.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanCommandBuffer.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanCommonHeaders.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanCore.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanHelpers.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanInterface.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanRenderPass.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanResources.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanSurface.h" />
+    <ClInclude Include="Graphics\Vulkan\VulkanValidation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\Entity.cpp" />
@@ -54,7 +54,6 @@
     <ClCompile Include="Components\Script.cpp" />
     <ClCompile Include="Core\Main.cpp" />
     <ClCompile Include="Core\Engine.cpp" />
-    <ClCompile Include="Content\ContentLoader.cpp" />
     <ClCompile Include="Platforms\PlatformWin32.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Interface.cpp" />
@@ -62,13 +61,7 @@
     <ClCompile Include="Graphics\Direct3D12\D3D12Resources.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Surface.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Helpers.cpp" />
-    <ClCompile Include="Graphics\Vulkan\VulkanCore.cpp" />
-    <ClCompile Include="Graphics\Vulkan\VulkanHelpers.cpp" />
-    <ClCompile Include="Graphics\Vulkan\VulkanInterface.cpp" />
-    <ClCompile Include="Graphics\Vulkan\VulkanResources.cpp" />
-    <ClCompile Include="Graphics\Vulkan\VulkanSurface.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Shaders.cpp" />
-    <ClCompile Include="Graphics\Vulkan\VulkanShaders.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12GPass.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12PostProcess.cpp" />
     <ClCompile Include="Platforms\PlatformLinux.cpp" />
@@ -77,12 +70,13 @@
     <ClCompile Include="Graphics\Direct3D12\D3D12Content.cpp" />
     <ClCompile Include="Content\ContentToEngine.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Camera.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Graphics\Vulkan\Shaders\compile_shaders.bat" />
-    <None Include="Graphics\Vulkan\Shaders\frag.spv" />
-    <None Include="Graphics\Vulkan\Shaders\Shader.frag" />
-    <None Include="Graphics\Vulkan\Shaders\Shader.vert" />
-    <None Include="Graphics\Vulkan\Shaders\vert.spv" />
+    <ClCompile Include="Content\ContentLoaderWin32.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanCommandBuffer.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanCore.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanHelpers.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanInterface.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanRenderPass.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanResources.cpp" />
+    <ClCompile Include="Graphics\Vulkan\VulkanSurface.cpp" />
   </ItemGroup>
 </Project>

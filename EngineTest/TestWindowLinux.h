@@ -25,7 +25,7 @@ class EngineTest : public Test
 public:
 	bool Initialize(void* disp) override
 	{
-		Platform::WindowInitInfo info[]
+		Platform::window_init_info info[]
 		{
 			{ nullptr, nullptr, L"Test Window 1", 100, 100, 400, 800 },
 			{ nullptr, nullptr, L"Test Window 2", 150, 150, 800, 400 },
@@ -37,7 +37,7 @@ public:
 
 		for (u32 i{ 0 }; i < _countof(windows); i++)
 		{
-			windows[i] = Platform::MakeWindow(&info[i], disp);
+			windows[i] = Platform::create_window(&info[i], disp);
 		}
 
 		return true;
@@ -145,7 +145,7 @@ public:
 	{
 		for (u32 i{ 0 }; i < _countof(windows); i++)
 		{
-			Platform::RemoveWindow(windows[i].get_id());
+			Platform::remove_window(windows[i].get_id());
 		}
 	}
 };

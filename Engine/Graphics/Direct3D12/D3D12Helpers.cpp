@@ -2,7 +2,7 @@
 #include "D3D12Core.h"
 #include "D3D12Upload.h"
 
-namespace havana::Graphics::D3D12::D3DX
+namespace havana::graphics::d3d12::D3DX
 {
 	namespace
 	{

@@ -19,7 +19,7 @@ namespace
 		u64 size{ 0 };
 		ReadFile("..\\..\\enginetest\\model.model", model, size);
 
-		modelId = Content::CreateResource(model.get(), Content::AssetType::Mesh);
+		modelId = content::CreateResource(model.get(), content::AssetType::Mesh);
 		assert(id::is_valid(modelId));
 	}
 

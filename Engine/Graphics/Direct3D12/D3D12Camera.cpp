@@ -1,7 +1,7 @@
 #include "D3D12Camera.h"
 #include "EngineAPI/GameEntity.h"
 
-namespace havana::Graphics::D3D12::Camera
+namespace havana::graphics::d3d12::Camera
 {
 	namespace
 	{
@@ -16,7 +16,7 @@ namespace havana::Graphics::D3D12::Camera
 
 		void SetFieldOfView(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
-			assert(camera.ProjectionType() == Graphics::Camera::Perspective);
+			assert(camera.ProjectionType() == graphics::Camera::Perspective);
 			f32 fov{ *(f32*)data };
 			assert(sizeof(fov) == size);
 			camera.FieldOfView(fov);
@@ -24,7 +24,7 @@ namespace havana::Graphics::D3D12::Camera
 
 		void SetAspectRatio(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
-			assert(camera.ProjectionType() == Graphics::Camera::Perspective);
+			assert(camera.ProjectionType() == graphics::Camera::Perspective);
 			f32 aspectRatio{ *(f32*)data };
 			assert(sizeof(aspectRatio) == size);
 			camera.AspectRatio(aspectRatio);
@@ -32,7 +32,7 @@ namespace havana::Graphics::D3D12::Camera
 
 		void SetViewWidth(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
-			assert(camera.ProjectionType() == Graphics::Camera::Orthographic);
+			assert(camera.ProjectionType() == graphics::Camera::Orthographic);
 			f32 viewWidth{ *(f32*)data };
 			assert(sizeof(viewWidth) == size);
 			camera.ViewWidth(viewWidth);
@@ -40,7 +40,7 @@ namespace havana::Graphics::D3D12::Camera
 
 		void SetViewHeight(D3D12Camera camera, const void* const data, [[maybe_unused]] u32 size)
 		{
-			assert(camera.ProjectionType() == Graphics::Camera::Orthographic);
+			assert(camera.ProjectionType() == graphics::Camera::Orthographic);
 			f32 viewHeight{ *(f32*)data };
 			assert(sizeof(viewHeight) == size);
 			camera.ViewHeight(viewHeight);
@@ -104,7 +104,7 @@ namespace havana::Graphics::D3D12::Camera
 
 		void GetFieldOfView(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			assert(camera.ProjectionType() == Graphics::Camera::Perspective);
+			assert(camera.ProjectionType() == graphics::Camera::Perspective);
 			f32* const fov{ (f32* const)data };
 			assert(sizeof(f32) == size);
 			*fov = camera.FieldOfView();
@@ -112,7 +112,7 @@ namespace havana::Graphics::D3D12::Camera
 
 		void GetAspectRatio(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			assert(camera.ProjectionType() == Graphics::Camera::Perspective);
+			assert(camera.ProjectionType() == graphics::Camera::Perspective);
 			f32* const aspectRatio{ (f32* const)data };
 			assert(sizeof(f32) == size);
 			*aspectRatio = camera.AspectRatio();
@@ -120,7 +120,7 @@ namespace havana::Graphics::D3D12::Camera
 
 		void GetViewWidth(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			assert(camera.ProjectionType() == Graphics::Camera::Orthographic);
+			assert(camera.ProjectionType() == graphics::Camera::Orthographic);
 			f32* const viewWidth{ (f32* const)data };
 			assert(sizeof(f32) == size);
 			*viewWidth = camera.ViewWidth();
@@ -128,7 +128,7 @@ namespace havana::Graphics::D3D12::Camera
 
 		void GetViewHeight(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			assert(camera.ProjectionType() == Graphics::Camera::Orthographic);
+			assert(camera.ProjectionType() == graphics::Camera::Orthographic);
 			f32* const viewHeight{ (f32* const)data };
 			assert(sizeof(f32) == size);
 			*viewHeight = camera.ViewHeight();
@@ -150,8 +150,8 @@ namespace havana::Graphics::D3D12::Camera
 
 		void GetProjectionType(D3D12Camera camera, void* const data, [[maybe_unused]] u32 size)
 		{
-			Graphics::Camera::type* const type{ (Graphics::Camera::type* const)data };
-			assert(sizeof(Graphics::Camera::type) == size);
+			graphics::Camera::type* const type{ (graphics::Camera::type* const)data };
+			assert(sizeof(graphics::Camera::type) == size);
 			*type = camera.ProjectionType();
 		}
 
@@ -228,7 +228,7 @@ namespace havana::Graphics::D3D12::Camera
 
 		if (m_isDirty)
 		{
-			m_projection = (m_projectionType == Graphics::Camera::Perspective)
+			m_projection = (m_projectionType == graphics::Camera::Perspective)
 				? XMMatrixPerspectiveFovRH(m_fieldOfView * XM_PI, m_aspectRatio, m_nearZ, m_farZ)
 				: XMMatrixOrthographicRH(m_viewWidth, m_viewHeight, m_nearZ, m_farZ);
 			m_inverseProjection = XMMatrixInverse(nullptr, m_projection);
@@ -246,14 +246,14 @@ namespace havana::Graphics::D3D12::Camera
 
 	void D3D12Camera::FieldOfView(f32 fov)
 	{
-		assert(m_projectionType == Graphics::Camera::Perspective);
+		assert(m_projectionType == graphics::Camera::Perspective);
 		m_fieldOfView = fov;
 		m_isDirty = true;
 	}
 
 	void D3D12Camera::AspectRatio(f32 aspectRatio)
 	{
-		assert(m_projectionType == Graphics::Camera::Perspective);
+		assert(m_projectionType == graphics::Camera::Perspective);
 		m_aspectRatio = aspectRatio;
 		m_isDirty = true;
 	}
@@ -261,7 +261,7 @@ namespace havana::Graphics::D3D12::Camera
 	void D3D12Camera::ViewWidth(f32 width)
 	{
 		assert(width);
-		assert(m_projectionType == Graphics::Camera::Orthographic);
+		assert(m_projectionType == graphics::Camera::Orthographic);
 		m_viewWidth = width;
 		m_isDirty = true;
 	}
@@ -269,7 +269,7 @@ namespace havana::Graphics::D3D12::Camera
 	void D3D12Camera::ViewHeight(f32 height)
 	{
 		assert(height);
-		assert(m_projectionType == Graphics::Camera::Orthographic);
+		assert(m_projectionType == graphics::Camera::Orthographic);
 		m_viewHeight = height;
 		m_isDirty = true;
 	}
@@ -286,9 +286,9 @@ namespace havana::Graphics::D3D12::Camera
 		m_isDirty = true;
 	}
 
-	Graphics::Camera Create(CameraInitInfo info)
+	graphics::Camera Create(CameraInitInfo info)
 	{
-		return Graphics::Camera{ camera_id{ cameras.add(info) } };
+		return graphics::Camera{ camera_id{ cameras.add(info) } };
 	}
 
 	void Remove(camera_id id)

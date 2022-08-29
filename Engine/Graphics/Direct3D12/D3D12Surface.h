@@ -1,7 +1,7 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace havana::Graphics::D3D12
+namespace havana::graphics::d3d12
 {
 	class D3D12Surface
 	{
@@ -9,9 +9,9 @@ namespace havana::Graphics::D3D12
 		constexpr static u32 bufferCount{ 3 };
 		constexpr static DXGI_FORMAT defaultBackBufferFormat{ DXGI_FORMAT_R8G8B8A8_UNORM_SRGB };
 
-		explicit D3D12Surface(Platform::Window window) : m_window{ window }
+		explicit D3D12Surface(platform::window window) : m_window{ window }
 		{
-			assert(m_window.Handle());
+			assert(m_window.handle());
 		}
 #if USE_STL_VECTOR
 		DISABLE_COPY(D3D12Surface);
@@ -62,7 +62,7 @@ namespace havana::Graphics::D3D12
 			DescriptorHandle rtv{};
 		};
 
-		Platform::Window	m_window{};
+		platform::window	m_window{};
 		DXGI_FORMAT			m_format{ defaultBackBufferFormat };
 		IDXGISwapChain4*	m_swapChain{ nullptr };
 		RenderTargetData	m_renderTargetData[bufferCount]{};

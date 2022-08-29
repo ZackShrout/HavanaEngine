@@ -2,7 +2,7 @@
 #include "D3D12Core.h"
 #include "D3D12Shaders.h"
 
-namespace havana::Graphics::D3D12::GPass
+namespace havana::graphics::d3d12::GPass
 {
 	namespace
 	{

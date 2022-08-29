@@ -4,7 +4,7 @@
 #include "Utilities/IOStream.h"
 #include "Content/ContentToEngine.h"
 
-namespace havana::Graphics::D3D12::Content
+namespace havana::graphics::d3d12::content
 {
 	namespace
 	{
@@ -21,9 +21,9 @@ namespace havana::Graphics::D3D12::Content
 		utl::free_list<SubmeshView>		submeshViews{};
 		std::mutex							submeshMutex{};
 
-		D3D_PRIMITIVE_TOPOLOGY GetD3DPrimitiveTopology(havana::Content::PrimitiveTopology::type type)
+		D3D_PRIMITIVE_TOPOLOGY GetD3DPrimitiveTopology(havana::content::PrimitiveTopology::type type)
 		{
-			using namespace havana::Content;
+			using namespace havana::content;
 
 			assert(type < PrimitiveTopology::count);
 
@@ -103,7 +103,7 @@ namespace havana::Graphics::D3D12::Content
 			view.indexBufferView.SizeInBytes = indexBufferSize;
 			view.indexBufferView.Format = (indexSize == sizeof(u16)) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 
-			view.primitiveTopology = GetD3DPrimitiveTopology((havana::Content::PrimitiveTopology::type)primitiveTopology);
+			view.primitiveTopology = GetD3DPrimitiveTopology((havana::content::PrimitiveTopology::type)primitiveTopology);
 			view.elements_type = elements_type;
 
 			std::lock_guard lock{ submeshMutex };

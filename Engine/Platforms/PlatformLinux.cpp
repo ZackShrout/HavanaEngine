@@ -3,7 +3,7 @@
 #include "Platform.h"
 #include "PlatformTypes.h"
 
-namespace havana::Platform
+namespace havana::platform
 {
 		namespace
 		{
@@ -22,16 +22,16 @@ namespace havana::Platform
 
 			utl::free_list<WindowInfo> windows;
 
-			WindowInfo& GetFromId(window_id id)
+			WindowInfo& get_from_id(window_id id)
 			{
 				assert(windows[id].window);
 				return windows[id];
 			}
 
 			// Linux specific window class functions
-			void ResizeWindow(window_id id, u32 width, u32 height)
+			void resize_window(window_id id, u32 width, u32 height)
 			{
-				WindowInfo& info{ GetFromId(id) };
+				WindowInfo& info{ get_from_id(id) };
 				info.width = width;
 				info.height = height;
 				// NOTE: this is not currently working how I would like... I expected the window to redraw
@@ -40,9 +40,9 @@ namespace havana::Platform
 				XClearWindow(info.display, info.window);
 			}
 
-			void SetWindowFullscreen(window_id id, bool isFullscreen)
+			void set_window_fullscreen(window_id id, bool isFullscreen)
 			{
-				WindowInfo& info{ GetFromId(id) };
+				WindowInfo& info{ get_from_id(id) };
 				if (info.isFullscreen != isFullscreen)
 				{
 					info.isFullscreen = isFullscreen;
@@ -82,50 +82,50 @@ namespace havana::Platform
 				}
 			}
 
-			bool IsWindowFullscreen(window_id id)
+			bool is_window_fullscreen(window_id id)
 			{
-				return GetFromId(id).isFullscreen;
+				return get_from_id(id).isFullscreen;
 			}
 
-			window_handle GetWindowHandle(window_id id)
+			window_handle get_window_handle(window_id id)
 			{
-				return &GetFromId(id).window;
+				return &get_from_id(id).window;
 			}
 
-			Display* GetDisplay(window_id id)
+			Display* get_display(window_id id)
 			{
-				return GetFromId(id).display;
+				return get_from_id(id).display;
 			}
 
-			void SetWindowCaption(window_id id, const wchar_t* caption)
+			void set_window_caption(window_id id, const wchar_t* caption)
 			{
-				WindowInfo& info{ GetFromId(id) };
+				WindowInfo& info{ get_from_id(id) };
 				size_t outSize = (sizeof(caption) * sizeof(wchar_t)) + 1;
 				char title[outSize];
 				wcstombs(title, caption, outSize);
 				XStoreName(info.display, info.window, title);
 			}
 
-			math::u32v4 GetWindowSize(window_id id)
+			math::u32v4 get_window_size(window_id id)
 			{
-				WindowInfo& info{ GetFromId(id) };
+				WindowInfo& info{ get_from_id(id) };
 				return { (u32)info.left, (u32)info.top, (u32)info.width - (u32)info.left, (u32)info.height - (u32)info.top };
 			}
 
-			bool IsWindowClosed(window_id id)
+			bool is_window_closed(window_id id)
 			{
-				return GetFromId(id).isClosed;
+				return get_from_id(id).isClosed;
 			}
 
-			void SetWindowClosed(window_id id)
+			void set_window_closed(window_id id)
 			{
-				WindowInfo& info{ GetFromId(id) };
-				GetFromId(id).isClosed = true;
+				WindowInfo& info{ get_from_id(id) };
+				get_from_id(id).isClosed = true;
 				XDestroyWindow(info.display, info.window);
 			}
 		} // anonymous namespace
 
-		Window MakeWindow(const WindowInitInfo* const initInfo /*= nullptr*/, void* disp /*= nullptr*/)
+		Window create_window(const window_init_info* const initInfo /*= nullptr*/, void* disp /*= nullptr*/)
 		{
 			// Cache a casted pointer of the display to save on casting later
 			Display* display{ (Display*)disp };
@@ -180,10 +180,10 @@ namespace havana::Platform
 			return Window{ id };
 		}
 
-		void RemoveWindow(window_id id)
+		void remove_window(window_id id)
 		{
-			WindowInfo& info{ GetFromId(id) };
-			GetFromId(id).isClosed = true;
+			WindowInfo& info{ get_from_id(id) };
+			get_from_id(id).isClosed = true;
 			XDestroyWindow(info.display, info.window);
 			windows.remove(id);
 		}

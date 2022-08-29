@@ -1,7 +1,7 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace havana::Graphics::D3D12
+namespace havana::graphics::d3d12
 {
 	struct D3D12FrameInfo
 	{
@@ -10,7 +10,7 @@ namespace havana::Graphics::D3D12
 	};
 }
 
-namespace havana::Graphics::D3D12::Core
+namespace havana::graphics::d3d12::Core
 {
 	bool Initialize();
 	void Shutdown();
@@ -48,7 +48,7 @@ namespace havana::Graphics::D3D12::Core
 	u32 CurrentFrameIndex();
 	void SetDeferredReleasesFlag();
 
-	Surface CreateSurface(Platform::Window window);
+	surface CreateSurface(platform::window window);
 	void RemoveSurface(surface_id id);
 	void ResizeSurface(surface_id id, u32, u32);
 	u32 SurfaceWidth(surface_id id);

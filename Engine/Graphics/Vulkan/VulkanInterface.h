@@ -1,11 +1,13 @@
+// Copyright (c) Contributors of Primal+
+// Distributed under the MIT license. See the LICENSE file in the project root for more information.
 #pragma once
 
-namespace havana::Graphics
+namespace havana::graphics
 {
-	struct PlatformInterface;
+struct platform_interface;
 
-	namespace Vulkan
-	{
-		void GetPlatformInterface(PlatformInterface& platformInterface);
-	} // Vulkan namespace
+namespace vulkan
+{
+void get_platform_interface(platform_interface& pi);
+}
 }

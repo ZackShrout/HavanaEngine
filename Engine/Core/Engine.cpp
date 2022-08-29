@@ -13,7 +13,7 @@ using namespace havana;
 
 namespace
 {
-	Graphics::RenderSurface gameWindow{};
+	graphics::RenderSurface gameWindow{};
 	
 	LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	{
@@ -21,7 +21,7 @@ namespace
 		{
 		case WM_DESTROY:
 		{
-			if (gameWindow.window.IsClosed())
+			if (gameWindow.window.is_closed())
 			{
 				PostQuitMessage(0);
 				return 0;
@@ -31,7 +31,7 @@ namespace
 		case WM_SYSCHAR:
 			if (wparam == VK_RETURN && (HIWORD(lparam) & KF_ALTDOWN))
 			{
-				gameWindow.window.SetFullscreen(!gameWindow.window.IsFullscreen());
+				gameWindow.window.set_fullscreen(!gameWindow.window.is_fullscreen());
 				return 0;
 			}
 			break;
@@ -45,14 +45,14 @@ namespace
 
 bool EngineInitialize()
 {
-	if(!Content::LoadGame()) return false;
+	if(!content::load_game()) return false;
 
-	Platform::WindowInitInfo info
+	platform::window_init_info info
 	{
 		&WinProc, nullptr, L"Havana Game" // TODO: get the game name from the loaded game file
 	};
 
-	gameWindow.window = Platform::MakeWindow(&info);
+	gameWindow.window = platform::create_window(&info);
 
 	if (!gameWindow.window.is_valid()) return false;
 
@@ -67,8 +67,8 @@ void EngineUpdate()
 
 void EngineShutdown()
 {
-	Platform::RemoveWindow(gameWindow.window.get_id());
-	havana::Content::UnloadGame();
+	platform::remove_window(gameWindow.window.get_id());
+	havana::content::unload_game();
 }
 
 #endif // _Win64

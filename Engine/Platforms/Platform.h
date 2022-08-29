@@ -1,9 +1,9 @@
 #pragma once
 #include "CommonHeaders.h"
 #include "Window.h"
-namespace havana::Platform
+namespace havana::platform
 {
-	struct WindowInitInfo; // forward declaration, defined by platform in PlatformTypes.h
-	Window MakeWindow(const WindowInitInfo* const initInfo = nullptr, void* disp = nullptr);
-	void RemoveWindow(window_id id);
+	struct window_init_info; // forward declaration, defined by platform in PlatformTypes.h
+	window create_window(const window_init_info* const initInfo = nullptr, void* disp = nullptr);
+	void remove_window(window_id id);
 }

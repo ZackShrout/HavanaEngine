@@ -27,10 +27,10 @@ void BufferTestWorker()
 {
 	//while (!close)
 	//{
-	//	auto* resource = Graphics::D3D12::D3DX::CreateBuffer(buffer.data(), (u32)buffer.size());
+	//	auto* resource = Graphics::d3d12::D3DX::CreateBuffer(buffer.data(), (u32)buffer.size());
 	//	// NOTE: We can also use Core::Release(resource) since we're not using the buffer for rendering.
 	//	//		 However, this is a nice test for DeferredRelease functionality.
-	//	Graphics::D3D12::Core::DeferredRelease(resource);
+	//	Graphics::d3d12::Core::DeferredRelease(resource);
 	//}
 }
 
@@ -83,9 +83,9 @@ bool ReadFile(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size
 	return true;
 }
 
-void CreateRenderSurface(Graphics::RenderSurface &surface, Platform::WindowInitInfo info, void* disp)
+void CreateRenderSurface(Graphics::RenderSurface &surface, Platform::window_init_info info, void* disp)
 {
-	surface.window = Platform::MakeWindow(&info, disp);
+	surface.window = Platform::create_window(&info, disp);
 	surface.surface = Graphics::CreateSurface(surface.window);
 }
 
@@ -96,7 +96,7 @@ void DestroyRenderSurface(Graphics::RenderSurface &surface)
 	if (temp.surface.is_valid())
 		Graphics::RemoveSurface(temp.surface.get_id());
 	if (temp.window.is_valid())
-		Platform::RemoveWindow(temp.window.get_id());
+		Platform::remove_window(temp.window.get_id());
 }
 
 bool TestInitialize(void *disp)
@@ -107,9 +107,9 @@ bool TestInitialize(void *disp)
 	// 	return false;
 	// }
 
-	if (!Graphics::Initialize(Graphics::GraphicsPlatform::VulkanAPI)) return false;
+	if (!Graphics::Initialize(Graphics::graphics_platform::VulkanAPI)) return false;
 
-	Platform::WindowInitInfo info[]{
+	Platform::window_init_info info[]{
 		{nullptr, nullptr, L"Render Window 1", 100, 100, 400, 800},
 		{nullptr, nullptr, L"Render Window 2", 150, 150, 800, 400},
 		{nullptr, nullptr, L"Render Window 3", 200, 200, 400, 400},
@@ -126,7 +126,7 @@ bool TestInitialize(void *disp)
 	u64 size{ 0 };
 	if (!ReadFile("..\\..\\enginetest\\model.model", model, size)) return false;
 
-	modelId = Content::CreateResource(model.get(), Content::AssetType::Mesh);
+	modelId = content::CreateResource(model.get(), content::AssetType::Mesh);
 	if (!id::is_valid(modelId)) return false;
 
 	InitTestWorkers(BufferTestWorker);
@@ -141,7 +141,7 @@ void TestShutdown()
 
 	if (id::is_valid(modelId))
 	{
-		Content::DestroyResource(modelId, Content::AssetType::Mesh);
+		content::DestroyResource(modelId, content::AssetType::Mesh);
 	}
 
 	for (u32 i{ 0 }; i < _countof(surfaces); i++)

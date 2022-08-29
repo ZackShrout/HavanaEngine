@@ -7,7 +7,7 @@
 
 using namespace Microsoft::WRL;
 
-namespace havana::Graphics::D3D12::Core
+namespace havana::graphics::d3d12::Core
 {
 	namespace
 	{
@@ -463,11 +463,11 @@ namespace havana::Graphics::D3D12::Core
 		deferredReleasesFlag[CurrentFrameIndex()] = 1;
 	}
 
-	Surface CreateSurface(Platform::Window window)
+	surface CreateSurface(platform::window window)
 	{
 		surface_id id{ surfaces.add(window) };
 		surfaces[id].CreateSwapChain(dxgiFactory, gfxCommand.CommandQueue());
-		return Surface{ id };
+		return surface{ id };
 	}
 
 	void RemoveSurface(surface_id id)

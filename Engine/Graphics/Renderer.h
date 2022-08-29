@@ -3,15 +3,15 @@
 #include "../Platforms/Platform.h"
 #include "EngineAPI/Camera.h"
 
-namespace havana::Graphics
+namespace havana::graphics
 {
 	DEFINE_TYPED_ID(surface_id);
 	
-	class Surface
+	class surface
 	{
 	public:
-		constexpr Surface() = default;
-		constexpr explicit Surface(surface_id id) : m_id{ id } {}
+		constexpr surface() = default;
+		constexpr explicit surface(surface_id id) : m_id{ id } {}
 		constexpr surface_id get_id() const { return m_id; }
 		constexpr bool is_valid() const { return id::is_valid(m_id); }
 
@@ -26,8 +26,8 @@ namespace havana::Graphics
 
 	struct RenderSurface
 	{
-		Platform::Window window{};
-		Surface surface{};
+		platform::window window{};
+		surface surface{};
 	};
 
 	struct CameraParameter
@@ -102,23 +102,23 @@ namespace havana::Graphics
 		}
 	};
 
-	enum GraphicsPlatform : u32
+	enum graphics_platform : u32
 	{
 		Direct3D12 = 0,
-		VulkanAPI = 1,
+		vulkan_1 = 1,
 		OpenGraphicsL = 2
 	};
 	
-	bool Initialize(GraphicsPlatform platform);
+	bool Initialize(graphics_platform platform);
 	void Shutdown();
 
 	// Get the location of the compiled engine shaders relative to the executable's path.
 	// The path is for the graphics API that is currently in use.
 	const char* GetEngineShadersPath();
 	// Get the location of the compiled engine shaders, for the specified platform, relative to the executable's path.
-	const char* GetEngineShadersPath(GraphicsPlatform platform);
+	const char* GetEngineShadersPath(graphics_platform platform);
 
-	Surface CreateSurface(Platform::Window window);
+	surface CreateSurface(platform::window window);
 	void RemoveSurface(surface_id id);
 
 	Camera CreateCamera(CameraInitInfo info);

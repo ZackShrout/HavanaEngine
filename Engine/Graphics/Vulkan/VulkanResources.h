@@ -1,30 +1,15 @@
+// Copyright (c) Contributors of Primal+
+// Distributed under the MIT license. See the LICENSE file in the project root for more information.
 #pragma once
 #include "VulkanCommonHeaders.h"
-#include<fstream>
 
-namespace havana::Graphics::Vulkan
+namespace havana::graphics::vulkan
 {
-	static utl::vector<char> ReadFile(const std::string& fileName)
-	{
-		// Open stream from given file at the end to get file size
-		std::ifstream file(fileName, std::ios::binary | std::ios::ate);
-		if (!file.is_open())
-		{
-			throw std::runtime_error("Failed to open a file!");
-		}
+bool create_image(VkDevice device, VkImageType type, u32 width, u32 height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+    VkMemoryPropertyFlags memory_flags, bool create_view, VkImageAspectFlags view_aspect_flags, vulkan_image& image);
+bool create_image_view(VkDevice device, VkFormat format, vulkan_image* image, VkImageAspectFlags view_aspect_flags);
+void destroy_image(VkDevice device, vulkan_image* image);
 
-		size_t fileSize = (size_t)file.tellg();
-		utl::vector<char> fileBuffer(fileSize);
-
-		// Go back to begining of file
-		file.seekg(0);
-
-		// Read file into our buffer
-		file.read(fileBuffer.data(), fileSize);
-
-		// Close the stream
-		file.close();
-
-		return fileBuffer;
-	}
+bool create_framebuffer(VkDevice device, vulkan_renderpass& renderpass, u32 width, u32 height, u32 attach_count, utl::vector<VkImageView> attachments, vulkan_framebuffer& framebuffer);
+void destroy_framebuffer(VkDevice device, vulkan_framebuffer& framebuffer);
 }

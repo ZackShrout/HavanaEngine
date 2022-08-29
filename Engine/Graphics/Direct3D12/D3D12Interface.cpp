@@ -5,31 +5,31 @@
 #include "D3D12Camera.h"
 #include "Graphics/GraphicsPlatformInterface.h"
 
-namespace havana::Graphics
+namespace havana::graphics
 {
-	namespace D3D12
+	namespace d3d12
 	{
-		void GetPlatformInterface(PlatformInterface& pi)
+		void get_platform_interface(platform_interface& pi)
 		{
-			pi.Initialize = Core::Initialize;
-			pi.Shutdown = Core::Shutdown;
+			pi.initialize = Core::Initialize;
+			pi.shutdown = Core::Shutdown;
 
-			pi.Surface.Create = Core::CreateSurface;
-			pi.Surface.Remove = Core::RemoveSurface;
-			pi.Surface.Resize = Core::ResizeSurface;
-			pi.Surface.Width = Core::SurfaceWidth;
-			pi.Surface.Height = Core::SurfaceHeight;
-			pi.Surface.Render = Core::RenderSurface;
+			pi.surface.create = Core::CreateSurface;
+			pi.surface.remove = Core::RemoveSurface;
+			pi.surface.resize = Core::ResizeSurface;
+			pi.surface.width = Core::SurfaceWidth;
+			pi.surface.height = Core::SurfaceHeight;
+			pi.surface.render = Core::RenderSurface;
 
-			pi.Camera.Create = Camera::Create;
-			pi.Camera.Remove = Camera::Remove;
-			pi.Camera.SetParamter = Camera::SetParamter;
-			pi.Camera.GetParamter = Camera::GetParamter;
+			pi.Camera.create = Camera::Create;
+			pi.Camera.remove = Camera::Remove;
+			pi.Camera.set_paramter = Camera::SetParamter;
+			pi.Camera.get_paramter = Camera::GetParamter;
 
-			pi.Resources.AddSubmesh = Content::Submesh::Add;
-			pi.Resources.RemoveSubmesh = Content::Submesh::Remove;
+			pi.Resources.add_submesh = content::Submesh::Add;
+			pi.Resources.remove_submesh = content::Submesh::Remove;
 
-			pi.platform = GraphicsPlatform::Direct3D12;
+			pi.platform = graphics_platform::Direct3D12;
 		}
-	} // D3D12 namespace
+	} // d3d12 namespace
 }
