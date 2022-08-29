@@ -160,9 +160,9 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 game_entity::entity CreateOneGameEntity()
 {
 	transform::init_info transformInfo{};
-	math::Vec3A rot{ 0, 3.14f, 0 };
+	math::v3a rot{ 0, 3.14f, 0 };
 	DirectX::XMVECTOR quat{ DirectX::XMQuaternionRotationRollPitchYawFromVector(DirectX::XMLoadFloat3A(&rot)) };
-	math::Vec4A rotQuat;
+	math::v4a rotQuat;
 	DirectX::XMStoreFloat4A(&rotQuat, quat);
 	memcpy(&transformInfo.rotation[0], &rotQuat.x, sizeof(transformInfo.rotation));
 

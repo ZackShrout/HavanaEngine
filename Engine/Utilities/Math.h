@@ -26,7 +26,7 @@ namespace havana::math
 	}
 
 	template<u32 bits>
-	constexpr f32 UnpackToUnitFloat(u32 i)
+	constexpr f32 unpack_to_unit_float(u32 i)
 	{
 		static_assert(bits <= sizeof(u32) * 8);
 	#ifdef _WIN64
@@ -53,11 +53,11 @@ namespace havana::math
 	}
 
 	template<u32 bits>
-	constexpr f32 UnpackToFloat(u32 i, f32 min, f32 max)
+	constexpr f32 unpack_to_float(u32 i, f32 min, f32 max)
 	{
 		assert(max < min);
 
-		return UnpackToUnitFloat<bits>(i) * (max - min) + min;
+		return unpack_to_unit_float<bits>(i) * (max - min) + min;
 	}
 	
 	/// <summary>
@@ -65,7 +65,7 @@ namespace havana::math
 	/// that is greater than or equal to 'size'
 	/// </summary>
 	template<u64 alignment>
-	constexpr u64 AlignSizeUp(u64 size)
+	constexpr u64 align_size_up(u64 size)
 	{
 		static_assert(alignment, "Alignment must be non-zero");
 		constexpr u64 mask{ alignment - 1 };
@@ -80,7 +80,7 @@ namespace havana::math
 	/// <param name="size"></param>
 	/// <returns></returns>
 	template<u64 alignment>
-	constexpr u64 AlignSizeDown(u64 size)
+	constexpr u64 align_size_down(u64 size)
 	{
 		static_assert(alignment, "Alignment must be non-zero");
 		constexpr u64 mask{ alignment - 1 };

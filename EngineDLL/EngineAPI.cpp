@@ -1,17 +1,19 @@
 //******************************************
 //Havana Engine API for use in Havana Editor
 //******************************************
+
+#include "Common.h"
+#include "Components/Script.h"
+#include "Graphics/Renderer.h"
+#include "Platforms/PlatformTypes.h"
+#include "Platforms/Platform.h"
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif // !WIN32_LEAN_AND_MEAN
 
 #include <Windows.h>
 #include <atlsafe.h>
-#include "Common.h"
-#include "Components/Script.h"
-#include "Graphics/Renderer.h"
-#include "Platforms/PlatformTypes.h"
-#include "Platforms/Platform.h"
 
 using namespace havana;
 

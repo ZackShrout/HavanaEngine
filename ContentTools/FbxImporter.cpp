@@ -54,7 +54,7 @@ namespace havana::tools
 
 		FbxImporter* importer{ FbxImporter::Create(_fbx_manager, "Importer") };
 		if (!(importer &&
-			importer->initialize(file, -1, _fbx_manager->GetIOSettings()) &&
+			importer->Initialize(file, -1, _fbx_manager->GetIOSettings()) &&
 			importer->Import(_fbx_scene)))
 		{
 			return;

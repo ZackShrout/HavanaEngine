@@ -15,7 +15,7 @@ namespace havana::graphics::d3d12::GPass
 	[[nodiscard]] const D3D12DepthBuffer& DepthBuffer();
 
 	// NOTE: call this every frame before rendering anything in gpass
-	void SetSize(math::Vec2u32 size);
+	void SetSize(math::u32v2 size);
 	void DepthPrepass(ID3D12GraphicsCommandList* cmdList, const D3D12FrameInfo& info);
 	void render(ID3D12GraphicsCommandList* cmdList, const D3D12FrameInfo& info);
 

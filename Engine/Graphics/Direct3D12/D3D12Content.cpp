@@ -78,8 +78,8 @@ namespace havana::graphics::d3d12::content
 			const u32 indexBufferSize{ indexSize * indexCount};
 
 			constexpr u32 alignment{ D3D12_STANDARD_MAXIMUM_ELEMENT_ALIGNMENT_BYTE_MULTIPLE };
-			const u32 alignedPositionBufferSize{ (u32)math::AlignSizeUp<alignment>(positionBufferSize) };
-			const u32 alignedElementBufferSize{ (u32)math::AlignSizeUp<alignment>(elementBufferSize) };
+			const u32 alignedPositionBufferSize{ (u32)math::align_size_up<alignment>(positionBufferSize) };
+			const u32 alignedElementBufferSize{ (u32)math::align_size_up<alignment>(elementBufferSize) };
 			const u32 totalBufferSize{ alignedPositionBufferSize + alignedElementBufferSize + indexBufferSize };
 
 			ID3D12Resource* resource{ D3DX::CreateBuffer(blob.position(), totalBufferSize) };

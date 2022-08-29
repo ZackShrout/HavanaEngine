@@ -122,7 +122,7 @@ namespace havana::tools
 			const u32 phi_count{ clamp(info.segments[axis::x], 3u, 64u) };
 			const u32 theta_count{ clamp(info.segments[axis::y], 2u, 64u) };
 			const f32 theta_step{ pi / theta_count };
-			const f32 phi_step{ twoPi / phi_count };
+			const f32 phi_step{ two_pi / phi_count };
 			const u32 num_vertices{ 2 + phi_count * (theta_count - 1) };
 			const u32 num_indices{ 2 * 3 * phi_count + 2 * 3 * phi_count * (theta_count - 2) };
 
