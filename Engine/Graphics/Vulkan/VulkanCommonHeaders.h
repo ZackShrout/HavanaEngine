@@ -1,5 +1,3 @@
-// Copyright (c) Contributors of Primal+
-// Distributed under the MIT license. See the LICENSE file in the project root for more information.
 #pragma once
 
 #include "CommonHeaders.h"
@@ -25,65 +23,67 @@
 #pragma comment(lib, "vulkan-1.lib")
 
 
-namespace havana::graphics::vulkan {
-
-constexpr u32 frame_buffer_count{ 3 };
-
-struct vulkan_image
+namespace havana::graphics::vulkan
 {
-    VkImage			image;
-    VkDeviceMemory	memory;
-    VkImageView		view;
-    u32				width;
-    u32				height;
-};
+    constexpr u32 frame_buffer_count{ 3 };
 
-struct vulkan_renderpass
-{
-    enum state : u32 {
-        READY,
-        RECORDING,
-        IN_RENDER_PASS,
-        RECORDING_ENDED,
-        SUBMITTED,
-        NOT_ALLOCATED
+    struct vulkan_image
+    {
+        VkImage			image;
+        VkDeviceMemory	memory;
+        VkImageView		view;
+        u32				width;
+        u32				height;
     };
 
-    VkRenderPass	render_pass;
-    math::u32v4		render_area;
-    math::v4		clear_color;
-    f32				depth;
-    u32				stencil;
-};
+    struct vulkan_renderpass
+    {
+        enum state : u32
+        {
+            READY,
+            RECORDING,
+            IN_RENDER_PASS,
+            RECORDING_ENDED,
+            SUBMITTED,
+            NOT_ALLOCATED
+        };
 
-struct vulkan_cmd_buffer
-{
-    enum state : u32 {
-        CMD_READY,
-        CMD_RECORDING,
-        CMD_IN_RENDER_PASS,
-        CMD_RECORDING_ENDED,
-        CMD_SUBMITTED,
-        CMD_NOT_ALLOCATED
+        VkRenderPass	render_pass;
+        math::u32v4		render_area;
+        math::v4		clear_color;
+        f32				depth;
+        u32				stencil;
     };
 
-    VkCommandBuffer cmd_buffer;
-    state           cmd_state;
-};
+    struct vulkan_cmd_buffer
+    {
+        enum state : u32
+        {
+            CMD_READY,
+            CMD_RECORDING,
+            CMD_IN_RENDER_PASS,
+            CMD_RECORDING_ENDED,
+            CMD_SUBMITTED,
+            CMD_NOT_ALLOCATED
+        };
 
-struct vulkan_framebuffer
-{
-    VkFramebuffer				framebuffer;
-    u32							attach_count;
-    utl::vector<VkImageView>	attachments;
-    vulkan_renderpass*			renderpass;
-};
+        VkCommandBuffer cmd_buffer;
+        state           cmd_state;
+    };
 
-struct vulkan_fence
-{
-    VkFence	fence;
-    bool	signaled;
-};
+    struct vulkan_framebuffer
+    {
+        VkFramebuffer				framebuffer;
+        u32							attach_count;
+        utl::vector<VkImageView>	attachments;
+        vulkan_renderpass*			renderpass;
+    };
+
+    struct vulkan_fence
+    {
+        VkFence	fence;
+        bool	signaled;
+    };
 }
 
 #ifdef _DEBUG

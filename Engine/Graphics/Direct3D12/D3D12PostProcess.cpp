@@ -49,7 +49,7 @@ namespace havana::graphics::d3d12::fx
 			{
 				d3dx::d3d12_pipeline_state_subobject_root_signature			root_signature{ fx_root_sig };
 				d3dx::d3d12_pipeline_state_subobject_vs						vs{ shaders::get_engine_shader(shaders::engine_shader::fullscreen_triangle_vs) };
-				d3dx::d3d12_pipeline_state_subobject_ps						ps{ shaders::get_engine_shader(shaders::engine_shader::postProcessPS) };
+				d3dx::d3d12_pipeline_state_subobject_ps						ps{ shaders::get_engine_shader(shaders::engine_shader::post_process_ps) };
 				d3dx::d3d12_pipeline_state_subobject_primitive_topology		primitive_topology{ D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE };
 				d3dx::d3d12_pipeline_state_subobject_render_target_formats	render_target_formats;
 				d3dx::d3d12_pipeline_state_subobject_rasterizer				rasterizer{ d3dx::rasterizer_state.no_cull };
@@ -57,7 +57,7 @@ namespace havana::graphics::d3d12::fx
 
 			D3D12_RT_FORMAT_ARRAY rtf_array{};
 			rtf_array.NumRenderTargets = 1;
-			rtf_array.RTFormats[0] = d3d12_surface::defaultBackBufferFormat;
+			rtf_array.RTFormats[0] = d3d12_surface::default_back_buffer_format;
 
 			stream.render_target_formats = rtf_array;
 

@@ -1,29 +1,26 @@
-// Copyright (c) Contributors of Primal+
-// Distributed under the MIT license. See the LICENSE file in the project root for more information.
 #include "CommonHeaders.h"
 #include "VulkanInterface.h"
 #include "VulkanCore.h"
 #include "Graphics/GraphicsPlatformInterface.h"
 
-namespace havana::graphics::vulkan {
-
-void
-get_platform_interface(platform_interface& pi)
+namespace havana::graphics::vulkan
 {
-    pi.initialize = core::initialize;
-    pi.shutdown = core::shutdown;
+    void
+    get_platform_interface(platform_interface& pi)
+    {
+        pi.initialize = core::initialize;
+        pi.shutdown = core::shutdown;
 
-    pi.surface.create = core::create_surface;
-    pi.surface.remove = core::remove_surface;
-    pi.surface.resize = core::resize_surface;
-    pi.surface.width = core::surface_width;
-    pi.surface.height = core::surface_height;
-    pi.surface.render = core::render_surface;
+        pi.surface.create = core::create_surface;
+        pi.surface.remove = core::remove_surface;
+        pi.surface.resize = core::resize_surface;
+        pi.surface.width = core::surface_width;
+        pi.surface.height = core::surface_height;
+        pi.surface.render = core::render_surface;
 
-    /*pi.resources.add_submesh = content::submesh::add;
-    pi.resources.remove_submesh = content::submesh::remove;*/
+        /*pi.resources.add_submesh = content::submesh::add;
+        pi.resources.remove_submesh = content::submesh::remove;*/
 
-    pi.platform = graphics_platform::vulkan_1;
-}
-
+        pi.platform = graphics_platform::vulkan_1;
+    }
 }

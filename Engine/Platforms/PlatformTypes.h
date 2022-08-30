@@ -25,11 +25,9 @@ namespace havana::platform
 		s32				height{ 950 };
 	};
 }
-
 #endif // _WIN64
 
 #ifdef __linux__
-
 #include <X11/Xlib.h>
 #include <stdlib.h>
 
@@ -51,5 +49,4 @@ namespace havana::platform
 		s32				height{ 950 };
 	};
 }
-
 #endif // __linux__

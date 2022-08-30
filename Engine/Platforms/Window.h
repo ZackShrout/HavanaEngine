@@ -14,7 +14,7 @@ namespace havana::platform
 		constexpr window_id get_id() const { return _id; }
 		constexpr bool is_valid() const { return id::is_valid(_id); }
 
-		void set_fullscreen(bool isFullscreen) const;
+		void set_fullscreen(bool is_fullscreen) const;
 		bool is_fullscreen() const;
 		void* handle() const;
 		void* display() const;

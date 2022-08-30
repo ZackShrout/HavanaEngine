@@ -3,67 +3,78 @@
 
 namespace havana::platform
 {
-	void window::set_fullscreen(bool isFullscreen) const
+	void
+	window::set_fullscreen(bool is_fullscreen) const
 	{
 		assert(is_valid());
-		set_window_fullscreen(_id, isFullscreen);
+		set_window_fullscreen(_id, is_fullscreen);
 	}
 
-	bool window::is_fullscreen() const
+	bool
+	window::is_fullscreen() const
 	{
 		assert(is_valid());
 		return is_window_fullscreen(_id);
 	}
 
-	void* window::handle() const
+	void*
+	window::handle() const
 	{
 		assert(is_valid());
 		return get_window_handle(_id);
 	}
 
-	void* window::display() const
+	void*
+	window::display() const
 	{
 		assert(is_valid());
 		return get_display(_id);
 	}
 
-	void window::set_caption(const wchar_t* caption) const
+	void
+	window::set_caption(const wchar_t* caption) const
 	{
 		assert(is_valid());
 		set_window_caption(_id, caption);
 	}
 
-	math::u32v4 window::size() const
+	math::u32v4
+	window::size() const
 	{
 		assert(is_valid());
 		return get_window_size(_id);
 	}
 
-	void window::resize(u32 width, u32 height) const
+	void
+	window::resize(u32 width, u32 height) const
 	{
 		assert(is_valid());
 		resize_window(_id, width, height);
 	}
 
-	u32 window::width() const
+	u32
+	window::width() const
 	{
 		math::u32v4 s{ size() };
 		return s.z - s.x;
 	}
 
-	u32 window::height() const
+	u32
+	window::height() const
 	{
 		math::u32v4 s{ size() };
 		return s.w - s.y;
 	}
 
-	bool window::is_closed() const
+	bool
+	window::is_closed() const
 	{
 		assert(is_valid());
 		return is_window_closed(_id);
 	}
 
-	void window::close()
+	void
+	window::close()
 	{
 		set_window_closed(_id);
 	}

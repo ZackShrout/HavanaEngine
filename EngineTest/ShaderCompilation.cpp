@@ -32,7 +32,7 @@ namespace
 
 	struct EngineShaderInfo
 	{
-		engine_shader::ID	id;
+		engine_shader::id	id;
 		ShaderFileInfo		info;
 	};
 	
@@ -40,7 +40,7 @@ namespace
 	{
 		engine_shader::fullscreen_triangle_vs, {"FullScreenTriangle.hlsl", "FullScreenTriangleVS", ShaderType::vertex},
 		engine_shader::fill_color_ps, {"FillColor.hlsl", "FillColorPS", ShaderType::pixel},
-		engine_shader::postProcessPS, {"PostProcess.hlsl", "PostProcessPS", ShaderType::pixel},
+		engine_shader::post_process_ps, {"PostProcess.hlsl", "PostProcessPS", ShaderType::pixel},
 	};
 
 	static_assert(_countof(engineShaderFiles) == engine_shader::count);
@@ -239,10 +239,10 @@ namespace
 
 		for (auto& shader : shaders)
 		{
-			const D3D12_SHADER_BYTECODE byteCode{ shader.byte_code->GetBufferPointer(), shader.byte_code->GetBufferSize() };
-			file.write((char*)&byteCode.BytecodeLength, sizeof(byteCode.BytecodeLength));
+			const D3D12_SHADER_BYTECODE byte_code{ shader.byte_code->GetBufferPointer(), shader.byte_code->GetBufferSize() };
+			file.write((char*)&byte_code.BytecodeLength, sizeof(byte_code.BytecodeLength));
 			file.write((char*)&shader.hash.HashDigest[0], sizeof(shader.hash.HashDigest));
-			file.write((char*)byteCode.pShaderBytecode, byteCode.BytecodeLength);
+			file.write((char*)byte_code.pShaderBytecode, byte_code.BytecodeLength);
 		}
 
 		file.close();

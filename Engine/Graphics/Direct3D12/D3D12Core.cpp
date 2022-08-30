@@ -141,18 +141,18 @@ namespace havana::graphics::d3d12::core
 				ID3D12CommandAllocator* cmd_allocator{ nullptr };
 				u64						fence_value{ 0 };
 
-				void wait(HANDLE fenceEvent, ID3D12Fence1* fence)
+				void wait(HANDLE fence_event, ID3D12Fence1* fence)
 				{
-					assert(fence && fenceEvent);
+					assert(fence && fence_event);
 					// If the current fence value is still less than "fence_value"
 					// then we know the GPU hasn't finished executing the command list
 					// since it has not reached the commandQueue->Signel() command.
 					if (fence->GetCompletedValue() < fence_value)
 					{
 						// We have the fence create an event which is signaled once the fence's current value equals "fence_value"
-						DXCall(fence->SetEventOnCompletion(fence_value, fenceEvent));
+						DXCall(fence->SetEventOnCompletion(fence_value, fence_event));
 						// Wait until the fence creates the above event, signaling that the command queue has finished executing
-						WaitForSingleObject(fenceEvent, INFINITE);
+						WaitForSingleObject(fence_event, INFINITE);
 					}
 				}
 
@@ -456,7 +456,7 @@ namespace havana::graphics::d3d12::core
 	create_surface(platform::window window)
 	{
 		surface_id id{ surfaces.add(window) };
-		surfaces[id].CreateSwapChain(dxgi_factory, gfx_command.command_queue());
+		surfaces[id].create_swap_chain(dxgi_factory, gfx_command.command_queue());
 		return surface{ id };
 	}
 
@@ -503,7 +503,7 @@ namespace havana::graphics::d3d12::core
 		}
 		
 		const d3d12_surface& surface{ surfaces[id] };
-		ID3D12Resource* const current_back_buffer{ surface.BackBuffer() };
+		ID3D12Resource* const current_back_buffer{ surface.back_buffer() };
 
 		d3d12_frame_info frame_info
 		{
