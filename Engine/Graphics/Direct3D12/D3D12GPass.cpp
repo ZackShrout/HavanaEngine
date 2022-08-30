@@ -55,9 +55,9 @@ namespace havana::graphics::d3d12::gpass
 
 			// Create the main buffer
 			{
-				D3D12TextureInitInfo info{};
+				d3d12_texture_init_info info{};
 				info.desc = &desc;
-				info.initialState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				info.initial_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 				info.clear_value.Format = desc.Format;
 				memcpy(&info.clear_value.Color, &clear_value[0], sizeof(clear_value));
 				
@@ -70,9 +70,9 @@ namespace havana::graphics::d3d12::gpass
 			
 			// Create the depth buffer
 			{
-				D3D12TextureInitInfo info{};
+				d3d12_texture_init_info info{};
 				info.desc = &desc;
-				info.initialState = D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+				info.initial_state = D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 				info.clear_value.Format = desc.Format;
 				info.clear_value.DepthStencil.Depth = 0.0f;
 				info.clear_value.DepthStencil.Stencil = 0;

@@ -5,15 +5,15 @@ namespace havana::graphics::d3d12
 {
 	class descriptor_heap;
 
-	struct DescriptorHandle
+	struct descriptor_handle
 	{
 		D3D12_CPU_DESCRIPTOR_HANDLE cpu{};
 		D3D12_GPU_DESCRIPTOR_HANDLE gpu{};
 		u32							index{ u32_invalid_id };
 
 
-		[[nodiscard]] constexpr bool IsVaild() const { return cpu.ptr != 0; }
-		[[nodiscard]] constexpr bool IsShaderVisible() const { return gpu.ptr != 0; }
+		[[nodiscard]] constexpr bool is_vaild() const { return cpu.ptr != 0; }
+		[[nodiscard]] constexpr bool is_shader_visible() const { return gpu.ptr != 0; }
 #ifdef _DEBUG
 	private:
 		friend class descriptor_heap;
@@ -27,61 +27,61 @@ namespace havana::graphics::d3d12
 	public:
 		explicit descriptor_heap(D3D12_DESCRIPTOR_HEAP_TYPE type) : _type{ type } {}
 		DISABLE_COPY_AND_MOVE(descriptor_heap);
-		~descriptor_heap() { assert(!m_heap); }
+		~descriptor_heap() { assert(!_heap); }
 
 		// Implemented in the translation unit for this header
 		bool initialize(u32 capacity, bool isShaderVisible);
 		void process_deferred_free(u32 frameIdx);
 		void release();
-		[[nodiscard]] DescriptorHandle Allocate();
-		void Free(DescriptorHandle& handle);
+		[[nodiscard]] descriptor_handle allocate();
+		void free(descriptor_handle& handle);
 
 		[[nodiscard]] constexpr D3D12_DESCRIPTOR_HEAP_TYPE type() { return _type; }
-		[[nodiscard]] constexpr D3D12_CPU_DESCRIPTOR_HANDLE CpuStart() { return m_cpuStart; }
-		[[nodiscard]] constexpr D3D12_GPU_DESCRIPTOR_HANDLE GpuStart() { return m_gpuStart; }
-		[[nodiscard]] constexpr ID3D12DescriptorHeap* const Heap() { return m_heap; }
-		[[nodiscard]] constexpr u32 Capactity() { return _capacity; }
-		[[nodiscard]] constexpr u32 Size() { return _size; }
-		[[nodiscard]] constexpr u32 DescriptorSize() { return m_descriptorSize; }
-		[[nodiscard]] constexpr bool IsShaderVisible() { return m_gpuStart.ptr != 0; }
+		[[nodiscard]] constexpr D3D12_CPU_DESCRIPTOR_HANDLE cpu_start() { return _cpu_start; }
+		[[nodiscard]] constexpr D3D12_GPU_DESCRIPTOR_HANDLE gpu_start() { return _gpu_start; }
+		[[nodiscard]] constexpr ID3D12DescriptorHeap* const heap() { return _heap; }
+		[[nodiscard]] constexpr u32 capactity() { return _capacity; }
+		[[nodiscard]] constexpr u32 size() { return _size; }
+		[[nodiscard]] constexpr u32 descriptor_size() { return _descriptor_size; }
+		[[nodiscard]] constexpr bool is_shader_visible() { return _gpu_start.ptr != 0; }
 
 	private:
-		ID3D12DescriptorHeap*				m_heap;
-		D3D12_CPU_DESCRIPTOR_HANDLE			m_cpuStart{};
-		D3D12_GPU_DESCRIPTOR_HANDLE			m_gpuStart{};
-		std::unique_ptr<u32[]>				m_freeHandles{};
-		utl::vector<u32>					m_deferredFreeIndices[frame_buffer_count]{};
-		std::mutex							m_mutex{};
+		ID3D12DescriptorHeap*				_heap;
+		D3D12_CPU_DESCRIPTOR_HANDLE			_cpu_start{};
+		D3D12_GPU_DESCRIPTOR_HANDLE			_gpu_start{};
+		std::unique_ptr<u32[]>				_free_handles{};
+		utl::vector<u32>					_deferred_free_indices[frame_buffer_count]{};
+		std::mutex							_mutex{};
 		u32									_capacity{ 0 };
 		u32									_size{ 0 };
-		u32									m_descriptorSize{ 0 };
+		u32									_descriptor_size{ 0 };
 		const D3D12_DESCRIPTOR_HEAP_TYPE	_type{};
 	};
 
-	struct D3D12TextureInitInfo
+	struct d3d12_texture_init_info
 	{
 		ID3D12Heap1*						heap{ nullptr };
 		ID3D12Resource*						resource{ nullptr };
-		D3D12_SHADER_RESOURCE_VIEW_DESC*	srvDesc{ nullptr };
+		D3D12_SHADER_RESOURCE_VIEW_DESC*	srv_desc{ nullptr };
 		D3D12_RESOURCE_DESC*				desc{ nullptr };
-		D3D12_RESOURCE_ALLOCATION_INFO1		allocationInfo{};
-		D3D12_RESOURCE_STATES				initialState{};
+		D3D12_RESOURCE_ALLOCATION_INFO1		allocation_info{};
+		D3D12_RESOURCE_STATES				initial_state{};
 		D3D12_CLEAR_VALUE					clear_value{};
 	};
 	
-	class D3D12Texture
+	class d3d12_texture
 	{
 	public:
-		constexpr static u32 maxMips{ 14 }; // Support up to 16k resolution
-		D3D12Texture() = default;
-		explicit D3D12Texture(D3D12TextureInitInfo info);
-		~D3D12Texture() { release(); }
-		DISABLE_COPY(D3D12Texture);
-		constexpr D3D12Texture(D3D12Texture&& o) : m_resource{ o.m_resource }, m_srv{ o.m_srv }
+		constexpr static u32 max_mips{ 14 }; // Support up to 16k resolution
+		d3d12_texture() = default;
+		explicit d3d12_texture(d3d12_texture_init_info info);
+		~d3d12_texture() { release(); }
+		DISABLE_COPY(d3d12_texture);
+		constexpr d3d12_texture(d3d12_texture&& o) : _resource{ o._resource }, _srv{ o._srv }
 		{
 			o.reset();
 		}
-		constexpr D3D12Texture& operator=(D3D12Texture&& o)
+		constexpr d3d12_texture& operator=(d3d12_texture&& o)
 		{
 			assert(this != &o);
 			if (this != &o)
@@ -93,37 +93,37 @@ namespace havana::graphics::d3d12
 		}
 
 		void release();
-		[[nodiscard]] constexpr ID3D12Resource* const resource() const { return m_resource; }
-		[[nodiscard]] constexpr DescriptorHandle SRV() const { return m_srv; }
+		[[nodiscard]] constexpr ID3D12Resource* const resource() const { return _resource; }
+		[[nodiscard]] constexpr descriptor_handle srv() const { return _srv; }
 
 	private:
-		constexpr void move(D3D12Texture& o)
+		constexpr void move(d3d12_texture& o)
 		{
-			m_resource = o.m_resource;
-			m_srv = o.m_srv;
+			_resource = o._resource;
+			_srv = o._srv;
 			o.reset();
 		}
 
 		constexpr void reset()
 		{
-			m_resource = nullptr;
-			m_srv = {};
+			_resource = nullptr;
+			_srv = {};
 		}
 
-		ID3D12Resource* m_resource{ nullptr };
-		DescriptorHandle m_srv;
+		ID3D12Resource*		_resource{ nullptr };
+		descriptor_handle	_srv;
 	};
 
 	class d3d12_render_texture
 	{
 	public:
 		d3d12_render_texture() = default;
-		explicit d3d12_render_texture(D3D12TextureInitInfo info);
+		explicit d3d12_render_texture(d3d12_texture_init_info info);
 		~d3d12_render_texture() { release(); }
 		DISABLE_COPY(d3d12_render_texture);
-		constexpr d3d12_render_texture(d3d12_render_texture&& o) : m_texture{ std::move(o.m_texture) }, m_mipCount{ o.m_mipCount }
+		constexpr d3d12_render_texture(d3d12_render_texture&& o) : _texture{ std::move(o._texture) }, _mip_count{ o._mip_count }
 		{
-			for (u32 i{ 0 }; i < m_mipCount; i++) m_rtv[i] = o.m_rtv[i];
+			for (u32 i{ 0 }; i < _mip_count; ++i) _rtv[i] = o._rtv[i];
 			o.reset();
 		}
 		constexpr d3d12_render_texture& operator=(d3d12_render_texture&& o)
@@ -138,61 +138,61 @@ namespace havana::graphics::d3d12
 		}
 
 		void release();
-		[[nodiscard]] constexpr u32 MipCount() const { return m_mipCount; }
-		[[nodiscard]] constexpr D3D12_CPU_DESCRIPTOR_HANDLE rtv(u32 mipIndex) const { assert(mipIndex < m_mipCount); return m_rtv[mipIndex].cpu; }
-		[[nodiscard]] constexpr DescriptorHandle SRV() const { return m_texture.SRV(); }
-		[[nodiscard]] constexpr ID3D12Resource* const resource() const { return m_texture.resource(); }
+		[[nodiscard]] constexpr u32 mip_count() const { return _mip_count; }
+		[[nodiscard]] constexpr D3D12_CPU_DESCRIPTOR_HANDLE rtv(u32 mipIndex) const { assert(mipIndex < _mip_count); return _rtv[mipIndex].cpu; }
+		[[nodiscard]] constexpr descriptor_handle srv() const { return _texture.srv(); }
+		[[nodiscard]] constexpr ID3D12Resource* const resource() const { return _texture.resource(); }
 
 	private:
 		constexpr void move(d3d12_render_texture& o)
 		{
-			m_texture = std::move(o.m_texture);
-			m_mipCount = o.m_mipCount;
-			for (u32 i{ 0 }; i < m_mipCount; i++) m_rtv[i] = o.m_rtv[i];
+			_texture = std::move(o._texture);
+			_mip_count = o._mip_count;
+			for (u32 i{ 0 }; i < _mip_count; ++i) _rtv[i] = o._rtv[i];
 			o.reset();
 		}
 
 		constexpr void reset()
 		{
-			for (u32 i{ 0 }; i < m_mipCount; i++) m_rtv[i] = {};
-			m_mipCount = 0;
+			for (u32 i{ 0 }; i < _mip_count; ++i) _rtv[i] = {};
+			_mip_count = 0;
 		}
 
-		D3D12Texture		m_texture{};
-		DescriptorHandle	m_rtv[D3D12Texture::maxMips]{};
-		u32					m_mipCount{ 0 };
+		d3d12_texture		_texture{};
+		descriptor_handle	_rtv[d3d12_texture::max_mips]{};
+		u32					_mip_count{ 0 };
 	};
 
 	class d3d12_depth_buffer
 	{
 	public:
 		d3d12_depth_buffer() = default;
-		explicit d3d12_depth_buffer(D3D12TextureInitInfo info);
+		explicit d3d12_depth_buffer(d3d12_texture_init_info info);
 		~d3d12_depth_buffer() { release(); }
 		DISABLE_COPY(d3d12_depth_buffer);
-		constexpr d3d12_depth_buffer(d3d12_depth_buffer&& o) : m_texture{ std::move(o.m_texture) }, m_dsv{ o.m_dsv }
+		constexpr d3d12_depth_buffer(d3d12_depth_buffer&& o) : _texture{ std::move(o._texture) }, _dsv{ o._dsv }
 		{
-			o.m_dsv = {};
+			o._dsv = {};
 		}
 		constexpr d3d12_depth_buffer& operator=(d3d12_depth_buffer&& o)
 		{
 			assert(this != &o);
 			if (this != &o)
 			{
-				m_texture = std::move(o.m_texture);
-				m_dsv = o.m_dsv;
-				o.m_dsv = {};
+				_texture = std::move(o._texture);
+				_dsv = o._dsv;
+				o._dsv = {};
 			}
 			return *this;
 		}
 
 		void release();
-		[[nodiscard]] constexpr D3D12_CPU_DESCRIPTOR_HANDLE dsv() const { return m_dsv.cpu; }
-		[[nodiscard]] constexpr DescriptorHandle SRV() const { return m_texture.SRV(); }
-		[[nodiscard]] constexpr ID3D12Resource* const resource() const { return m_texture.resource(); }
+		[[nodiscard]] constexpr D3D12_CPU_DESCRIPTOR_HANDLE dsv() const { return _dsv.cpu; }
+		[[nodiscard]] constexpr descriptor_handle srv() const { return _texture.srv(); }
+		[[nodiscard]] constexpr ID3D12Resource* const resource() const { return _texture.resource(); }
 
 	private:
-		D3D12Texture		m_texture{};
-		DescriptorHandle	m_dsv{};
+		d3d12_texture		_texture{};
+		descriptor_handle	_dsv{};
 	};
 }

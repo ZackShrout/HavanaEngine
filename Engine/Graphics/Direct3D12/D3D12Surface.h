@@ -59,7 +59,7 @@ namespace havana::graphics::d3d12
 		struct RenderTargetData
 		{
 			ID3D12Resource* resource{ nullptr };
-			DescriptorHandle rtv{};
+			descriptor_handle rtv{};
 		};
 
 		platform::window	m_window{};

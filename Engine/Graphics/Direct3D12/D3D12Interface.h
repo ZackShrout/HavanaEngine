@@ -6,6 +6,6 @@ namespace havana::graphics
 
 	namespace d3d12
 	{
-		void get_platform_interface(platform_interface& platformInterface);
+		void get_platform_interface(platform_interface& pi);
 	} // d3d12 namespace
 }

@@ -8,25 +8,25 @@ namespace havana::graphics::d3d12::fx
 {
 	namespace
 	{
-		struct FXRootParamIndices
+		struct fx_root_param_indices
 		{
 			enum : u32
 			{
 				root_constants,
-				descriptorTable,
+				descriptor_table,
 
 				count
 			};
 		};
 
-		ID3D12RootSignature*	fxRootSig{ nullptr };
-		ID3D12PipelineState*	fxPSO{ nullptr };
+		ID3D12RootSignature*	fx_root_sig{ nullptr };
+		ID3D12PipelineState*	fx_pso{ nullptr };
 
-		bool CreateFXPSOAndRootSignature()
+		bool create_fx_pso_and_root_signature()
 		{
-			assert(!fxRootSig && !fxPSO);
+			assert(!fx_root_sig && !fx_pso);
 			
-			// Create Post-Process fx root signature
+			// Create Post-Process FX root signature
 			d3dx::d3d12_descriptor_range range
 			{
 				D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
@@ -34,64 +34,67 @@ namespace havana::graphics::d3d12::fx
 				D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE
 			};
 
-			using idx = FXRootParamIndices;
+			using idx = fx_root_param_indices;
 			d3dx::d3d12_root_parameter paramters[idx::count]{};
 			paramters[idx::root_constants].as_constants(1, D3D12_SHADER_VISIBILITY_PIXEL, 1);
-			paramters[idx::descriptorTable].as_descriptor_table(D3D12_SHADER_VISIBILITY_PIXEL, &range, 1);
+			paramters[idx::descriptor_table].as_descriptor_table(D3D12_SHADER_VISIBILITY_PIXEL, &range, 1);
 
-			const d3dx::d3d12_root_signature_desc rootSignature{ &paramters[0], _countof(paramters) };
-			fxRootSig = rootSignature.create();
-			assert(fxRootSig);
-			NAME_D3D12_OBJECT(fxRootSig, L"Post-Process FX Root Signature");
+			const d3dx::d3d12_root_signature_desc root_signature{ &paramters[0], _countof(paramters) };
+			fx_root_sig = root_signature.create();
+			assert(fx_root_sig);
+			NAME_D3D12_OBJECT(fx_root_sig, L"Post-Process FX Root Signature");
 
-			// Create Post-Process fx Pipeline State Object
+			// Create Post-Process FX Pipeline State Object
 			struct
 			{
-				d3dx::d3d12_pipeline_state_subobject_root_signature			rootSignature{ fxRootSig };
+				d3dx::d3d12_pipeline_state_subobject_root_signature			root_signature{ fx_root_sig };
 				d3dx::d3d12_pipeline_state_subobject_vs						vs{ shaders::get_engine_shader(shaders::engine_shader::fullscreen_triangle_vs) };
 				d3dx::d3d12_pipeline_state_subobject_ps						ps{ shaders::get_engine_shader(shaders::engine_shader::postProcessPS) };
 				d3dx::d3d12_pipeline_state_subobject_primitive_topology		primitive_topology{ D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE };
-				d3dx::d3d12_pipeline_state_subobject_render_target_formats	renderTargetFormats;
+				d3dx::d3d12_pipeline_state_subobject_render_target_formats	render_target_formats;
 				d3dx::d3d12_pipeline_state_subobject_rasterizer				rasterizer{ d3dx::rasterizer_state.no_cull };
 			} stream;
 
-			D3D12_RT_FORMAT_ARRAY rtfArray{};
-			rtfArray.NumRenderTargets = 1;
-			rtfArray.RTFormats[0] = d3d12_surface::defaultBackBufferFormat;
+			D3D12_RT_FORMAT_ARRAY rtf_array{};
+			rtf_array.NumRenderTargets = 1;
+			rtf_array.RTFormats[0] = d3d12_surface::defaultBackBufferFormat;
 
-			stream.renderTargetFormats = rtfArray;
+			stream.render_target_formats = rtf_array;
 
-			fxPSO = d3dx::create_pipeline_state(&stream, sizeof(stream));
-			NAME_D3D12_OBJECT(fxRootSig, L"Post-Process FX Pipeline State Object");
+			fx_pso = d3dx::create_pipeline_state(&stream, sizeof(stream));
+			NAME_D3D12_OBJECT(fx_root_sig, L"Post-Process FX Pipeline State Object");
 
-			return fxRootSig && fxPSO;
+			return fx_root_sig && fx_pso;
 		}
 	} //anonymous namespace
 
-	bool initialize()
+	bool
+	initialize()
 	{
-		return CreateFXPSOAndRootSignature();
+		return create_fx_pso_and_root_signature();
 	}
 
-	void shutdown()
+	void
+	shutdown()
 	{
-		core::release(fxRootSig);
-		core::release(fxPSO);
+		core::release(fx_root_sig);
+		core::release(fx_pso);
 	}
 
-	void post_process(ID3D12GraphicsCommandList* cmdList, D3D12_CPU_DESCRIPTOR_HANDLE targetRTV)
+	void
+	post_process(id3d12_graphics_command_list* cmd_list, D3D12_CPU_DESCRIPTOR_HANDLE target_rtv)
 	{
-		cmdList->SetGraphicsRootSignature(fxRootSig);
-		cmdList->SetPipelineState(fxPSO);
+		cmd_list->SetGraphicsRootSignature(fx_root_sig);
+		cmd_list->SetPipelineState(fx_pso);
 
-		using idx = FXRootParamIndices;
-		cmdList->SetGraphicsRoot32BitConstant(idx::root_constants, gpass::main_buffer().SRV().index, 0);
-		cmdList->SetGraphicsRootDescriptorTable(idx::descriptorTable, core::srv_heap().GpuStart());
-		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		using idx = fx_root_param_indices;
+		cmd_list->SetGraphicsRoot32BitConstant(idx::root_constants, gpass::main_buffer().srv().index, 0);
+		cmd_list->SetGraphicsRootDescriptorTable(idx::descriptor_table, core::srv_heap().gpu_start());
+		cmd_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		// NOTE: we don't need to clear the render target, because each pixel will
 		//		 be overwritten by pixels from the gpass main buffer.
 		//		 We also don't need a depth buffer.
-		cmdList->OMSetRenderTargets(1, &targetRTV, 1, nullptr);
-		cmdList->DrawInstanced(3, 1, 0, 0);
+		cmd_list->OMSetRenderTargets(1, &target_rtv, 1, nullptr);
+		cmd_list->DrawInstanced(3, 1, 0, 0);
 	}
 }

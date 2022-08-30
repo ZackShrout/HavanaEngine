@@ -361,10 +361,10 @@ namespace havana::graphics::d3d12::core
 			return failed_init();
 
 		NAME_D3D12_OBJECT(main_device, L"Main D3D Device");
-		NAME_D3D12_OBJECT(rtv_desc_heap.Heap(), L"RTV Descriptor Heap");
-		NAME_D3D12_OBJECT(dsv_desc_heap.Heap(), L"DSV Descriptor Heap");
-		NAME_D3D12_OBJECT(srv_desc_heap.Heap(), L"SRV Descriptor Heap");
-		NAME_D3D12_OBJECT(uav_desc_heap.Heap(), L"USV Descriptor Heap");
+		NAME_D3D12_OBJECT(rtv_desc_heap.heap(), L"RTV Descriptor Heap");
+		NAME_D3D12_OBJECT(dsv_desc_heap.heap(), L"DSV Descriptor Heap");
+		NAME_D3D12_OBJECT(srv_desc_heap.heap(), L"SRV Descriptor Heap");
+		NAME_D3D12_OBJECT(uav_desc_heap.heap(), L"USV Descriptor Heap");
 
 		return true;
 	}
@@ -515,7 +515,7 @@ namespace havana::graphics::d3d12::core
 		d3dx::d3d12_resource_barrier& barriers{ resource_barriers };
 
 		// Record commands
-		ID3D12DescriptorHeap* const heaps[]{ srv_desc_heap.Heap() };
+		ID3D12DescriptorHeap* const heaps[]{ srv_desc_heap.heap() };
 		cmd_list->SetDescriptorHeaps(1, &heaps[0]);
 
 		cmd_list->RSSetViewports(1, &surface.viewport());

@@ -52,7 +52,7 @@ namespace havana::graphics::d3d12
 
 		for (u32 i{ 0 }; i < frame_buffer_count; i++)
 		{
-			m_renderTargetData[i].rtv = core::rtv_heap().Allocate();
+			m_renderTargetData[i].rtv = core::rtv_heap().allocate();
 		}
 
 		Finalize();
@@ -120,7 +120,7 @@ namespace havana::graphics::d3d12
 		{
 			RenderTargetData& data{ m_renderTargetData[i] };
 			core::release(data.resource);
-			core::rtv_heap().Free(data.rtv);
+			core::rtv_heap().free(data.rtv);
 		}
 
 		core::release(m_swapChain);
