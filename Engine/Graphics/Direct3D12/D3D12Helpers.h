@@ -1,12 +1,11 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace havana::graphics::d3d12::D3DX
+namespace havana::graphics::d3d12::d3dx
 {
-	
 	constexpr struct
 	{
-		D3D12_HEAP_PROPERTIES defaultHeap
+		const D3D12_HEAP_PROPERTIES default_heap
 		{
 			D3D12_HEAP_TYPE_DEFAULT,					// type
 			D3D12_CPU_PAGE_PROPERTY_UNKNOWN,			// CPUPageProperty
@@ -15,7 +14,7 @@ namespace havana::graphics::d3d12::D3DX
 			0											// VisibleNodeMask
 		};
 
-		D3D12_HEAP_PROPERTIES uploadHeap
+		const D3D12_HEAP_PROPERTIES upload_heap
 		{
 			D3D12_HEAP_TYPE_UPLOAD,						// type
 			D3D12_CPU_PAGE_PROPERTY_UNKNOWN,			// CPUPageProperty
@@ -24,11 +23,11 @@ namespace havana::graphics::d3d12::D3DX
 			0											// VisibleNodeMask
 		};
 
-	} heapProperties;
+	} heap_properties;
 
 	constexpr struct
 	{
-		const D3D12_RASTERIZER_DESC noCull
+		const D3D12_RASTERIZER_DESC no_cull
 		{
 			D3D12_FILL_MODE_SOLID,						// FillMode
 			D3D12_CULL_MODE_NONE,						// CullMode
@@ -43,7 +42,7 @@ namespace havana::graphics::d3d12::D3DX
 			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster
 		};
 
-		const D3D12_RASTERIZER_DESC backfaceCull
+		const D3D12_RASTERIZER_DESC backface_cull
 		{
 			D3D12_FILL_MODE_SOLID,						// FillMode
 			D3D12_CULL_MODE_BACK,						// CullMode
@@ -58,7 +57,7 @@ namespace havana::graphics::d3d12::D3DX
 			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster
 		};
 		
-		const D3D12_RASTERIZER_DESC frontfaceCull
+		const D3D12_RASTERIZER_DESC frontface_cull
 		{
 			D3D12_FILL_MODE_SOLID,						// FillMode
 			D3D12_CULL_MODE_FRONT,						// CullMode
@@ -87,7 +86,7 @@ namespace havana::graphics::d3d12::D3DX
 			0,											// ForcedSampleCount
 			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster
 		};
-	} rasterizerState;
+	} rasterizer_state;
 
 	constexpr struct
 	{
@@ -103,24 +102,22 @@ namespace havana::graphics::d3d12::D3DX
 			{},											// BackFace
 			0											// DepthBoundsTestEnable
 		};
-	} depthState;
+	} depth_state;
 
-	class ResourceBarrier
+	class d3d12_resource_barrier
 	{
 	public:
-		constexpr static u32 maxResourceBarriers{ 32 };
+		constexpr static u32 max_resource_barriers{ 32 };
 
 		// Add a transition barrier to the list of barriers
-		constexpr void Add(
-			ID3D12Resource* resource,
-			D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after,
-			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE,
-			u32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
+		constexpr void add(ID3D12Resource* resource,
+						   D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after,
+						   D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE,
+						   u32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
 		{
 			assert(resource);
-			assert(m_offset < maxResourceBarriers);
-			
-			D3D12_RESOURCE_BARRIER& barrier{ m_barriers[m_offset] };
+			assert(_offset < max_resource_barriers);
+			D3D12_RESOURCE_BARRIER& barrier{ _barriers[_offset] };
 			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 			barrier.Flags = flags;
 			barrier.Transition.pResource = resource;
@@ -128,114 +125,114 @@ namespace havana::graphics::d3d12::D3DX
 			barrier.Transition.StateAfter = after;
 			barrier.Transition.Subresource = subresource;
 
-			m_offset++;
+			++_offset;
 		}
 
 		// Add a UAV barrier to the list of barries
-		constexpr void Add(
-			ID3D12Resource* resource,
-			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE)
+		constexpr void add(ID3D12Resource* resource,
+						   D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE)
 		{
 			assert(resource);
-			assert(m_offset < maxResourceBarriers);
+			assert(_offset < max_resource_barriers);
 			
-			D3D12_RESOURCE_BARRIER& barrier{ m_barriers[m_offset] };
+			D3D12_RESOURCE_BARRIER& barrier{ _barriers[_offset] };
 			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
 			barrier.Flags = flags;
 			barrier.UAV.pResource = resource;
 
-			m_offset++;
+			++_offset;
 		}
 
 		// Add an aliasing barrier to the list of barriers
-		constexpr void Add(
-			ID3D12Resource* before, ID3D12Resource* after,
-			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE)
+		constexpr void add(ID3D12Resource* before, ID3D12Resource* after,
+						   D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE)
 		{
 			assert(before && after);
-			assert(m_offset < maxResourceBarriers);
+			assert(_offset < max_resource_barriers);
 
-			D3D12_RESOURCE_BARRIER& barrier{ m_barriers[m_offset] };
+			D3D12_RESOURCE_BARRIER& barrier{ _barriers[_offset] };
 			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_ALIASING;
 			barrier.Flags = flags;
 			barrier.Aliasing.pResourceBefore = before;
 			barrier.Aliasing.pResourceAfter = after;
 
-			m_offset++;
+			++_offset;
 		}
 
-		void Apply(ID3D12GraphicsCommandList* cmdList)
+		void apply(ID3D12GraphicsCommandList* cmd_list)
 		{
-			assert(m_offset);
-			cmdList->ResourceBarrier(m_offset, m_barriers);
-			m_offset = 0;
+			assert(_offset);
+			cmd_list->ResourceBarrier(_offset, _barriers);
+			_offset = 0;
 		}
 	private:
-		D3D12_RESOURCE_BARRIER	m_barriers[maxResourceBarriers]{};
-		u32						m_offset{ 0 };
+		D3D12_RESOURCE_BARRIER	_barriers[max_resource_barriers]{};
+		u32						_offset{ 0 };
 	};
 
-	void TransitionResource(
-		id3d12GraphicsCommandList* cmdList,
+	void transition_resource(
+		id3d12_graphics_command_list* cmd_list,
 		ID3D12Resource* resource,
 		D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after,
 		D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE,
 		u32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
 
-	ID3D12RootSignature* CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC1& desc);
+	ID3D12RootSignature* create_root_signature(const D3D12_ROOT_SIGNATURE_DESC1& desc);
 
-	struct D3D12_Descriptor_Range : public D3D12_DESCRIPTOR_RANGE1
+	struct d3d12_descriptor_range : public D3D12_DESCRIPTOR_RANGE1
 	{
-		constexpr explicit D3D12_Descriptor_Range(D3D12_DESCRIPTOR_RANGE_TYPE rangeType, u32 descriptorCount, u32 shaderRegister, u32 space = 0,
-			D3D12_DESCRIPTOR_RANGE_FLAGS flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE, u32 offsetFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND) 
-			: D3D12_DESCRIPTOR_RANGE1{ rangeType, descriptorCount, shaderRegister, space, flags, offsetFromTableStart }
+		constexpr explicit d3d12_descriptor_range(D3D12_DESCRIPTOR_RANGE_TYPE range_type,
+												  u32 descriptor_count, u32 shader_register, u32 space = 0,
+												  D3D12_DESCRIPTOR_RANGE_FLAGS flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE,
+												  u32 offset_from_table_start = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND) 
+			: D3D12_DESCRIPTOR_RANGE1{ range_type, descriptor_count, shader_register, space, flags, offset_from_table_start }
 		{}
 	};
 
-	struct D3D12_Root_Parameter : public D3D12_ROOT_PARAMETER1
+	struct d3d12_root_parameter : public D3D12_ROOT_PARAMETER1
 	{
-		constexpr void AsConstants(u32 numConstants, D3D12_SHADER_VISIBILITY visibility, u32 shaderRegister, u32 space = 0)
+		constexpr void as_constants(u32 num_constants, D3D12_SHADER_VISIBILITY visibility, u32 shader_register, u32 space = 0)
 		{
 			ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 			ShaderVisibility = visibility;
-			Constants.Num32BitValues = numConstants;
-			Constants.ShaderRegister = shaderRegister;
+			Constants.Num32BitValues = num_constants;
+			Constants.ShaderRegister = shader_register;
 			Constants.RegisterSpace = space;
 		}
 
-		constexpr void AsCBV(D3D12_SHADER_VISIBILITY visibility, u32 shaderRegister, u32 space = 0, 
+		constexpr void as_cbv(D3D12_SHADER_VISIBILITY visibility, u32 shader_register, u32 space = 0, 
 			D3D12_ROOT_DESCRIPTOR_FLAGS flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE)
 		{
-			AsDescriptor(D3D12_ROOT_PARAMETER_TYPE_CBV, visibility, shaderRegister, space, flags);
+			as_descriptor(D3D12_ROOT_PARAMETER_TYPE_CBV, visibility, shader_register, space, flags);
 		}
 
-		constexpr void AsSRV(D3D12_SHADER_VISIBILITY visibility, u32 shaderRegister, u32 space = 0,
+		constexpr void as_srv(D3D12_SHADER_VISIBILITY visibility, u32 shader_register, u32 space = 0,
 			D3D12_ROOT_DESCRIPTOR_FLAGS flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE)
 		{
-			AsDescriptor(D3D12_ROOT_PARAMETER_TYPE_SRV, visibility, shaderRegister, space, flags);
+			as_descriptor(D3D12_ROOT_PARAMETER_TYPE_SRV, visibility, shader_register, space, flags);
 		}
 
-		constexpr void AsUAV(D3D12_SHADER_VISIBILITY visibility, u32 shaderRegister, u32 space = 0,
+		constexpr void as_uav(D3D12_SHADER_VISIBILITY visibility, u32 shader_register, u32 space = 0,
 			D3D12_ROOT_DESCRIPTOR_FLAGS flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE)
 		{
-			AsDescriptor(D3D12_ROOT_PARAMETER_TYPE_UAV, visibility, shaderRegister, space, flags);
+			as_descriptor(D3D12_ROOT_PARAMETER_TYPE_UAV, visibility, shader_register, space, flags);
 		}
 
-		constexpr void AsDescriptorTable(D3D12_SHADER_VISIBILITY visibility, const D3D12_Descriptor_Range* ranges, u32 rangeCount)
+		constexpr void as_descriptor_table(D3D12_SHADER_VISIBILITY visibility, const d3d12_descriptor_range* ranges, u32 range_count)
 		{
 			ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 			ShaderVisibility = visibility;
-			DescriptorTable.NumDescriptorRanges = rangeCount;
+			DescriptorTable.NumDescriptorRanges = range_count;
 			DescriptorTable.pDescriptorRanges = ranges;
 		}
 
 	private:
-		constexpr void AsDescriptor(D3D12_ROOT_PARAMETER_TYPE type, D3D12_SHADER_VISIBILITY visibility, u32 shaderRegister, u32 space,
+		constexpr void as_descriptor(D3D12_ROOT_PARAMETER_TYPE type, D3D12_SHADER_VISIBILITY visibility, u32 shader_register, u32 space,
 			D3D12_ROOT_DESCRIPTOR_FLAGS flags)
 		{
 			ParameterType = type;
 			ShaderVisibility = visibility;
-			Descriptor.ShaderRegister = shaderRegister;
+			Descriptor.ShaderRegister = shader_register;
 			Descriptor.RegisterSpace = space;
 			Descriptor.Flags = flags;
 		}
@@ -246,76 +243,76 @@ namespace havana::graphics::d3d12::D3DX
 	// Root descriptor (CBV, SRV, UAV) = 2 DWORDs each
 	// Descriptor table pointer = 1 DWORD
 	// Static samplers = 0 DWORDs (compiled into shader)
-	struct D3D12_Root_Signature_Desc : public D3D12_ROOT_SIGNATURE_DESC1
+	struct d3d12_root_signature_desc : public D3D12_ROOT_SIGNATURE_DESC1
 	{
-		constexpr explicit D3D12_Root_Signature_Desc(const D3D12_Root_Parameter* parameters, u32 parameterCount,
-			const D3D12_STATIC_SAMPLER_DESC* staticSamplers = nullptr, u32 samplerCount = 0,
-			D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS)
-			: D3D12_ROOT_SIGNATURE_DESC1{ parameterCount, parameters, samplerCount, staticSamplers, flags }
+		constexpr explicit d3d12_root_signature_desc(const d3d12_root_parameter* parameters, u32 parameter_count,
+													 const D3D12_STATIC_SAMPLER_DESC* static_samplers = nullptr, u32 sampler_count = 0,
+													 D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
+													 D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+													 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+													 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+													 D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS |
+													 D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS)
+			: D3D12_ROOT_SIGNATURE_DESC1{ parameter_count, parameters, sampler_count, static_samplers, flags }
 		{}
 
-		ID3D12RootSignature* Create() const
+		ID3D12RootSignature* create() const
 		{
-			return CreateRootSignature(*this);
+			return create_root_signature(*this);
 		}
 	};
 
 #pragma warning(push)
-#pragma warning(disable : 4324)
+#pragma warning(disable : 4324) // disable padding warning
 	template<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE type, typename T>
-	class alignas(void*) D3D12_Pipeline_State_Subobject
+	class alignas(void*) d3d12_pipeline_state_subobject
 	{
 	public:
-		D3D12_Pipeline_State_Subobject() = default;
-		constexpr explicit D3D12_Pipeline_State_Subobject(T subobject) : m_type{ type }, m_subobject{ subobject }{}
-		D3D12_Pipeline_State_Subobject& operator=(const T& subobject) { m_subobject = subobject; return *this; }
+		d3d12_pipeline_state_subobject() = default;
+		constexpr explicit d3d12_pipeline_state_subobject(T subobject) : _type{ type }, _subobject{ subobject }{}
+		d3d12_pipeline_state_subobject& operator=(const T& subobject) { _subobject = subobject; return *this; }
 	private:
-		const D3D12_PIPELINE_STATE_SUBOBJECT_TYPE m_type{ type };
-		T m_subobject{};
+		const D3D12_PIPELINE_STATE_SUBOBJECT_TYPE _type{ type };
+		T _subobject{};
 	};
 #pragma warning(pop)
 
 // Pipeline State Subobject (PSS) macro
-#define PSS(name, ...) using D3D12_Pipeline_State_Subobject_##name = D3D12_Pipeline_State_Subobject<__VA_ARGS__>;
+#define PSS(name, ...) using d3d12_pipeline_state_subobject_##name = d3d12_pipeline_state_subobject<__VA_ARGS__>;
 
-	PSS(rootSignature, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE, ID3D12RootSignature*);
+	PSS(root_signature, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE, ID3D12RootSignature*);
 	PSS(vs, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS, D3D12_SHADER_BYTECODE);
 	PSS(ps, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PS, D3D12_SHADER_BYTECODE);
 	PSS(ds, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DS, D3D12_SHADER_BYTECODE);
 	PSS(hs, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_HS, D3D12_SHADER_BYTECODE);
 	PSS(gs, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_GS, D3D12_SHADER_BYTECODE);
 	PSS(cs, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_CS, D3D12_SHADER_BYTECODE);
-	PSS(streamOutput, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_STREAM_OUTPUT, D3D12_STREAM_OUTPUT_DESC);
+	PSS(stream_output, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_STREAM_OUTPUT, D3D12_STREAM_OUTPUT_DESC);
 	PSS(blend, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND, D3D12_BLEND_DESC);
-	PSS(sampleMask, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK, u32);
+	PSS(sample_mask, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK, u32);
 	PSS(rasterizer, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER, D3D12_RASTERIZER_DESC);
-	PSS(depthStencil, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL, D3D12_DEPTH_STENCIL_DESC);
-	PSS(inputLayer, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT, D3D12_INPUT_LAYOUT_DESC);
-	PSS(ibStripCutValue, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_IB_STRIP_CUT_VALUE, D3D12_INDEX_BUFFER_STRIP_CUT_VALUE);
-	PSS(primitiveTopology, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY, D3D12_PRIMITIVE_TOPOLOGY_TYPE);
-	PSS(renderTargetFormats, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RENDER_TARGET_FORMATS, D3D12_RT_FORMAT_ARRAY);
-	PSS(depthStencilFormat, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL_FORMAT, DXGI_FORMAT);
-	PSS(sampleDesc, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_DESC, DXGI_SAMPLE_DESC);
-	PSS(nodeMask, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_NODE_MASK, u32);
-	PSS(cachedPSO, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_CACHED_PSO, D3D12_CACHED_PIPELINE_STATE);
+	PSS(depth_stencil, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL, D3D12_DEPTH_STENCIL_DESC);
+	PSS(input_layer, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT, D3D12_INPUT_LAYOUT_DESC);
+	PSS(ib_strip_cut_value, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_IB_STRIP_CUT_VALUE, D3D12_INDEX_BUFFER_STRIP_CUT_VALUE);
+	PSS(primitive_topology, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY, D3D12_PRIMITIVE_TOPOLOGY_TYPE);
+	PSS(render_target_formats, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RENDER_TARGET_FORMATS, D3D12_RT_FORMAT_ARRAY);
+	PSS(depth_stencil_format, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL_FORMAT, DXGI_FORMAT);
+	PSS(sample_desc, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_DESC, DXGI_SAMPLE_DESC);
+	PSS(node_mask, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_NODE_MASK, u32);
+	PSS(cached_pso, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_CACHED_PSO, D3D12_CACHED_PIPELINE_STATE);
 	PSS(flags, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_FLAGS, D3D12_PIPELINE_STATE_FLAGS);
-	PSS(depthStencil1, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL1, D3D12_DEPTH_STENCIL_DESC1);
-	PSS(viewInstancing, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VIEW_INSTANCING, D3D12_VIEW_INSTANCING_DESC);
+	PSS(depth_stencil1, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL1, D3D12_DEPTH_STENCIL_DESC1);
+	PSS(view_instancing, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VIEW_INSTANCING, D3D12_VIEW_INSTANCING_DESC);
 	PSS(as, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_AS, D3D12_SHADER_BYTECODE);
 	PSS(ms, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_MS, D3D12_SHADER_BYTECODE);
 
 #undef PSS
 
-	ID3D12PipelineState* CreatePipelineState(D3D12_PIPELINE_STATE_STREAM_DESC desc);
-	ID3D12PipelineState* CreatePipelineState(void* stream, u64 streamSize);
+	ID3D12PipelineState* create_pipeline_state(D3D12_PIPELINE_STATE_STREAM_DESC desc);
+	ID3D12PipelineState* create_pipeline_state(void* stream, u64 stream_size);
 
-	ID3D12Resource* CreateBuffer(const void* data, u32 buffer_size, bool isCPUAccessible = false,
-								 D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON,
-								 D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
-								 ID3D12Heap* heap = nullptr, u64 heapOffset = 0);
+	ID3D12Resource* create_buffer(const void* data, u32 buffer_size, bool is_cpu_accessible = false,
+								  D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON,
+								  D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
+								  ID3D12Heap* heap = nullptr, u64 heap_offset = 0);
 }

@@ -1,25 +1,25 @@
 #include "D3D12Upload.h"
 #include "D3D12Core.h"
 
-namespace havana::graphics::d3d12::Upload
+namespace havana::graphics::d3d12::upload
 {
 	namespace
 	{
 		struct UploadFrame
 		{
 			ID3D12CommandAllocator*		cmdAllocator{ nullptr };
-			id3d12GraphicsCommandList*	cmdList{ nullptr };
+			id3d12_graphics_command_list*	cmdList{ nullptr };
 			ID3D12Resource*				uploadBuffer{ nullptr };
 			void*						cpuAddress{ nullptr };
-			u64							fenceValue{ 0 };
+			u64							fence_value{ 0 };
 
 			void WaitAndReset();
 
-			void Release()
+			void release()
 			{
 				WaitAndReset();
-				Core::Release(cmdAllocator);
-				Core::Release(cmdList);
+				core::release(cmdAllocator);
+				core::release(cmdList);
 			}
 
 			constexpr bool IsReady() const { return uploadBuffer == nullptr; }
@@ -37,13 +37,13 @@ namespace havana::graphics::d3d12::Upload
 		void UploadFrame::WaitAndReset()
 		{
 			assert(uploadFence && fenceEvent);
-			if (uploadFence->GetCompletedValue() < fenceValue)
+			if (uploadFence->GetCompletedValue() < fence_value)
 			{
-				DXCall(uploadFence->SetEventOnCompletion(fenceValue, fenceEvent));
+				DXCall(uploadFence->SetEventOnCompletion(fence_value, fenceEvent));
 				WaitForSingleObject(fenceEvent, INFINITE);
 			}
 
-			Core::Release(uploadBuffer);
+			core::release(uploadBuffer);
 			cpuAddress = nullptr;
 		}
 
@@ -86,21 +86,21 @@ namespace havana::graphics::d3d12::Upload
 
 	} // anonymous namespace
 
-	D3D12UploadContext::D3D12UploadContext(u32 alignedSize)
+	d3d12_upload_context::d3d12_upload_context(u32 alignedSize)
 	{
 		assert(uploadCmdQueue);
 		{
 			// We don't want to lock this function for longer than necessary, so we scope this lock
 			std::lock_guard lock{ frameMutex };
-			m_frameIndex = GetAvailableUploadFrame();
-			assert(m_frameIndex != u32_invalid_id);
+			_frame_index = GetAvailableUploadFrame();
+			assert(_frame_index != u32_invalid_id);
 			// Before unlocking, we prevent other threads from picking
 			// this frame by making IsReady() return false.
-			uploadFrames[m_frameIndex].uploadBuffer = (ID3D12Resource*)1;
+			uploadFrames[_frame_index].uploadBuffer = (ID3D12Resource*)1;
 		}
 
-		UploadFrame& frame{ uploadFrames[m_frameIndex] };
-		frame.uploadBuffer = D3DX::CreateBuffer(nullptr, alignedSize, true);
+		UploadFrame& frame{ uploadFrames[_frame_index] };
+		frame.uploadBuffer = d3dx::create_buffer(nullptr, alignedSize, true);
 		NAME_D3D12_OBJECT_INDEXED(frame.uploadBuffer, alignedSize, L"Upload Buffer - size");
 
 		const D3D12_RANGE range{};
@@ -116,11 +116,11 @@ namespace havana::graphics::d3d12::Upload
 		DXCall(frame.cmdList->Reset(frame.cmdAllocator, nullptr));
 	}
 
-	void D3D12UploadContext::EndUpload()
+	void d3d12_upload_context::end_upload()
 	{
-		assert(m_frameIndex != u32_invalid_id);
-		UploadFrame& frame{ uploadFrames[m_frameIndex] };
-		id3d12GraphicsCommandList* const cmdList{frame.cmdList};
+		assert(_frame_index != u32_invalid_id);
+		UploadFrame& frame{ uploadFrames[_frame_index] };
+		id3d12_graphics_command_list* const cmdList{frame.cmdList};
 		DXCall(cmdList->Close());
 
 		std::lock_guard lock{ queueMutex };
@@ -130,18 +130,18 @@ namespace havana::graphics::d3d12::Upload
 		cmdQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
 
 		++uploadFenceValue;
-		frame.fenceValue = uploadFenceValue;
-		DXCall(cmdQueue->Signal(uploadFence, frame.fenceValue));
+		frame.fence_value = uploadFenceValue;
+		DXCall(cmdQueue->Signal(uploadFence, frame.fence_value));
 
-		// Wait for copy queue to finish. Then release the upload buffer.
+		// wait for copy queue to finish. Then release the upload buffer.
 		frame.WaitAndReset();
 		// This instance of upload context is now expired. make sure we don't use it again.
-		DEBUG_OP(new (this) D3D12UploadContext);
+		DEBUG_OP(new (this) d3d12_upload_context);
 	}
 	
 	bool initialize()
 	{
-		id3d12Device* const device{ Core::Device() };
+		id3d12_device* const device{ core::device() };
 		assert(device && !uploadCmdQueue);
 
 		HRESULT hr{ S_OK };
@@ -186,7 +186,7 @@ namespace havana::graphics::d3d12::Upload
 	{
 		for (u32 i{ 0 }; i < uploadFrameCount; i++)
 		{
-			uploadFrames[i].Release();
+			uploadFrames[i].release();
 		}
 
 		if (fenceEvent)
@@ -195,8 +195,8 @@ namespace havana::graphics::d3d12::Upload
 			fenceEvent = nullptr;
 		}
 
-		Core::Release(uploadCmdQueue);
-		Core::Release(uploadFence);
+		core::release(uploadCmdQueue);
+		core::release(uploadFence);
 		uploadFenceValue = 0;
 	}
 }

@@ -1,27 +1,27 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
 
-namespace havana::graphics::d3d12::Upload
+namespace havana::graphics::d3d12::upload
 {
-	class D3D12UploadContext
+	class d3d12_upload_context
 	{
 	public:
-		D3D12UploadContext(u32 alignedSize);
-		DISABLE_COPY_AND_MOVE(D3D12UploadContext);
-		~D3D12UploadContext() { assert(m_frameIndex == u32_invalid_id); }
+		d3d12_upload_context(u32 alignedSize);
+		DISABLE_COPY_AND_MOVE(d3d12_upload_context);
+		~d3d12_upload_context() { assert(_frame_index == u32_invalid_id); }
 
-		void EndUpload();
+		void end_upload();
 
-		[[nodiscard]] constexpr id3d12GraphicsCommandList* const CommandList() const { return m_cmdList; }
-		[[nodiscard]] constexpr ID3D12Resource* const UploadBuffer() const { return m_uploadBuffer; }
-		[[nodiscard]] constexpr void* const CPUAddress() const { return m_cpuAddress; }
+		[[nodiscard]] constexpr id3d12_graphics_command_list* const command_list() const { return m_cmdList; }
+		[[nodiscard]] constexpr ID3D12Resource* const upload_buffer() const { return m_uploadBuffer; }
+		[[nodiscard]] constexpr void* const cpu_address() const { return m_cpuAddress; }
 
 	private:
-		DEBUG_OP(D3D12UploadContext() = default);
-		id3d12GraphicsCommandList*		m_cmdList{ nullptr };
+		DEBUG_OP(d3d12_upload_context() = default);
+		id3d12_graphics_command_list*		m_cmdList{ nullptr };
 		ID3D12Resource*					m_uploadBuffer{ nullptr };
 		void*							m_cpuAddress{ nullptr };
-		u32								m_frameIndex{ u32_invalid_id };
+		u32								_frame_index{ u32_invalid_id };
 	};
 
 	bool initialize();

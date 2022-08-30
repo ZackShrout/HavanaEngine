@@ -27,10 +27,10 @@
 //{
 //	while (!close)
 //	{
-//		auto* resource = Graphics::d3d12::D3DX::CreateBuffer(buffer.data(), (u32)buffer.size());
-//		// NOTE: We can also use Core::Release(resource) since we're not using the buffer for rendering.
-//		//		 However, this is a nice test for DeferredRelease functionality.
-//		Graphics::d3d12::Core::DeferredRelease(resource);
+//		auto* resource = Graphics::d3d12::d3dx::CreateBuffer(buffer.data(), (u32)buffer.size());
+//		// NOTE: We can also use core::release(resource) since we're not using the buffer for rendering.
+//		//		 However, this is a nice test for deferred_release functionality.
+//		Graphics::d3d12::core::deferred_release(resource);
 //	}
 //}
 //

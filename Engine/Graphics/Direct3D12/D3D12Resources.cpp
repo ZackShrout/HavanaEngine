@@ -4,29 +4,29 @@
 namespace havana::graphics::d3d12
 {
 	//// DESCRIPTOR HEAP //////////////////////////////////////////////////////////////////////////
-	bool DescriptorHeap::initialize(u32 capacity, bool isShaderVisible)
+	bool descriptor_heap::initialize(u32 capacity, bool isShaderVisible)
 	{
 		std::lock_guard lock{ m_mutex };
 		assert(capacity && capacity < D3D12_MAX_SHADER_VISIBLE_DESCRIPTOR_HEAP_SIZE_TIER_2);
-		assert(!(m_type == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER &&
+		assert(!(_type == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER &&
 			capacity > D3D12_MAX_SHADER_VISIBLE_SAMPLER_HEAP_SIZE));
 		
-		if (m_type == D3D12_DESCRIPTOR_HEAP_TYPE_DSV ||
-			m_type == D3D12_DESCRIPTOR_HEAP_TYPE_RTV)
+		if (_type == D3D12_DESCRIPTOR_HEAP_TYPE_DSV ||
+			_type == D3D12_DESCRIPTOR_HEAP_TYPE_RTV)
 		{
 			isShaderVisible = false;
 		}
 
-		Release();
+		release();
 
-		auto* const device{ Core::Device() };
+		auto* const device{ core::device() };
 		assert(device);
 
 		D3D12_DESCRIPTOR_HEAP_DESC desc{};
 		desc.Flags = isShaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		desc.NodeMask = 0;
 		desc.NumDescriptors = capacity;
-		desc.Type = m_type;
+		desc.Type = _type;
 
 		HRESULT hr{ S_OK };
 		DXCall(hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_heap)));
@@ -39,19 +39,19 @@ namespace havana::graphics::d3d12
 		for (u32 i{ 0 }; i < capacity; i++)
 			m_freeHandles[i] = i;
 
-		DEBUG_OP(for (u32 i{ 0 }; i < frameBufferCount; i++) assert(m_deferredFreeIndices[i].empty()));
+		DEBUG_OP(for (u32 i{ 0 }; i < frame_buffer_count; i++) assert(m_deferredFreeIndices[i].empty()));
 
-		m_descriptorSize = device->GetDescriptorHandleIncrementSize(m_type);
+		m_descriptorSize = device->GetDescriptorHandleIncrementSize(_type);
 		m_cpuStart = m_heap->GetCPUDescriptorHandleForHeapStart();
 		m_gpuStart = isShaderVisible ? m_heap->GetGPUDescriptorHandleForHeapStart() : D3D12_GPU_DESCRIPTOR_HANDLE{ 0 };
 
 		return true;
 	}
 	
-	void DescriptorHeap::ProcessDeferredFree(u32 frameIdx)
+	void descriptor_heap::process_deferred_free(u32 frameIdx)
 	{
 		std::lock_guard lock{ m_mutex };
-		assert(frameIdx < frameBufferCount);
+		assert(frameIdx < frame_buffer_count);
 
 		utl::vector<u32>& indices{ m_deferredFreeIndices[frameIdx] };
 		if (!indices.empty())
@@ -65,13 +65,13 @@ namespace havana::graphics::d3d12
 		}
 	}
 	
-	void DescriptorHeap::Release()
+	void descriptor_heap::release()
 	{
 		assert(!_size);
-		Core::DeferredRelease(m_heap);
+		core::deferred_release(m_heap);
 	}
 
-	DescriptorHandle DescriptorHeap::Allocate()
+	DescriptorHandle descriptor_heap::Allocate()
 	{
 		std::lock_guard lock{ m_mutex };
 		assert(m_heap);
@@ -95,7 +95,7 @@ namespace havana::graphics::d3d12
 		return handle;
 	}
 
-	void DescriptorHeap::Free(DescriptorHandle& handle)
+	void descriptor_heap::Free(DescriptorHandle& handle)
 	{
 		if (!handle.IsVaild()) return;
 		std::lock_guard lock{ m_mutex };
@@ -107,24 +107,24 @@ namespace havana::graphics::d3d12
 		const u32 index{ (u32)(handle.cpu.ptr - m_cpuStart.ptr) / m_descriptorSize };
 		assert(handle.index == index);
 
-		const u32 frameIdx{ Core::CurrentFrameIndex() };
+		const u32 frameIdx{ core::current_frame_index() };
 		m_deferredFreeIndices[frameIdx].push_back(index);
-		Core::SetDeferredReleasesFlag();
+		core::set_deferred_releases_flag();
 		handle = {};
 	}
 
 	//// D3D12 TEXTURE ////////////////////////////////////////////////////////////////////////////
 	D3D12Texture::D3D12Texture(D3D12TextureInitInfo info)
 	{
-		auto* const device{ Core::Device() };
+		auto* const device{ core::device() };
 		assert(device);
 
-		D3D12_CLEAR_VALUE* const clearValue
+		D3D12_CLEAR_VALUE* const clear_value
 		{
 			(info.desc &&
 			(info.desc->Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET ||
 				info.desc->Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL))
-			? &info.clearValue : nullptr
+			? &info.clear_value : nullptr
 		};
 
 		if (info.resource)
@@ -137,60 +137,60 @@ namespace havana::graphics::d3d12
 			assert(!info.resource);
 			DXCall(device->CreatePlacedResource(
 				info.heap, info.allocationInfo.Offset, info.desc, info.initialState,
-				clearValue, IID_PPV_ARGS(&m_resource)));
+				clear_value, IID_PPV_ARGS(&m_resource)));
 		}
 		else if(info.desc)
 		{
 			assert(!info.resource);
 
 			DXCall(device->CreateCommittedResource(
-				&D3DX::heapProperties.defaultHeap, D3D12_HEAP_FLAG_NONE, info.desc, info.initialState,
-				clearValue, IID_PPV_ARGS(&m_resource)));
+				&d3dx::heap_properties.default_heap, D3D12_HEAP_FLAG_NONE, info.desc, info.initialState,
+				clear_value, IID_PPV_ARGS(&m_resource)));
 		}
 
 		assert(m_resource);
-		m_srv = Core::SRVHeap().Allocate();
+		m_srv = core::srv_heap().Allocate();
 		device->CreateShaderResourceView(m_resource, info.srvDesc, m_srv.cpu);
 	}
 
-	void D3D12Texture::Release()
+	void D3D12Texture::release()
 	{
-		Core::SRVHeap().Free(m_srv);
-		Core::DeferredRelease(m_resource);
+		core::srv_heap().Free(m_srv);
+		core::deferred_release(m_resource);
 	}
 
 	//// RENDER TEXTURE ///////////////////////////////////////////////////////////////////////////
-	D3D12RenderTexture::D3D12RenderTexture(D3D12TextureInitInfo info) : m_texture{ info }
+	d3d12_render_texture::d3d12_render_texture(D3D12TextureInitInfo info) : m_texture{ info }
 	{
-		m_mipCount = Resource()->GetDesc().MipLevels;
+		m_mipCount = resource()->GetDesc().MipLevels;
 		assert(m_mipCount && m_mipCount <= D3D12Texture::maxMips);
 
-		DescriptorHeap& rtvHeap{ Core::RTVHeap() };
+		descriptor_heap& rtvHeap{ core::rtv_heap() };
 		D3D12_RENDER_TARGET_VIEW_DESC desc{};
 		desc.Format = info.desc->Format;
 		desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 		desc.Texture2D.MipSlice = 0;
 
-		auto* const device{ Core::Device() };
+		auto* const device{ core::device() };
 		assert(device);
 
 		for (u32 i{ 0 }; i < m_mipCount; i++)
 		{
 			m_rtv[i] = rtvHeap.Allocate();
-			device->CreateRenderTargetView(Resource(), &desc, m_rtv[i].cpu);
+			device->CreateRenderTargetView(resource(), &desc, m_rtv[i].cpu);
 			++desc.Texture2D.MipSlice;
 		}
 	}
 
-	void D3D12RenderTexture::Release()
+	void d3d12_render_texture::release()
 	{
-		for (u32 i{ 0 }; i < m_mipCount; i++) Core::RTVHeap().Free(m_rtv[i]);
-		m_texture.Release();
+		for (u32 i{ 0 }; i < m_mipCount; i++) core::rtv_heap().Free(m_rtv[i]);
+		m_texture.release();
 		m_mipCount = 0;
 	}
 
 	//// DEPTH BUFFER /////////////////////////////////////////////////////////////////////////////
-	D3D12DepthBuffer::D3D12DepthBuffer(D3D12TextureInitInfo info)
+	d3d12_depth_buffer::d3d12_depth_buffer(D3D12TextureInitInfo info)
 	{
 		assert(info.desc);
 		const DXGI_FORMAT dsvFormat{ info.desc->Format };
@@ -220,15 +220,15 @@ namespace havana::graphics::d3d12
 		dsvDesc.Format = dsvFormat; // Now that info was used to make the texture, revert the depth stencil view to it's previous format
 		dsvDesc.Texture2D.MipSlice = 0;
 
-		m_dsv = Core::DSVHeap().Allocate();
-		auto* const device{ Core::Device() };
+		m_dsv = core::dsv_heap().Allocate();
+		auto* const device{ core::device() };
 		assert(device);
-		device->CreateDepthStencilView(Resource(), &dsvDesc, m_dsv.cpu);
+		device->CreateDepthStencilView(resource(), &dsvDesc, m_dsv.cpu);
 	}
 	
-	void D3D12DepthBuffer::Release()
+	void d3d12_depth_buffer::release()
 	{
-		Core::DSVHeap().Free(m_dsv);
-		m_texture.Release();
+		core::dsv_heap().Free(m_dsv);
+		m_texture.release();
 	}
 }

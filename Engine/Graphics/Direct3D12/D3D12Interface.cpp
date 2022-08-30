@@ -11,23 +11,23 @@ namespace havana::graphics
 	{
 		void get_platform_interface(platform_interface& pi)
 		{
-			pi.initialize = Core::initialize;
-			pi.shutdown = Core::shutdown;
+			pi.initialize = core::initialize;
+			pi.shutdown = core::shutdown;
 
-			pi.surface.create = Core::create_surface;
-			pi.surface.remove = Core::remove_surface;
-			pi.surface.resize = Core::ResizeSurface;
-			pi.surface.width = Core::SurfaceWidth;
-			pi.surface.height = Core::SurfaceHeight;
-			pi.surface.render = Core::render_surface;
+			pi.surface.create = core::create_surface;
+			pi.surface.remove = core::remove_surface;
+			pi.surface.resize = core::resize_surface;
+			pi.surface.width = core::surface_width;
+			pi.surface.height = core::surface_height;
+			pi.surface.render = core::render_surface;
 
-			pi.camera.create = camera::Create;
-			pi.camera.remove = camera::Remove;
-			pi.camera.set_paramter = camera::SetParamter;
-			pi.camera.get_paramter = camera::GetParamter;
+			pi.camera.create = camera::create;
+			pi.camera.remove = camera::remove;
+			pi.camera.set_paramter = camera::set_paramter;
+			pi.camera.get_paramter = camera::get_paramter;
 
-			pi.resources.add_submesh = content::Submesh::Add;
-			pi.resources.remove_submesh = content::Submesh::Remove;
+			pi.resources.add_submesh = content::submesh::add;
+			pi.resources.remove_submesh = content::submesh::remove;
 
 			pi.platform = graphics_platform::direct3d12;
 		}

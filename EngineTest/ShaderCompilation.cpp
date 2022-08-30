@@ -6,12 +6,12 @@
 
 #pragma comment(lib, "../packages/DirectXShaderCompiler/lib/x64/dxcompiler.lib")
 
-using namespace havana::graphics::d3d12::Shaders;
+using namespace havana::graphics::d3d12::shaders;
 using namespace Microsoft::WRL;
 #elif __linux__
 
 #include "../Graphics/Vulkan/VulkanShaders.h"
-using namespace havana::Graphics::Vulkan::Shaders;
+using namespace havana::Graphics::Vulkan::shaders;
 #endif // _WIN64
 
 #include <glslang/Public/ShaderLang.h>
@@ -32,18 +32,18 @@ namespace
 
 	struct EngineShaderInfo
 	{
-		EngineShader::ID	id;
+		engine_shader::ID	id;
 		ShaderFileInfo		info;
 	};
 	
 	constexpr EngineShaderInfo engineShaderFiles[]
 	{
-		EngineShader::fullscreenTriangleVS, {"FullScreenTriangle.hlsl", "FullScreenTriangleVS", ShaderType::vertex},
-		EngineShader::fillColorPS, {"FillColor.hlsl", "FillColorPS", ShaderType::pixel},
-		EngineShader::postProcessPS, {"PostProcess.hlsl", "PostProcessPS", ShaderType::pixel},
+		engine_shader::fullscreen_triangle_vs, {"FullScreenTriangle.hlsl", "FullScreenTriangleVS", ShaderType::vertex},
+		engine_shader::fill_color_ps, {"FillColor.hlsl", "FillColorPS", ShaderType::pixel},
+		engine_shader::postProcessPS, {"PostProcess.hlsl", "PostProcessPS", ShaderType::pixel},
 	};
 
-	static_assert(_countof(engineShaderFiles) == EngineShader::count);
+	static_assert(_countof(engineShaderFiles) == engine_shader::count);
 
 	struct dxc_compiled_shader
 	{
@@ -207,7 +207,7 @@ namespace
 
 		// Check if either of the engine shader source files are newer than the compiled shader file,
 		// in which case, we need to recompile
-		for (u32 i{ 0 }; i < EngineShader::count; i++)
+		for (u32 i{ 0 }; i < engine_shader::count; i++)
 		{
 			auto& file = engineShaderFiles[i];
 			fullPath = shadersSourcePath;
@@ -270,7 +270,7 @@ bool CompileShaders()
 	std::filesystem::path fullPath{};
 
 	// Compile shaders put all shaders together in a buffer in the same order of compilation
-	for (u32 i{ 0 }; i < EngineShader::count; i++)
+	for (u32 i{ 0 }; i < engine_shader::count; i++)
 	{
 		auto& file = engineShaderFiles[i];
 

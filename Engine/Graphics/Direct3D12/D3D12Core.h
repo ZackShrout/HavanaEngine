@@ -3,20 +3,20 @@
 
 namespace havana::graphics::d3d12
 {
-	struct D3D12FrameInfo
+	struct d3d12_frame_info
 	{
-		u32 surfaceWidth{};
-		u32 surfaceHeight{};
+		u32 surface_width{};
+		u32 surface_height{};
 	};
 }
 
-namespace havana::graphics::d3d12::Core
+namespace havana::graphics::d3d12::core
 {
 	bool initialize();
 	void shutdown();
 
 	template<typename T>
-	constexpr void Release(T*& resource)
+	constexpr void release(T*& resource)
 	{
 		if (resource)
 		{
@@ -27,31 +27,32 @@ namespace havana::graphics::d3d12::Core
 
 	namespace detail
 	{
-		void DeferredRelease(IUnknown* resource);
+		void deferred_release(IUnknown* resource);
 	}
 
 	template<typename T>
-	constexpr void DeferredRelease(T*& resource)
+	constexpr void deferred_release(T*& resource)
 	{
 		if (resource)
 		{
-			detail::DeferredRelease(resource);
+			detail::deferred_release(resource);
 			resource = nullptr;
 		}
 	}
 
-	id3d12Device* const Device();
-	DescriptorHeap& RTVHeap();
-	DescriptorHeap& DSVHeap();
-	DescriptorHeap& SRVHeap();
-	DescriptorHeap& UAVHeap();
-	u32 CurrentFrameIndex();
-	void SetDeferredReleasesFlag();
+	id3d12_device* const device();
+	descriptor_heap& rtv_heap();
+	descriptor_heap& dsv_heap();
+	descriptor_heap& srv_heap();
+	descriptor_heap& uav_heap();
+
+	u32 current_frame_index();
+	void set_deferred_releases_flag();
 
 	surface create_surface(platform::window window);
 	void remove_surface(surface_id id);
-	void ResizeSurface(surface_id id, u32, u32);
-	u32 SurfaceWidth(surface_id id);
-	u32 SurfaceHeight(surface_id id);
+	void resize_surface(surface_id id, u32, u32);
+	u32 surface_width(surface_id id);
+	u32 surface_height(surface_id id);
 	void render_surface(surface_id id);
 }

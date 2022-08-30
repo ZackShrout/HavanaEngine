@@ -3,10 +3,10 @@
 
 namespace havana::graphics::d3d12::camera
 {
-	class D3D12Camera
+	class d3d12_camera
 	{
 	public:
-		explicit D3D12Camera(camera_init_info info);
+		explicit d3d12_camera(camera_init_info info);
 		
 		void update();
 		void up(math::v3 up);
@@ -17,48 +17,48 @@ namespace havana::graphics::d3d12::camera
 		void near_z(f32 near_z);
 		void far_z(f32 far_z);
 
-		[[nodiscard]] constexpr DirectX::XMMATRIX view() const { return m_view; }
-		[[nodiscard]] constexpr DirectX::XMMATRIX projection() const { return m_projection; }
-		[[nodiscard]] constexpr DirectX::XMMATRIX inverse_projection() const { return m_inverseProjection; }
-		[[nodiscard]] constexpr DirectX::XMMATRIX view_projection() const { return m_viewProjection; }
-		[[nodiscard]] constexpr DirectX::XMMATRIX inverse_view_projection() const { return m_inverseViewProjection; }
-		[[nodiscard]] constexpr DirectX::XMVECTOR up() const { return m_up; }
-		[[nodiscard]] constexpr f32 near_z() const { return m_nearZ; }
-		[[nodiscard]] constexpr f32 far_z() const { return m_farZ; }
-		[[nodiscard]] constexpr f32 field_of_view() const { return m_fieldOfView; }
-		[[nodiscard]] constexpr f32 aspect_ratio() const { return m_aspectRatio; }
-		[[nodiscard]] constexpr f32 view_width() const { return m_viewWidth; }
-		[[nodiscard]] constexpr f32 view_height() const { return m_viewHeight; }
-		[[nodiscard]] constexpr graphics::camera::type projection_type() const { return m_projectionType; }
-		[[nodiscard]] constexpr id::id_type entity_id() const { return m_entityID; }
+		[[nodiscard]] constexpr DirectX::XMMATRIX view() const { return _view; }
+		[[nodiscard]] constexpr DirectX::XMMATRIX projection() const { return _projection; }
+		[[nodiscard]] constexpr DirectX::XMMATRIX inverse_projection() const { return _inverse_projection; }
+		[[nodiscard]] constexpr DirectX::XMMATRIX view_projection() const { return _view_projection; }
+		[[nodiscard]] constexpr DirectX::XMMATRIX inverse_view_projection() const { return _inverse_view_projection; }
+		[[nodiscard]] constexpr DirectX::XMVECTOR up() const { return _up; }
+		[[nodiscard]] constexpr f32 near_z() const { return _near_z; }
+		[[nodiscard]] constexpr f32 far_z() const { return _far_z; }
+		[[nodiscard]] constexpr f32 field_of_view() const { return _field_of_view; }
+		[[nodiscard]] constexpr f32 aspect_ratio() const { return _aspect_ratio; }
+		[[nodiscard]] constexpr f32 view_width() const { return _view_width; }
+		[[nodiscard]] constexpr f32 view_height() const { return _view_height; }
+		[[nodiscard]] constexpr graphics::camera::type projection_type() const { return _projection_type; }
+		[[nodiscard]] constexpr id::id_type entity_id() const { return _entity_id; }
 
 	private:
-		DirectX::XMMATRIX		m_view;
-		DirectX::XMMATRIX		m_projection;
-		DirectX::XMMATRIX		m_inverseProjection;
-		DirectX::XMMATRIX		m_viewProjection;
-		DirectX::XMMATRIX		m_inverseViewProjection;
-		DirectX::XMVECTOR		m_up;
-		f32						m_nearZ;
-		f32						m_farZ;
+		DirectX::XMMATRIX		_view;
+		DirectX::XMMATRIX		_projection;
+		DirectX::XMMATRIX		_inverse_projection;
+		DirectX::XMMATRIX		_view_projection;
+		DirectX::XMMATRIX		_inverse_view_projection;
+		DirectX::XMVECTOR		_up;
+		f32						_near_z;
+		f32						_far_z;
 		union
 		{
-			f32					m_fieldOfView;	// use with perspective camera
-			f32					m_viewWidth;	// use with orthographic camera
+			f32					_field_of_view;	// use with perspective camera
+			f32					_view_width;	// use with orthographic camera
 		};
 		union
 		{
-			f32					m_aspectRatio;	// use with perspective camera
-			f32					m_viewHeight;	// use with orthographic camera
+			f32					_aspect_ratio;	// use with perspective camera
+			f32					_view_height;	// use with orthographic camera
 		};
-		graphics::camera::type	m_projectionType;
-		id::id_type				m_entityID;
-		bool					m_isDirty;
+		graphics::camera::type	_projection_type;
+		id::id_type				_entity_id;
+		bool					_is_dirty;
 	};
 
-	graphics::camera Create(camera_init_info info);
-	void Remove(camera_id id);
-	void SetParamter(camera_id id, camera_parameter::parameter parameter, const void *const data, u32 dataSize);
-	void GetParamter(camera_id id, camera_parameter::parameter parameter, void *const data, u32 dataSize);
-	[[nodiscard]] D3D12Camera& Get(camera_id id);
+	graphics::camera create(camera_init_info info);
+	void remove(camera_id id);
+	void set_paramter(camera_id id, camera_parameter::parameter parameter, const void *const data, u32 data_size);
+	void get_paramter(camera_id id, camera_parameter::parameter parameter, void *const data, u32 data_size);
+	[[nodiscard]] d3d12_camera& get(camera_id id);
 }

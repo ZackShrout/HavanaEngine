@@ -2,50 +2,51 @@
 #include "D3D12Core.h"
 #include "D3D12Shaders.h"
 
-namespace havana::graphics::d3d12::GPass
+namespace havana::graphics::d3d12::gpass
 {
 	namespace
 	{
-		struct GPassRootParamIndices
+		struct gpass_root_param_indices
 		{
 			enum : u32
 			{
-				rootConstants,
+				root_constants,
 
 				count
 			};
 		};
 
-		constexpr DXGI_FORMAT			mainBufferFormat{ DXGI_FORMAT_R16G16B16A16_FLOAT };
-		constexpr DXGI_FORMAT			depthBufferFormat{ DXGI_FORMAT_D32_FLOAT };
-		constexpr math::u32v2			initialDimensions{ 100, 100 };
+		constexpr DXGI_FORMAT			main_buffer_format{ DXGI_FORMAT_R16G16B16A16_FLOAT };
+		constexpr DXGI_FORMAT			depth_buffer_format{ DXGI_FORMAT_D32_FLOAT };
+		constexpr math::u32v2			initial_dimensions{ 100, 100 };
 		
-		D3D12RenderTexture				gpassMainBuffer{};
-		D3D12DepthBuffer				gpassDepthBuffer{};
-		math::u32v2					dimensions{ initialDimensions };
+		d3d12_render_texture			gpass_main_buffer{};
+		d3d12_depth_buffer				gpass_depth_buffer{};
+		math::u32v2						dimensions{ initial_dimensions };
 		D3D12_RESOURCE_BARRIER_FLAGS	flags{};
 
-		ID3D12RootSignature*			gpassRootSig{ nullptr };
-		ID3D12PipelineState*			gpassPSO{ nullptr };
+		ID3D12RootSignature*			gpass_root_sig{ nullptr };
+		ID3D12PipelineState*			gpass_pso{ nullptr };
 
 #if _DEBUG
-		constexpr f32					clearValue[4]{ 0.5f, 0.5f, 0.5f, 1.0f };
+		constexpr f32					clear_value[4]{ 0.5f, 0.5f, 0.5f, 1.0f };
 #else
-		constexpr f32					clearValue[4]{ };
+		constexpr f32					clear_value[4]{ };
 #endif
 
-		bool CreateBuffers(math::u32v2 size)
+		bool
+		create_buffers(math::u32v2 size)
 		{
 			assert(size.x && size.y);
-			gpassMainBuffer.Release();
-			gpassDepthBuffer.Release();
+			gpass_main_buffer.release();
+			gpass_depth_buffer.release();
 
 			D3D12_RESOURCE_DESC desc{};
 			desc.Alignment = 0; // NOTE: 0 is the same as 64KB (or 4MB for MSAA)
 			desc.DepthOrArraySize = 1;
 			desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 			desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-			desc.Format = mainBufferFormat;
+			desc.Format = main_buffer_format;
 			desc.Height = size.y;
 			desc.Width = size.x;
 			desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
@@ -57,14 +58,14 @@ namespace havana::graphics::d3d12::GPass
 				D3D12TextureInitInfo info{};
 				info.desc = &desc;
 				info.initialState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-				info.clearValue.Format = desc.Format;
-				memcpy(&info.clearValue.Color, &clearValue[0], sizeof(clearValue));
+				info.clear_value.Format = desc.Format;
+				memcpy(&info.clear_value.Color, &clear_value[0], sizeof(clear_value));
 				
-				gpassMainBuffer = D3D12RenderTexture{ info };
+				gpass_main_buffer = d3d12_render_texture{ info };
 			}
 
 			desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-			desc.Format = depthBufferFormat;
+			desc.Format = depth_buffer_format;
 			desc.MipLevels = 1;
 			
 			// Create the depth buffer
@@ -72,103 +73,110 @@ namespace havana::graphics::d3d12::GPass
 				D3D12TextureInitInfo info{};
 				info.desc = &desc;
 				info.initialState = D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-				info.clearValue.Format = desc.Format;
-				info.clearValue.DepthStencil.Depth = 0.0f;
-				info.clearValue.DepthStencil.Stencil = 0;
+				info.clear_value.Format = desc.Format;
+				info.clear_value.DepthStencil.Depth = 0.0f;
+				info.clear_value.DepthStencil.Stencil = 0;
 
-				gpassDepthBuffer = D3D12DepthBuffer{ info };
+				gpass_depth_buffer = d3d12_depth_buffer{ info };
 			}
 
-			NAME_D3D12_OBJECT(gpassMainBuffer.Resource(), L"GPass Main Buffer");
-			NAME_D3D12_OBJECT(gpassDepthBuffer.Resource(), L"GPass Depth Buffer");
+			NAME_D3D12_OBJECT(gpass_main_buffer.resource(), L"GPass Main Buffer");
+			NAME_D3D12_OBJECT(gpass_depth_buffer.resource(), L"GPass Depth Buffer");
 
 			flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 
-			return gpassMainBuffer.Resource() && gpassDepthBuffer.Resource();
+			return gpass_main_buffer.resource() && gpass_depth_buffer.resource();
+		}
+
+		bool
+		create_gpass_pso_and_root_signature()
+		{
+			assert(!gpass_root_sig && !gpass_pso);
+
+			// Create GPass root signature
+			using idx = gpass_root_param_indices;
+			d3dx::d3d12_root_parameter paramters[idx::count]{};
+			paramters[0].as_constants(3, D3D12_SHADER_VISIBILITY_PIXEL, 1);
+			const d3dx::d3d12_root_signature_desc root_signature{ &paramters[0], idx::count };
+			gpass_root_sig = root_signature.create();
+			assert(gpass_root_sig);
+			NAME_D3D12_OBJECT(gpass_root_sig, L"GPass Root Signature");
+
+			// Create gpass Pipeline State Object
+			struct
+			{
+				d3dx::d3d12_pipeline_state_subobject_root_signature			root_signature{ gpass_root_sig };
+				d3dx::d3d12_pipeline_state_subobject_vs						vs{ shaders::get_engine_shader(shaders::engine_shader::fullscreen_triangle_vs) };
+				d3dx::d3d12_pipeline_state_subobject_ps						ps{ shaders::get_engine_shader(shaders::engine_shader::fill_color_ps) };
+				d3dx::d3d12_pipeline_state_subobject_primitive_topology		primitive_topology{ D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE };
+				d3dx::d3d12_pipeline_state_subobject_render_target_formats	render_target_formats;
+				d3dx::d3d12_pipeline_state_subobject_depth_stencil_format	depth_stencil_format{ depth_buffer_format };
+				d3dx::d3d12_pipeline_state_subobject_rasterizer				rasterizer{ d3dx::rasterizer_state.no_cull };
+				d3dx::d3d12_pipeline_state_subobject_depth_stencil1			depth{ d3dx::depth_state.disabled };
+			} stream;
+
+			D3D12_RT_FORMAT_ARRAY rtf_array{};
+			rtf_array.NumRenderTargets = 1;
+			rtf_array.RTFormats[0] = main_buffer_format;
+
+			stream.render_target_formats = rtf_array;
+
+			gpass_pso = d3dx::create_pipeline_state(&stream, sizeof(stream));
+			NAME_D3D12_OBJECT(gpass_pso, L"GPass Pipeline State Object");
+
+			return gpass_root_sig && gpass_pso;
 		}
 	} // anonymous namespace
 
-	bool CreateGPassPSOandRootSignature()
+	bool
+	initialize()
 	{
-		assert(!gpassRootSig && !gpassPSO);
-
-		// Create GPass root signature
-		using idx = GPassRootParamIndices;
-		D3DX::D3D12_Root_Parameter paramters[idx::count]{};
-		paramters[0].AsConstants(3, D3D12_SHADER_VISIBILITY_PIXEL, 1);
-		const D3DX::D3D12_Root_Signature_Desc rootSignature{ &paramters[0], idx::count };
-		gpassRootSig = rootSignature.Create();
-		assert(gpassRootSig);
-		NAME_D3D12_OBJECT(gpassRootSig, L"GPass Root Signature");
-
-		// Create GPass Pipeline State Object
-		struct
-		{
-			D3DX::D3D12_Pipeline_State_Subobject_rootSignature			rootSignature{ gpassRootSig };
-			D3DX::D3D12_Pipeline_State_Subobject_vs						vs{ Shaders::GetEngineShader(Shaders::EngineShader::fullscreenTriangleVS) };
-			D3DX::D3D12_Pipeline_State_Subobject_ps						ps{ Shaders::GetEngineShader(Shaders::EngineShader::fillColorPS) };
-			D3DX::D3D12_Pipeline_State_Subobject_primitiveTopology		primitiveTopology{ D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE };
-			D3DX::D3D12_Pipeline_State_Subobject_renderTargetFormats	renderTargetFormats;
-			D3DX::D3D12_Pipeline_State_Subobject_depthStencilFormat		depthStencilFormat{ depthBufferFormat };
-			D3DX::D3D12_Pipeline_State_Subobject_rasterizer				rasterizer{ D3DX::rasterizerState.noCull };
-			D3DX::D3D12_Pipeline_State_Subobject_depthStencil1			depth{ D3DX::depthState.disabled };
-		} stream;
-
-		D3D12_RT_FORMAT_ARRAY rtfArray{};
-		rtfArray.NumRenderTargets = 1;
-		rtfArray.RTFormats[0] = mainBufferFormat;
-
-		stream.renderTargetFormats = rtfArray;
-
-		gpassPSO = D3DX::CreatePipelineState(&stream, sizeof(stream));
-		NAME_D3D12_OBJECT(gpassRootSig, L"GPass Pipeline State Object");
-
-		return gpassRootSig && gpassPSO;
+		return create_buffers(initial_dimensions) && create_gpass_pso_and_root_signature();
 	}
 
-	bool initialize()
+	void
+	shutdown()
 	{
-		return CreateBuffers(initialDimensions) && CreateGPassPSOandRootSignature();
+		gpass_main_buffer.release();
+		gpass_depth_buffer.release();
+		dimensions = initial_dimensions;
+
+		core::release(gpass_root_sig);
+		core::release(gpass_pso);
 	}
 
-	void shutdown()
+	const d3d12_render_texture&
+	main_buffer()
 	{
-		gpassMainBuffer.Release();
-		gpassDepthBuffer.Release();
-		dimensions = initialDimensions;
-
-		Core::Release(gpassRootSig);
-		Core::Release(gpassPSO);
+		return gpass_main_buffer;
 	}
 
-	const D3D12RenderTexture& MainBuffer()
+	const d3d12_depth_buffer&
+	depth_buffer()
 	{
-		return gpassMainBuffer;
+		return gpass_depth_buffer;
 	}
 
-	const D3D12DepthBuffer& DepthBuffer()
-	{
-		return gpassDepthBuffer;
-	}
-
-	void SetSize(math::u32v2 size)
+	void
+	set_size(math::u32v2 size)
 	{
 		math::u32v2& d{ dimensions };
 		if (size.x > d.x || size.y > d.y)
 		{
 			d = { std::max(size.x, d.x), std::max(size.y, d.y) };
-			CreateBuffers(d);
+			create_buffers(d);
 		}
 	}
-	void DepthPrepass(ID3D12GraphicsCommandList* cmdList, const D3D12FrameInfo& info)
-	{
+	
+	void
+	depth_prepass(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& info)
+	{}
 
-	}
-
-	void render(ID3D12GraphicsCommandList* cmdList, const D3D12FrameInfo& info)
+	void
+	render(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& info)
 	{
-		cmdList->SetGraphicsRootSignature(gpassRootSig);
-		cmdList->SetPipelineState(gpassPSO);
+		cmd_list->SetGraphicsRootSignature(gpass_root_sig);
+		cmd_list->SetPipelineState(gpass_pso);
 
 		static u32 frame{ 0 };
 		struct
@@ -176,60 +184,65 @@ namespace havana::graphics::d3d12::GPass
 			f32 width;
 			f32 height;
 			u32 frame;
-		} constants{ (f32)info.surfaceWidth, (f32)info.surfaceHeight, ++frame };
+		} constants{ (f32)info.surface_width, (f32)info.surface_height, ++frame };
 
-		using idx = GPassRootParamIndices;
-		cmdList->SetGraphicsRoot32BitConstants(idx::rootConstants, 3, &constants, 0);
+		using idx = gpass_root_param_indices;
+		cmd_list->SetGraphicsRoot32BitConstants(idx::root_constants, 3, &constants, 0);
 
-		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		cmdList->DrawInstanced(3, 1, 0, 0);
+		cmd_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		cmd_list->DrawInstanced(3, 1, 0, 0);
 	}
 
-	void AddTransitionsForDepthPrepass(D3DX::ResourceBarrier& barriers)
+	void
+	add_transitions_for_depth_prepass(d3dx::d3d12_resource_barrier& barriers)
 	{
-		barriers.Add(gpassMainBuffer.Resource(),
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
-		barriers.Add(gpassDepthBuffer.Resource(),
-			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-			D3D12_RESOURCE_STATE_DEPTH_WRITE, flags);
+		barriers.add(gpass_main_buffer.resource(),
+					 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+					 D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
+		barriers.add(gpass_depth_buffer.resource(),
+					 D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+					 D3D12_RESOURCE_STATE_DEPTH_WRITE, flags);
 
 		flags = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;
 	}
 
-	void AddTransitionsForGPass(D3DX::ResourceBarrier& barriers)
+	void
+	add_transitions_for_gpass(d3dx::d3d12_resource_barrier& barriers)
 	{
-		barriers.Add(gpassMainBuffer.Resource(),
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_END_ONLY);
-		barriers.Add(gpassDepthBuffer.Resource(),
-			D3D12_RESOURCE_STATE_DEPTH_WRITE,
-			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		barriers.add(gpass_main_buffer.resource(),
+					 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+					 D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_END_ONLY);
+		barriers.add(gpass_depth_buffer.resource(),
+					 D3D12_RESOURCE_STATE_DEPTH_WRITE,
+					 D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	}
 
-	void AddTransitionsForPostProcess(D3DX::ResourceBarrier& barriers)
+	void
+	add_transitions_for_post_process(d3dx::d3d12_resource_barrier& barriers)
 	{
-		barriers.Add(gpassMainBuffer.Resource(),
-			D3D12_RESOURCE_STATE_RENDER_TARGET,
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		barriers.Add(gpassDepthBuffer.Resource(),
-			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-			D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
+		barriers.add(gpass_main_buffer.resource(),
+					 D3D12_RESOURCE_STATE_RENDER_TARGET,
+					 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		barriers.add(gpass_depth_buffer.resource(),
+					 D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+					 D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
 	}
 
-	void SetRenderTargetsForDepthPrepass(id3d12GraphicsCommandList* cmdList)
+	void
+	set_render_targets_for_depth_prepass(id3d12_graphics_command_list* cmd_list)
 	{
-		const D3D12_CPU_DESCRIPTOR_HANDLE dsv{ gpassDepthBuffer.DSV() };
-		cmdList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 0.0f, 0, 0, nullptr);
-		cmdList->OMSetRenderTargets(0, nullptr, 0, &dsv);
+		const D3D12_CPU_DESCRIPTOR_HANDLE dsv{ gpass_depth_buffer.dsv() };
+		cmd_list->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 0.0f, 0, 0, nullptr);
+		cmd_list->OMSetRenderTargets(0, nullptr, 0, &dsv);
 	}
 
-	void SetRenderTargetsForGPass(id3d12GraphicsCommandList* cmdList)
+	void
+	set_render_targets_for_gpass(id3d12_graphics_command_list* cmd_list)
 	{
-		const D3D12_CPU_DESCRIPTOR_HANDLE rtv{ gpassMainBuffer.RTV(0) };
-		const D3D12_CPU_DESCRIPTOR_HANDLE dsv{ gpassDepthBuffer.DSV() };
+		const D3D12_CPU_DESCRIPTOR_HANDLE rtv{ gpass_main_buffer.rtv(0) };
+		const D3D12_CPU_DESCRIPTOR_HANDLE dsv{ gpass_depth_buffer.dsv() };
 
-		cmdList->ClearRenderTargetView(rtv, clearValue, 0, nullptr);
-		cmdList->OMSetRenderTargets(1, &rtv, 0, &dsv);
+		cmd_list->ClearRenderTargetView(rtv, clear_value, 0, nullptr);
+		cmd_list->OMSetRenderTargets(1, &rtv, 0, &dsv);
 	}
 }

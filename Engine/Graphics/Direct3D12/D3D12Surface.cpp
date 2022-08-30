@@ -15,10 +15,10 @@ namespace havana::graphics::d3d12
 	} // anonymous namespace
 	
 	// PUBLIC
-	void D3D12Surface::CreateSwapChain(IDXGIFactory7* factory, ID3D12CommandQueue* cmdQueue, DXGI_FORMAT format /*= defaultBackBufferFormat*/)
+	void d3d12_surface::CreateSwapChain(IDXGIFactory7* factory, ID3D12CommandQueue* cmdQueue, DXGI_FORMAT format /*= defaultBackBufferFormat*/)
 	{
 		assert(factory && cmdQueue);
-		Release();
+		release();
 
 		if (SUCCEEDED(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &m_allowTearing, sizeof(u32))) && m_allowTearing)
 		{
@@ -46,31 +46,31 @@ namespace havana::graphics::d3d12
 		DXCall(factory->CreateSwapChainForHwnd(cmdQueue, hwnd, &desc, nullptr, nullptr, &swapChain));
 		DXCall(factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER));
 		DXCall(swapChain->QueryInterface(IID_PPV_ARGS(&m_swapChain)));
-		Core::Release(swapChain);
+		core::release(swapChain);
 
 		m_currentBBIndex = m_swapChain->GetCurrentBackBufferIndex();
 
-		for (u32 i{ 0 }; i < frameBufferCount; i++)
+		for (u32 i{ 0 }; i < frame_buffer_count; i++)
 		{
-			m_renderTargetData[i].rtv = Core::RTVHeap().Allocate();
+			m_renderTargetData[i].rtv = core::rtv_heap().Allocate();
 		}
 
 		Finalize();
 	}
 
-	void D3D12Surface::Present() const
+	void d3d12_surface::present() const
 	{
 		assert(m_swapChain);
 		DXCall(m_swapChain->Present(0, m_presentFlags));
 		m_currentBBIndex = m_swapChain->GetCurrentBackBufferIndex();
 	}
 
-	void D3D12Surface::resize()
+	void d3d12_surface::resize()
 	{
 		assert(m_swapChain);
 		for (u32 i{ 0 }; i < bufferCount; i++)
 		{
-			Core::Release(m_renderTargetData[i].resource);
+			core::release(m_renderTargetData[i].resource);
 		}
 
 		const u32 flags{ m_allowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0ul };
@@ -83,7 +83,7 @@ namespace havana::graphics::d3d12
 	}
 
 	// PRIVATE
-	void D3D12Surface::Finalize()
+	void d3d12_surface::Finalize()
 	{
 		// Create RTVs for back-buffers
 		for (u32 i{ 0 }; i < bufferCount; i++)
@@ -94,7 +94,7 @@ namespace havana::graphics::d3d12
 			D3D12_RENDER_TARGET_VIEW_DESC desc{};
 			desc.Format = m_format;
 			desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			Core::Device()->CreateRenderTargetView(data.resource, &desc, data.rtv.cpu);
+			core::device()->CreateRenderTargetView(data.resource, &desc, data.rtv.cpu);
 		}
 
 		DXGI_SWAP_CHAIN_DESC desc{};
@@ -114,15 +114,15 @@ namespace havana::graphics::d3d12
 		m_scissorRect = { 0, 0, (s32)width, (s32)height };
 	}
 	
-	void D3D12Surface::Release()
+	void d3d12_surface::release()
 	{
 		for (u32 i{ 0 }; i < bufferCount; i++)
 		{
 			RenderTargetData& data{ m_renderTargetData[i] };
-			Core::Release(data.resource);
-			Core::RTVHeap().Free(data.rtv);
+			core::release(data.resource);
+			core::rtv_heap().Free(data.rtv);
 		}
 
-		Core::Release(m_swapChain);
+		core::release(m_swapChain);
 	}
 }

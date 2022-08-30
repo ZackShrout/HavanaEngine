@@ -3,9 +3,9 @@
 
 namespace havana::graphics::d3d12::content
 {
-	namespace Submesh
+	namespace submesh
 	{
-		id::id_type Add(const u8* &data);
-		void Remove(id::id_type id);
-	} // namespace Submesh
+		id::id_type add(const u8* &data);
+		void remove(id::id_type id);
+	} // namespace submesh
 }

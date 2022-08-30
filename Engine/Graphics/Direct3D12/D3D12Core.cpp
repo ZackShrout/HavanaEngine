@@ -7,47 +7,39 @@
 
 using namespace Microsoft::WRL;
 
-namespace havana::graphics::d3d12::Core
+namespace havana::graphics::d3d12::core
 {
 	namespace
 	{
-		class D3D12Command
+		class d3d12_command
 		{
 		public:
-			D3D12Command() = default;
-			DISABLE_COPY_AND_MOVE(D3D12Command)
-			explicit D3D12Command(id3d12Device* const device, D3D12_COMMAND_LIST_TYPE type)
+			d3d12_command() = default;
+			DISABLE_COPY_AND_MOVE(d3d12_command)
+			explicit d3d12_command(id3d12_device* const device, D3D12_COMMAND_LIST_TYPE type)
 			{
 				HRESULT hr{ S_OK };
-				D3D12_COMMAND_QUEUE_DESC description{};
-				description.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-				description.NodeMask = 0;
-				description.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-				description.Type = type;
+				D3D12_COMMAND_QUEUE_DESC desc{};
+				desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+				desc.NodeMask = 0;
+				desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+				desc.Type = type;
 				
 				// Command Queue
-				DXCall(hr = device->CreateCommandQueue(&description, IID_PPV_ARGS(&m_commandQueue)));
-				if (FAILED(hr))
-				{
-					Release();
-					return;
-				}
-				NAME_D3D12_OBJECT(m_commandQueue, type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
-												L"Graphics Command Queue" :
-												type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
-												L"Compute Command Queue" : L"Command Queue");
+				DXCall(hr = device->CreateCommandQueue(&desc, IID_PPV_ARGS(&_cmd_queue)));
+				if (FAILED(hr)) goto _error;
+				NAME_D3D12_OBJECT(_cmd_queue, type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+								  L"GFX Command Queue" :
+								  type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+								  L"Compute Command Queue" : L"Command Queue");
 
 				// Command allocators
-				for (u32 i{ 0 }; i < frameBufferCount; i++)
+				for (u32 i{ 0 }; i < frame_buffer_count; ++i)
 				{
-					CommandFrame& frame{ m_commandFrames[i] };
-					DXCall(hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&frame.commandAllocator)));
-					if (FAILED(hr))
-					{
-						Release();
-						return;
-					}
-					NAME_D3D12_OBJECT_INDEXED(frame.commandAllocator, i, 
+					command_frame& frame{ _cmd_frames[i] };
+					DXCall(hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&frame.cmd_allocator)));
+					if (FAILED(hr)) goto _error;
+					NAME_D3D12_OBJECT_INDEXED(frame.cmd_allocator, i, 
 											  type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
 											  L"GFX Command Allocator" :
 											  type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
@@ -55,157 +47,151 @@ namespace havana::graphics::d3d12::Core
 				}
 
 				// Command list
-				DXCall(hr = device->CreateCommandList(0, type, m_commandFrames[0].commandAllocator , nullptr, IID_PPV_ARGS(&m_commandList)));
-				if (FAILED(hr))
-				{
-					Release();
-					return;
-				}
-				DXCall(m_commandList->Close());
-				NAME_D3D12_OBJECT(m_commandList, type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
-											   L"Graphics Command List" :
-											   type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
-											   L"Compute Command List" : L"Command List");
+				DXCall(hr = device->CreateCommandList(0, type, _cmd_frames[0].cmd_allocator , nullptr, IID_PPV_ARGS(&_cmd_list)));
+				if (FAILED(hr)) goto _error;
+				DXCall(_cmd_list->Close());
+				NAME_D3D12_OBJECT(_cmd_list, type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+								  L"GFX Command List" :
+								  type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+								  L"Compute Command List" : L"Command List");
 
 				// Fence
-				DXCall(hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
-				if (FAILED(hr))
-				{
-					Release();
-					return;
-				}
-				NAME_D3D12_OBJECT(m_fence, L"D3D12 Fence");
+				DXCall(hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence)));
+				if (FAILED(hr)) goto _error;
+				NAME_D3D12_OBJECT(_fence, L"D3D12 Fence");
 
-				m_fenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
-				assert(m_fenceEvent);
-				if (!m_fenceEvent)
-				{
-					Release();
-					return;
-				}
+				_fence_event = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+				assert(_fence_event);
+				if (!_fence_event) goto _error;
+
+				return;
+
+			_error:
+				release();
 			}
 
-			~D3D12Command()
+			~d3d12_command()
 			{
-				assert(!m_commandQueue && !m_commandList && !m_fence);
+				assert(!_cmd_queue && !_cmd_list && !_fence);
 			}
 
 			// Wait for the current frame to be signaled and reset the command list/allocator
-			void BeginFrame()
+			void begin_frame()
 			{
-				CommandFrame& frame{ m_commandFrames[m_frameIndex] };
-				frame.Wait(m_fenceEvent, m_fence);
-				DXCall(frame.commandAllocator->Reset());
-				DXCall(m_commandList->Reset(frame.commandAllocator, nullptr));
+				command_frame& frame{ _cmd_frames[_frame_index] };
+				frame.wait(_fence_event, _fence);
+				DXCall(frame.cmd_allocator->Reset());
+				DXCall(_cmd_list->Reset(frame.cmd_allocator, nullptr));
 			}
 
 			// Singal the fence with the new fence value
-			void EndFrame(const D3D12Surface& surface)
+			void end_frame(const d3d12_surface& surface)
 			{
-				DXCall(m_commandList->Close());
-				ID3D12CommandList* const commandLists[]{ m_commandList };
-				m_commandQueue->ExecuteCommandLists(_countof(commandLists), &commandLists[0]);
+				DXCall(_cmd_list->Close());
+				ID3D12CommandList* const cmd_lists[]{ _cmd_list };
+				_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), &cmd_lists[0]);
 
 				// Presenting swap chain buffers happens in lockstep with frame buffers.
-				surface.Present();
+				surface.present();
 
-				u64& fenceValue{ m_fenceValue };
-				fenceValue++;
-				CommandFrame& frame{ m_commandFrames[m_frameIndex] };
-				frame.fenceValue = fenceValue;
-				m_commandQueue->Signal(m_fence, fenceValue);
+				u64& fence_value{ _fence_value };
+				++fence_value;
+				command_frame& frame{ _cmd_frames[_frame_index] };
+				frame.fence_value = fence_value;
+				_cmd_queue->Signal(_fence, fence_value);
 
-				m_frameIndex = (m_frameIndex + 1) % frameBufferCount;
+				_frame_index = (_frame_index + 1) % frame_buffer_count;
 			}
 
 			// Complete all work on GPU for all frames
-			void Flush()
+			void flush()
 			{
-				for (u32 i{ 0 }; i < frameBufferCount; i++)
+				for (u32 i{ 0 }; i < frame_buffer_count; ++i)
 				{
-					m_commandFrames[i].Wait(m_fenceEvent, m_fence);
+					_cmd_frames[i].wait(_fence_event, _fence);
 				}
-				m_frameIndex = 0;
+				_frame_index = 0;
 			}
 			
-			void Release()
+			void release()
 			{
-				Flush();
-				Core::Release(m_fence);
-				m_fenceValue = 0;
+				flush();
+				core::release(_fence);
+				_fence_value = 0;
 
-				CloseHandle(m_fenceEvent);
-				m_fenceEvent = nullptr;
+				CloseHandle(_fence_event);
+				_fence_event = nullptr;
 
-				Core::Release(m_commandQueue);
-				Core::Release(m_commandList);
+				core::release(_cmd_queue);
+				core::release(_cmd_list);
 
-				for (u32 i{ 0 }; i < frameBufferCount; i++)
+				for (u32 i{ 0 }; i < frame_buffer_count; ++i)
 				{
-					m_commandFrames[i].Release();
+					_cmd_frames[i].release();
 				}
 			}
 
-			[[nodiscard]] constexpr ID3D12CommandQueue* const CommandQueue() const { return m_commandQueue; }
-			[[nodiscard]] constexpr id3d12GraphicsCommandList* const CommandList() const { return m_commandList; }
-			[[nodiscard]] constexpr u32 FrameIndex() const { return m_frameIndex; }
+			[[nodiscard]] constexpr ID3D12CommandQueue* const command_queue() const { return _cmd_queue; }
+			[[nodiscard]] constexpr id3d12_graphics_command_list* const command_list() const { return _cmd_list; }
+			[[nodiscard]] constexpr u32 frame_index() const { return _frame_index; }
 
 		private:
-			struct CommandFrame
+			struct command_frame
 			{
-				ID3D12CommandAllocator* commandAllocator{ nullptr };
-				u64						fenceValue{ 0 };
+				ID3D12CommandAllocator* cmd_allocator{ nullptr };
+				u64						fence_value{ 0 };
 
-				void Wait(HANDLE fenceEvent, ID3D12Fence1* fence)
+				void wait(HANDLE fenceEvent, ID3D12Fence1* fence)
 				{
 					assert(fence && fenceEvent);
-					// If the current fence value is still less than "fenceValue"
+					// If the current fence value is still less than "fence_value"
 					// then we know the GPU hasn't finished executing the command list
 					// since it has not reached the commandQueue->Signel() command.
-					if (fence->GetCompletedValue() < fenceValue)
+					if (fence->GetCompletedValue() < fence_value)
 					{
-						// We have the fence create an event which is signaled once the fence's current value equals "fenceValue"
-						DXCall(fence->SetEventOnCompletion(fenceValue, fenceEvent));
+						// We have the fence create an event which is signaled once the fence's current value equals "fence_value"
+						DXCall(fence->SetEventOnCompletion(fence_value, fenceEvent));
 						// Wait until the fence creates the above event, signaling that the command queue has finished executing
 						WaitForSingleObject(fenceEvent, INFINITE);
 					}
 				}
 
-				void Release()
+				void release()
 				{
-					Core::Release(commandAllocator);
-					fenceValue = 0;
+					core::release(cmd_allocator);
+					fence_value = 0;
 				}
 			};
 
-			ID3D12CommandQueue*			m_commandQueue{ nullptr };
-			id3d12GraphicsCommandList*	m_commandList{ nullptr };
-			ID3D12Fence1*				m_fence{ nullptr };
-			HANDLE						m_fenceEvent{ nullptr };
-			u64							m_fenceValue{ 0 };
-			CommandFrame				m_commandFrames[frameBufferCount]{};
-			u32							m_frameIndex{ 0 };
+			ID3D12CommandQueue*			_cmd_queue{ nullptr };
+			id3d12_graphics_command_list*	_cmd_list{ nullptr };
+			ID3D12Fence1*				_fence{ nullptr };
+			HANDLE						_fence_event{ nullptr };
+			u64							_fence_value{ 0 };
+			command_frame				_cmd_frames[frame_buffer_count]{};
+			u32							_frame_index{ 0 };
 		};
 
-		using surface_collection = utl::free_list<D3D12Surface>;
+		using surface_collection = utl::free_list<d3d12_surface>;
 
-		id3d12Device*				mainDevice{ nullptr };
-		IDXGIFactory7*				dxgiFactory{ nullptr };
-		D3D12Command				gfxCommand;
-		surface_collection			surfaces;
-		D3DX::ResourceBarrier		resourceBarriers{};
+		id3d12_device*					main_device{ nullptr };
+		IDXGIFactory7*					dxgi_factory{ nullptr };
+		d3d12_command					gfx_command;
+		surface_collection				surfaces;
+		d3dx::d3d12_resource_barrier	resource_barriers{};
 
-		DescriptorHeap				rtvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
-		DescriptorHeap				dsvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
-		DescriptorHeap				srvDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
-		DescriptorHeap				uavDescHeap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
-		utl::vector<IUnknown*>	deferredReleases[frameBufferCount]{};
-		u32							deferredReleasesFlag[frameBufferCount]{};
-		std::mutex					deferredReleasesMutex{};
+		descriptor_heap					rtv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
+		descriptor_heap					dsv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
+		descriptor_heap					srv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
+		descriptor_heap					uav_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
+		utl::vector<IUnknown*>			deferred_releases[frame_buffer_count]{};
+		u32								deferred_releases_flag[frame_buffer_count]{};
+		std::mutex						deferred_releases_mutex{};
 
-		constexpr D3D_FEATURE_LEVEL minimumFeatureLevel{ D3D_FEATURE_LEVEL_11_0 };
+		constexpr D3D_FEATURE_LEVEL		minimum_feature_level{ D3D_FEATURE_LEVEL_11_0 };
 
-		bool FailedInit()
+		bool
+		failed_init()
 		{
 			shutdown();
 			return false;
@@ -215,21 +201,22 @@ namespace havana::graphics::d3d12::Core
 		// NOTE: this function can be expanded in functionality with, for example, checking if any
 		//       output devices (i.e. screens) are attached, enumerate the supported resolutions, provide
 		//       a means for the user to choose which adapter to use in a multi-adapter setting, etc.
-		IDXGIAdapter4* DetermineMainAdapter()
+		IDXGIAdapter4*
+		determine_main_adapter()
 		{
 			IDXGIAdapter4* adapter{ nullptr };
 
 			// Get adapters in decending order of performance
 			for (u32 i{ 0 };
-				dxgiFactory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND;
-				i++)
+				dxgi_factory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND;
+				++i)
 			{
 				// Pick the first adapter that supports the minimum feature level
-				if (SUCCEEDED(D3D12CreateDevice(adapter, minimumFeatureLevel, __uuidof(ID3D12Device), nullptr)))
+				if (SUCCEEDED(D3D12CreateDevice(adapter, minimum_feature_level, __uuidof(ID3D12Device), nullptr)))
 				{
 					return adapter;
 				}
-				Release(adapter);
+				release(adapter);
 			}
 			
 			return nullptr;
@@ -240,9 +227,10 @@ namespace havana::graphics::d3d12::Core
 		/// </summary>
 		/// <param name="adapter"> - Adapter to check feature levels of.</param>
 		/// <returns>D3D_FEATURE_LEVEL containing max feature level.</returns>
-		D3D_FEATURE_LEVEL GetMaxFeatureLevel(IDXGIAdapter4* adapter)
+		D3D_FEATURE_LEVEL
+		get_max_feature_level(IDXGIAdapter4* adapter)
 		{
-			constexpr D3D_FEATURE_LEVEL featureLevels[4]
+			constexpr D3D_FEATURE_LEVEL feature_levels[4]
 			{
 				D3D_FEATURE_LEVEL_11_0,
 				D3D_FEATURE_LEVEL_11_1,
@@ -250,36 +238,37 @@ namespace havana::graphics::d3d12::Core
 				D3D_FEATURE_LEVEL_12_1
 			};
 
-			D3D12_FEATURE_DATA_FEATURE_LEVELS featureLevelInfo{};
-			featureLevelInfo.NumFeatureLevels = _countof(featureLevels);
-			featureLevelInfo.pFeatureLevelsRequested = featureLevels;
+			D3D12_FEATURE_DATA_FEATURE_LEVELS feature_level_info{};
+			feature_level_info.NumFeatureLevels = _countof(feature_levels);
+			feature_level_info.pFeatureLevelsRequested = feature_levels;
 
 			ComPtr<ID3D12Device> device;
-			DXCall(D3D12CreateDevice(adapter, minimumFeatureLevel, IID_PPV_ARGS(&device)));
-			DXCall(device->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &featureLevelInfo, sizeof(featureLevelInfo)));
-			return featureLevelInfo.MaxSupportedFeatureLevel;
+			DXCall(D3D12CreateDevice(adapter, minimum_feature_level, IID_PPV_ARGS(&device)));
+			DXCall(device->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &feature_level_info, sizeof(feature_level_info)));
+			return feature_level_info.MaxSupportedFeatureLevel;
 		}
 
 		// This wont be called often so we shouldn't have this inlined
-		void __declspec(noinline) ProcessDeferredReleases(u32 frameIdx)
+		void __declspec(noinline)
+		process_deferred_releases(u32 frame_idx)
 		{
-			std::lock_guard lock{ deferredReleasesMutex };
+			std::lock_guard lock{ deferred_releases_mutex };
 
 			// This flag is cleared at the beginning becuase otherwise it might
 			// overwrite some other thread that was trying to set it. Its ok if
 			// the overwrite happens before processing the items.
-			deferredReleasesFlag[frameIdx] = 0;
+			deferred_releases_flag[frame_idx] = 0;
 
-			rtvDescHeap.ProcessDeferredFree(frameIdx);
-			dsvDescHeap.ProcessDeferredFree(frameIdx);
-			srvDescHeap.ProcessDeferredFree(frameIdx);
-			uavDescHeap.ProcessDeferredFree(frameIdx);
+			rtv_desc_heap.process_deferred_free(frame_idx);
+			dsv_desc_heap.process_deferred_free(frame_idx);
+			srv_desc_heap.process_deferred_free(frame_idx);
+			uav_desc_heap.process_deferred_free(frame_idx);
 			
-			utl::vector<IUnknown*>& resources{ deferredReleases[frameIdx] };
+			utl::vector<IUnknown*>& resources{ deferred_releases[frame_idx] };
 			if (!resources.empty())
 			{
 				for (auto& resource : resources)
-					Release(resource);
+					release(resource);
 				resources.clear();
 			}
 		}
@@ -287,149 +276,151 @@ namespace havana::graphics::d3d12::Core
 
 	namespace detail
 	{
-		void DeferredRelease(IUnknown* resource)
+		void deferred_release(IUnknown* resource)
 		{
-			const u32 frameIdx{ CurrentFrameIndex() };
-			std::lock_guard lock{ deferredReleasesMutex };
-			deferredReleases[frameIdx].push_back(resource);
-			SetDeferredReleasesFlag();
+			const u32 frame_idx{ current_frame_index() };
+			std::lock_guard lock{ deferred_releases_mutex };
+			deferred_releases[frame_idx].push_back(resource);
+			set_deferred_releases_flag();
 		}
 	} // detail namespace
 
-	bool initialize()
+	bool
+	initialize()
 	{
-		if (mainDevice) shutdown();
+		if (main_device) shutdown();
 
-		u32 dxgiFactoryFlags{ 0 };
+		u32 dxgi_factory_flags{ 0 };
 
 #ifdef _DEBUG
 		// Enable debugging layer. Requires "Graphics Tools" optional feature
 		{
-			ComPtr<ID3D12Debug3> debugInterface;
-			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
+			ComPtr<ID3D12Debug3> debug_interface;
+			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_interface))))
 			{
-				debugInterface->EnableDebugLayer();
+				debug_interface->EnableDebugLayer();
 #if 0
 #pragma message("WARNING: GPU based validation is enabled. This will considerably slow down the renderer!")
-				debugInterface->SetEnableGPUBasedValidation(1);
+				debug_interface->SetEnableGPUBasedValidation(1);
 #endif
 			}
 			else
 			{
 				OutputDebugStringA("Warning: D3D12 debug interface is not available. Verify that the Graphics Tools optional feature is installed in this device.\n");
 			}
-			dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+			dxgi_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
 		}
 #endif // _DEBUG
 
 		HRESULT hr{ S_OK };
-		DXCall(hr = CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
-		if (FAILED(hr)) return FailedInit();
+		DXCall(hr = CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgi_factory)));
+		if (FAILED(hr)) return failed_init();
 		
 		// Determine which adapter (i.e. graphics card) to use, if any
-		ComPtr<IDXGIAdapter4> mainAdapter;
-		mainAdapter.Attach(DetermineMainAdapter());
-		if (!mainAdapter) return FailedInit();
+		ComPtr<IDXGIAdapter4> main_adapter;
+		main_adapter.Attach(determine_main_adapter());
+		if (!main_adapter) return failed_init();
 		
 		// Determine what the max feature level supported is
-		D3D_FEATURE_LEVEL maxFeatureLevel{ GetMaxFeatureLevel(mainAdapter.Get()) };
-		assert(maxFeatureLevel >= minimumFeatureLevel);
-		if (maxFeatureLevel < minimumFeatureLevel) return FailedInit();
+		D3D_FEATURE_LEVEL max_feature_level{ get_max_feature_level(main_adapter.Get()) };
+		assert(max_feature_level >= minimum_feature_level);
+		if (max_feature_level < minimum_feature_level) return failed_init();
 		
 		// Create an ID3D12Device (virtual adapter)
-		DXCall(hr = D3D12CreateDevice(mainAdapter.Get(), maxFeatureLevel, IID_PPV_ARGS(&mainDevice)));
-		if (FAILED(hr)) return FailedInit();
+		DXCall(hr = D3D12CreateDevice(main_adapter.Get(), max_feature_level, IID_PPV_ARGS(&main_device)));
+		if (FAILED(hr)) return failed_init();
 
 #ifdef _DEBUG
 		{
-			ComPtr<ID3D12InfoQueue> infoQueue;
-			DXCall(mainDevice->QueryInterface(IID_PPV_ARGS(&infoQueue)));
-			infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
-			infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
-			infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+			ComPtr<ID3D12InfoQueue> info_queue;
+			DXCall(main_device->QueryInterface(IID_PPV_ARGS(&info_queue)));
+			info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+			info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+			info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
 		}
 #endif // _DEBUG
 
 		// Initialize Descriptor Heaps
 		bool result{ true };
-		result &= rtvDescHeap.initialize(512, false);
-		result &= dsvDescHeap.initialize(512, false);
-		result &= srvDescHeap.initialize(4896, true);
-		result &= uavDescHeap.initialize(512, false);
-		if (!result) return FailedInit();
+		result &= rtv_desc_heap.initialize(512, false);
+		result &= dsv_desc_heap.initialize(512, false);
+		result &= srv_desc_heap.initialize(4896, true);
+		result &= uav_desc_heap.initialize(512, false);
+		if (!result) return failed_init();
 
-		// There is nothing in D3D12Command that would cause a memory leak by calling 
+		// There is nothing in d3d12_command that would cause a memory leak by calling 
 		// new here, but care must be taken.
-		new (&gfxCommand) D3D12Command(mainDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
-		if (!gfxCommand.CommandQueue()) return FailedInit();
+		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+		if (!gfx_command.command_queue()) return failed_init();
 
 		// Initialize modules
-		if (!(Shaders::initialize() && 
-			  GPass::initialize() &&
-			  FX::initialize() &&
-			  Upload::initialize())) 
-			return FailedInit();
+		if (!(shaders::initialize() && 
+			  gpass::initialize() &&
+			  fx::initialize() &&
+			  upload::initialize())) 
+			return failed_init();
 
-		NAME_D3D12_OBJECT(mainDevice, L"Main D3D Device");
-		NAME_D3D12_OBJECT(rtvDescHeap.Heap(), L"RTV Descriptor Heap");
-		NAME_D3D12_OBJECT(dsvDescHeap.Heap(), L"DSV Descriptor Heap");
-		NAME_D3D12_OBJECT(srvDescHeap.Heap(), L"SRV Descriptor Heap");
-		NAME_D3D12_OBJECT(uavDescHeap.Heap(), L"USV Descriptor Heap");
+		NAME_D3D12_OBJECT(main_device, L"Main D3D Device");
+		NAME_D3D12_OBJECT(rtv_desc_heap.Heap(), L"RTV Descriptor Heap");
+		NAME_D3D12_OBJECT(dsv_desc_heap.Heap(), L"DSV Descriptor Heap");
+		NAME_D3D12_OBJECT(srv_desc_heap.Heap(), L"SRV Descriptor Heap");
+		NAME_D3D12_OBJECT(uav_desc_heap.Heap(), L"USV Descriptor Heap");
 
 		return true;
 	}
 
-	void shutdown()
+	void
+	shutdown()
 	{
-		gfxCommand.Release();
+		gfx_command.release();
 
 		// This is not called at the end because some resources
 		// (like swap chains) can't be released before their
 		// depending resources are released.
-		for (u32 i{ 0 }; i < frameBufferCount; i++)
+		for (u32 i{ 0 }; i < frame_buffer_count; ++i)
 		{
-			ProcessDeferredReleases(i);
+			process_deferred_releases(i);
 		}
 
 		// Shutdown modules
-		Upload::shutdown();
-		FX::shutdown();
-		GPass::shutdown();
-		Shaders::shutdown();
+		upload::shutdown();
+		fx::shutdown();
+		gpass::shutdown();
+		shaders::shutdown();
 
-		Release(dxgiFactory);
+		release(dxgi_factory);
 
 		// NOTE: Some modules free their descriptors when they shutdown.
-		//		 We process those by calling ProcessDeferredFree once more.
-		rtvDescHeap.ProcessDeferredFree(0);
-		dsvDescHeap.ProcessDeferredFree(0);
-		srvDescHeap.ProcessDeferredFree(0);
-		uavDescHeap.ProcessDeferredFree(0);
+		//		 We process those by calling process_deferred_free once more.
+		rtv_desc_heap.process_deferred_free(0);
+		dsv_desc_heap.process_deferred_free(0);
+		srv_desc_heap.process_deferred_free(0);
+		uav_desc_heap.process_deferred_free(0);
 
-		rtvDescHeap.Release();
-		dsvDescHeap.Release();
-		srvDescHeap.Release();
-		uavDescHeap.Release();
+		rtv_desc_heap.release();
+		dsv_desc_heap.release();
+		srv_desc_heap.release();
+		uav_desc_heap.release();
 
 		// Some types only use deferred releases for their resources
 		// during shutdown/reset/clear. To release these resources,
 		// this function is called one last time.
-		ProcessDeferredReleases(0);
+		process_deferred_releases(0);
 
 #ifdef _DEBUG
 		{
 			{
-				ComPtr<ID3D12InfoQueue> infoQueue;
-				DXCall(mainDevice->QueryInterface(IID_PPV_ARGS(&infoQueue)));
-				infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, false);
-				infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false);
-				infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, false);
+				ComPtr<ID3D12InfoQueue> info_queue;
+				DXCall(main_device->QueryInterface(IID_PPV_ARGS(&info_queue)));
+				info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, false);
+				info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false);
+				info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, false);
 			}
 
-			ComPtr<ID3D12DebugDevice2> debugDevice;
-			DXCall(mainDevice->QueryInterface(IID_PPV_ARGS(&debugDevice)));
-			Release(mainDevice);
-			DXCall(debugDevice->ReportLiveDeviceObjects
+			ComPtr<ID3D12DebugDevice2> debug_device;
+			DXCall(main_device->QueryInterface(IID_PPV_ARGS(&debug_device)));
+			release(main_device);
+			DXCall(debug_device->ReportLiveDeviceObjects
 			(
 				D3D12_RLDO_SUMMARY | D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL
 			));
@@ -437,128 +428,129 @@ namespace havana::graphics::d3d12::Core
 		}
 #endif // _DEBUG
 		
-		Release(mainDevice);
+		release(main_device);
 	}
 
-	id3d12Device* const Device()
-	{
-		return mainDevice;
-	}
+	id3d12_device* const
+	device() { return main_device; }
 	
-	DescriptorHeap& RTVHeap() { return rtvDescHeap; }
+	descriptor_heap&
+	rtv_heap() { return rtv_desc_heap; }
 
-	DescriptorHeap& DSVHeap() { return dsvDescHeap; }
+	descriptor_heap&
+	dsv_heap() { return dsv_desc_heap; }
 
-	DescriptorHeap& SRVHeap() { return srvDescHeap; }
+	descriptor_heap&
+	srv_heap() { return srv_desc_heap; }
 
-	DescriptorHeap& UAVHeap() { return uavDescHeap; }
+	descriptor_heap&
+	uav_heap() { return uav_desc_heap; }
 
-	u32 CurrentFrameIndex()
-	{
-		return gfxCommand.FrameIndex();
-	}
+	u32
+	current_frame_index() { return gfx_command.frame_index(); }
 	
-	void SetDeferredReleasesFlag()
-	{
-		deferredReleasesFlag[CurrentFrameIndex()] = 1;
-	}
+	void
+	set_deferred_releases_flag() { deferred_releases_flag[current_frame_index()] = 1; }
 
-	surface create_surface(platform::window window)
+	surface
+	create_surface(platform::window window)
 	{
 		surface_id id{ surfaces.add(window) };
-		surfaces[id].CreateSwapChain(dxgiFactory, gfxCommand.CommandQueue());
+		surfaces[id].CreateSwapChain(dxgi_factory, gfx_command.command_queue());
 		return surface{ id };
 	}
 
-	void remove_surface(surface_id id)
+	void
+	remove_surface(surface_id id)
 	{
-		gfxCommand.Flush();
+		gfx_command.flush();
 		surfaces.remove(id);
 	}
 
-	void ResizeSurface(surface_id id, u32, u32)
+	void
+	resize_surface(surface_id id, u32, u32)
 	{
-		gfxCommand.Flush();
+		gfx_command.flush();
 		surfaces[id].resize();
 	}
 	
-	u32 SurfaceWidth(surface_id id)
+	u32
+	surface_width(surface_id id)
 	{
 		return surfaces[id].width();
 	}
 
-	u32 SurfaceHeight(surface_id id)
+	u32
+	surface_height(surface_id id)
 	{
 		return surfaces[id].height();
 	}
 
-	void render_surface(surface_id id)
+	void
+	render_surface(surface_id id)
 	{
 		// Wait for the GPU to finish with the command allocator and
 		// reset the allocator once the GPU is done with it.
 		// This frees the memory that was used to store commands.
-		gfxCommand.BeginFrame();
-		id3d12GraphicsCommandList* cmdList{ gfxCommand.CommandList() };
+		gfx_command.begin_frame();
+		id3d12_graphics_command_list* cmd_list{ gfx_command.command_list() };
 
 		// Check to see if there are deferred releases to handle
-		const u32 frameIdx{ CurrentFrameIndex() };
-		if (deferredReleasesFlag[frameIdx])
+		const u32 frame_idx{ current_frame_index() };
+		if (deferred_releases_flag[frame_idx])
 		{
-			(ProcessDeferredReleases(frameIdx));
+			(process_deferred_releases(frame_idx));
 		}
 		
-		const D3D12Surface& surface{ surfaces[id] };
-		ID3D12Resource* const currentBackBuffer{ surface.BackBuffer() };
+		const d3d12_surface& surface{ surfaces[id] };
+		ID3D12Resource* const current_back_buffer{ surface.BackBuffer() };
 
-		D3D12FrameInfo frameInfo
+		d3d12_frame_info frame_info
 		{
 			surface.width(),
 			surface.height()
 		};
 
-		GPass::SetSize({ frameInfo.surfaceWidth, frameInfo.surfaceHeight });
-		D3DX::ResourceBarrier& barriers{ resourceBarriers };
+		gpass::set_size({ frame_info.surface_width, frame_info.surface_height });
+		d3dx::d3d12_resource_barrier& barriers{ resource_barriers };
 
 		// Record commands
-		ID3D12DescriptorHeap* const heaps[]{ srvDescHeap.Heap() };
-		cmdList->SetDescriptorHeaps(1, &heaps[0]);
+		ID3D12DescriptorHeap* const heaps[]{ srv_desc_heap.Heap() };
+		cmd_list->SetDescriptorHeaps(1, &heaps[0]);
 
-		cmdList->RSSetViewports(1, &surface.Viewport());
-		cmdList->RSSetScissorRects(1, &surface.ScissorRect());
+		cmd_list->RSSetViewports(1, &surface.viewport());
+		cmd_list->RSSetScissorRects(1, &surface.scissor_rect());
 		
 		// Depth Prepass
-		barriers.Add(currentBackBuffer,
+		barriers.add(current_back_buffer,
 			D3D12_RESOURCE_STATE_PRESENT,
 			D3D12_RESOURCE_STATE_RENDER_TARGET,
 			D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
-		GPass::AddTransitionsForDepthPrepass(barriers);
-		barriers.Apply(cmdList);
-		GPass::SetRenderTargetsForDepthPrepass(cmdList);
-		GPass::DepthPrepass(cmdList, frameInfo);
+		gpass::add_transitions_for_depth_prepass(barriers);
+		barriers.apply(cmd_list);
+		gpass::set_render_targets_for_depth_prepass(cmd_list);
+		gpass::depth_prepass(cmd_list, frame_info);
 
 		// Geometry and Lighting Pass
-		GPass::AddTransitionsForGPass(barriers);
-		barriers.Apply(cmdList);
-		GPass::SetRenderTargetsForGPass(cmdList);
-		GPass::render(cmdList, frameInfo);
+		gpass::add_transitions_for_gpass(barriers);
+		barriers.apply(cmd_list);
+		gpass::set_render_targets_for_gpass(cmd_list);
+		gpass::render(cmd_list, frame_info);
 
 		// Post-process
-		barriers.Add(currentBackBuffer, 
+		barriers.add(current_back_buffer, 
 					 D3D12_RESOURCE_STATE_PRESENT,
 					 D3D12_RESOURCE_STATE_RENDER_TARGET,
 					 D3D12_RESOURCE_BARRIER_FLAG_END_ONLY);
-		GPass::AddTransitionsForPostProcess(barriers);
-		barriers.Apply(cmdList);
+		gpass::add_transitions_for_post_process(barriers);
+		barriers.apply(cmd_list);
 		// -- Will write final image to the current back buffer, so the back buffer is a render target
-		FX::PostProcess(cmdList, surface.RTV());
+		fx::post_process(cmd_list, surface.rtv());
 		// After post-process
-		D3DX::TransitionResource(cmdList, currentBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		d3dx::transition_resource(cmd_list, current_back_buffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
-		// Presenting swap chain buffers happens in lockstep with frame buffers.
-		//surface.Present();
-		
 		// Done recording commands, now execute them,
 		// signal and incriment fence value for next frame.
-		gfxCommand.EndFrame(surface);
+		gfx_command.end_frame(surface);
 	}
 }

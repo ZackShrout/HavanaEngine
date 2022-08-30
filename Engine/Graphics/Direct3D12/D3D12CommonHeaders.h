@@ -1,23 +1,24 @@
 #pragma once
+#include "CommonHeaders.h"
+#include "Graphics/Renderer.h"
+#include "Platforms/Window.h"
+
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif // !NOMINMAX
+
 #include <dxgi1_6.h>
 #include <d3d12.h>
 #include <wrl.h>
-
-#include "CommonHeaders.h"
-#include "../Graphics/Renderer.h"
-#include "../Platforms/Window.h"
 
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d12.lib")
 
 namespace havana::graphics::d3d12
 {
-	constexpr u32 frameBufferCount{ 3 };
-	using id3d12Device = ID3D12Device8;
-	using id3d12GraphicsCommandList = ID3D12GraphicsCommandList6;
+	constexpr u32 frame_buffer_count{ 3 };
+	using id3d12_device = ID3D12Device8;
+	using id3d12_graphics_command_list = ID3D12GraphicsCommandList6;
 }
 
 // Assert that COM call to D3D API succeeded
@@ -25,12 +26,12 @@ namespace havana::graphics::d3d12
 #ifndef DXCall
 #define DXCall(x)								\
 if(FAILED(x)) {									\
-	char lineNumber[32];						\
-	sprintf_s(lineNumber, "%u", __LINE__);		\
+	char line_number[32];						\
+	sprintf_s(line_number, "%u", __LINE__);		\
 	OutputDebugStringA("Error in: ");			\
 	OutputDebugStringA(__FILE__);				\
 	OutputDebugStringA("\nLine: ");				\
-	OutputDebugStringA(lineNumber);				\
+	OutputDebugStringA(line_number);			\
 	OutputDebugStringA("\n");					\
 	OutputDebugStringA(#x);						\
 	OutputDebugStringA("\n");					\
@@ -49,11 +50,11 @@ if(FAILED(x)) {									\
 // The indexed variant will include the index in the name of the object
 #define NAME_D3D12_OBJECT_INDEXED(obj, n, name)					\
 		{														\
-			wchar_t fullName[128];								\
-			if (swprintf_s(fullName, L"%s[%u]", name, n) > 0){	\
-				obj->SetName(fullName);							\
+			wchar_t full_name[128];								\
+			if (swprintf_s(full_name, L"%s[%u]", name, n) > 0){	\
+				obj->SetName(full_name);						\
 				OutputDebugString(L"::D3D12 Object Created: ");	\
-				OutputDebugString(fullName);					\
+				OutputDebugString(full_name);					\
 				OutputDebugString(L"\n");						\
 		}}
 #else

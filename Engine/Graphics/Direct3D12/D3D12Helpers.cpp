@@ -2,15 +2,16 @@
 #include "D3D12Core.h"
 #include "D3D12Upload.h"
 
-namespace havana::graphics::d3d12::D3DX
+namespace havana::graphics::d3d12::d3dx
 {
 	namespace
 	{
 
 	} // anonymous namespace
 
-	void TransitionResource(
-		id3d12GraphicsCommandList* cmdList,
+	void
+	transition_resource(
+		id3d12_graphics_command_list* cmd_list,
 		ID3D12Resource* resource,
 		D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after,
 		D3D12_RESOURCE_BARRIER_FLAGS flags /*= D3D12_RESOURCE_BARRIER_FLAG_NONE*/,
@@ -24,60 +25,63 @@ namespace havana::graphics::d3d12::D3DX
 		barrier.Transition.StateAfter = after;
 		barrier.Transition.Subresource = subresource;
 
-		cmdList->ResourceBarrier(1, &barrier);
+		cmd_list->ResourceBarrier(1, &barrier);
 	}
 
-	ID3D12RootSignature* CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC1& desc)
+	ID3D12RootSignature*
+	create_root_signature(const D3D12_ROOT_SIGNATURE_DESC1& desc)
 	{
-		D3D12_VERSIONED_ROOT_SIGNATURE_DESC versionedDesc{};
-		versionedDesc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
-		versionedDesc.Desc_1_1 = desc;
+		D3D12_VERSIONED_ROOT_SIGNATURE_DESC versioned_desc{};
+		versioned_desc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
+		versioned_desc.Desc_1_1 = desc;
 
 		using namespace Microsoft::WRL;
-		ComPtr<ID3DBlob> signatureBlob{ nullptr };
-		ComPtr<ID3DBlob> errorBlob{ nullptr };
+		ComPtr<ID3DBlob> signature_blob{ nullptr };
+		ComPtr<ID3DBlob> error_blob{ nullptr };
 		HRESULT hr{ S_OK };
-		if (FAILED(hr = D3D12SerializeVersionedRootSignature(&versionedDesc, &signatureBlob, &errorBlob)))
+		if (FAILED(hr = D3D12SerializeVersionedRootSignature(&versioned_desc, &signature_blob, &error_blob)))
 		{
-			DEBUG_OP(const char* errorMsg{ errorBlob ? (const char*)errorBlob->GetBufferPointer() : "" });
-			DEBUG_OP(OutputDebugStringA(errorMsg));
+			DEBUG_OP(const char* error_msg{ error_blob ? (const char*)error_blob->GetBufferPointer() : "" });
+			DEBUG_OP(OutputDebugStringA(error_msg));
 			return nullptr;
 		}
 
 		ID3D12RootSignature* signature{ nullptr };
-		DXCall(hr = Core::Device()->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&signature)));
+		DXCall(hr = core::device()->CreateRootSignature(0, signature_blob->GetBufferPointer(), signature_blob->GetBufferSize(), IID_PPV_ARGS(&signature)));
 
 		if (FAILED(hr))
 		{
-			Core::Release(signature);
+			core::release(signature);
 		}
 
 		return signature;
 	}
 
-	ID3D12PipelineState* CreatePipelineState(D3D12_PIPELINE_STATE_STREAM_DESC desc)
+	ID3D12PipelineState*
+	create_pipeline_state(D3D12_PIPELINE_STATE_STREAM_DESC desc)
 	{
 		assert(desc.pPipelineStateSubobjectStream && desc.SizeInBytes);
 		ID3D12PipelineState* pso{ nullptr };
-		DXCall(Core::Device()->CreatePipelineState(&desc, IID_PPV_ARGS(&pso)));
+		DXCall(core::device()->CreatePipelineState(&desc, IID_PPV_ARGS(&pso)));
 		assert(pso);
 		return pso;
 	}
 
-	ID3D12PipelineState* CreatePipelineState(void* stream, u64 streamSize)
+	ID3D12PipelineState*
+	create_pipeline_state(void* stream, u64 stream_size)
 	{
-		assert(stream && streamSize);
+		assert(stream && stream_size);
 		D3D12_PIPELINE_STATE_STREAM_DESC desc{};
-		desc.SizeInBytes = streamSize;
+		desc.SizeInBytes = stream_size;
 		desc.pPipelineStateSubobjectStream = stream;
-
-		return CreatePipelineState(desc);
+		return create_pipeline_state(desc);
 	}
 
-	ID3D12Resource* CreateBuffer(const void* data, u32 buffer_size, bool isCPUAccessible/* = false*/,
-								 D3D12_RESOURCE_STATES state/* = D3D12_RESOURCE_STATE_COMMON*/,
-								 D3D12_RESOURCE_FLAGS flags/* = D3D12_RESOURCE_FLAG_NONE*/,
-								 ID3D12Heap* heap/* = nullptr*/, u64 heapOffset/* = 0*/)
+	ID3D12Resource*
+	create_buffer(const void* data, u32 buffer_size, bool is_cpu_accessible/* = false*/,
+	   			  D3D12_RESOURCE_STATES state/* = D3D12_RESOURCE_STATE_COMMON*/,
+	   			  D3D12_RESOURCE_FLAGS flags/* = D3D12_RESOURCE_FLAG_NONE*/,
+	   			  ID3D12Heap* heap/* = nullptr*/, u64 heap_offset/* = 0*/)
 	{
 		assert(buffer_size);
 
@@ -91,21 +95,21 @@ namespace havana::graphics::d3d12::D3DX
 		desc.Format = DXGI_FORMAT_UNKNOWN;
 		desc.SampleDesc = { 1,0 };
 		desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-		desc.Flags = isCPUAccessible ? D3D12_RESOURCE_FLAG_NONE : flags;
+		desc.Flags = is_cpu_accessible ? D3D12_RESOURCE_FLAG_NONE : flags;
 
 		// The buffer will be only used for upload or as constant buffer/UAV
 		assert(desc.Flags == D3D12_RESOURCE_FLAG_NONE || desc.Flags == D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
 		ID3D12Resource* resource{ nullptr };
-		const D3D12_RESOURCE_STATES resourceState{ isCPUAccessible ? D3D12_RESOURCE_STATE_GENERIC_READ : state };
+		const D3D12_RESOURCE_STATES resource_state{ is_cpu_accessible ? D3D12_RESOURCE_STATE_GENERIC_READ : state };
 
 		if (heap)
 		{
-			DXCall(Core::Device()->CreatePlacedResource(heap, heapOffset, &desc, resourceState, nullptr, IID_PPV_ARGS(&resource)));
+			DXCall(core::device()->CreatePlacedResource(heap, heap_offset, &desc, resource_state, nullptr, IID_PPV_ARGS(&resource)));
 		}
 		else
 		{
-			DXCall(Core::Device()->CreateCommittedResource(isCPUAccessible ? &heapProperties.uploadHeap : &heapProperties.defaultHeap, D3D12_HEAP_FLAG_NONE, &desc, resourceState, nullptr, IID_PPV_ARGS(&resource)));
+			DXCall(core::device()->CreateCommittedResource(is_cpu_accessible ? &heap_properties.upload_heap : &heap_properties.default_heap, D3D12_HEAP_FLAG_NONE, &desc, resource_state, nullptr, IID_PPV_ARGS(&resource)));
 		}
 
 		if (data)
@@ -113,23 +117,23 @@ namespace havana::graphics::d3d12::D3DX
 			// If we have initial data which we'd like to be able to change later, we set isCPUAccessible
 			// to true. If we only want to upload some data once to be used by the GPU, then isCPUAccessible
 			// should be set to false.
-			if (isCPUAccessible)
+			if (is_cpu_accessible)
 			{
 				// NOTE: range's Begin and End fields are set to 0, to indicate that
 				//		 the CPU is not reading any data (i.e. write-only)
 				const D3D12_RANGE range{};
-				void* cpuAddress{ nullptr };
-				DXCall(resource->Map(0, &range, reinterpret_cast<void**>(&cpuAddress)));
-				assert(cpuAddress);
-				memcpy(cpuAddress, data, buffer_size);
+				void* cpu_address{ nullptr };
+				DXCall(resource->Map(0, &range, reinterpret_cast<void**>(&cpu_address)));
+				assert(cpu_address);
+				memcpy(cpu_address, data, buffer_size);
 				resource->Unmap(0, nullptr);
 			}
 			else
 			{
-				Upload::D3D12UploadContext context{ buffer_size };
-				memcpy(context.CPUAddress(), data, buffer_size);
-				context.CommandList()->CopyResource(resource, context.UploadBuffer());
-				context.EndUpload();
+				upload::d3d12_upload_context context{ buffer_size };
+				memcpy(context.cpu_address(), data, buffer_size);
+				context.command_list()->CopyResource(resource, context.upload_buffer());
+				context.end_upload();
 			}
 		}
 

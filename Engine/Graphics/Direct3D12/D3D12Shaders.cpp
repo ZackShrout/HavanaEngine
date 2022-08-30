@@ -1,7 +1,7 @@
 #include "D3D12Shaders.h"
 #include "Content/ContentLoader.h"
 
-namespace havana::graphics::d3d12::Shaders
+namespace havana::graphics::d3d12::shaders
 {
 	namespace
 	{
@@ -12,7 +12,7 @@ namespace havana::graphics::d3d12::Shaders
 		} const* compiledShaderPtr;
 
 		// Each element in this array points to an offset within the shaders blob
-		compiledShaderPtr engineShaders[EngineShader::count]{};
+		compiledShaderPtr engineShaders[engine_shader::count]{};
 		
 		// This is a chunk of memory that contains all compiled engine shaders
 		// The blob is an array of shader byte code, consisting of a u64 size and
@@ -30,17 +30,17 @@ namespace havana::graphics::d3d12::Shaders
 			u64 index{ 0 };
 			while (offset < size && result)
 			{
-				assert(index < EngineShader::count);
+				assert(index < engine_shader::count);
 				compiledShaderPtr& shader{ engineShaders[index] };
 				assert(!shader);
-				result &= index < EngineShader::count && !shader;
+				result &= index < engine_shader::count && !shader;
 				if (!result) break;
 
 				shader = reinterpret_cast<const compiledShaderPtr>(&shadersBlob[offset]);
 				offset += sizeof(u64) + shader->size;
 				index++;
 			}
-			assert(offset == size && index == EngineShader::count);
+			assert(offset == size && index == engine_shader::count);
 
 			return result;
 		}
@@ -54,16 +54,16 @@ namespace havana::graphics::d3d12::Shaders
 
 	void shutdown()
 	{
-		for (u32 i{ 0 }; i < EngineShader::count; i++)
+		for (u32 i{ 0 }; i < engine_shader::count; i++)
 		{
 			engineShaders[i] = {};
 		}
 		shadersBlob.reset();
 	}
 
-	D3D12_SHADER_BYTECODE GetEngineShader(EngineShader::ID id)
+	D3D12_SHADER_BYTECODE get_engine_shader(engine_shader::ID id)
 	{
-		assert(id < EngineShader::count);
+		assert(id < engine_shader::count);
 		const compiledShaderPtr shader{ engineShaders[id] };
 		assert(shader && shader->size);
 
