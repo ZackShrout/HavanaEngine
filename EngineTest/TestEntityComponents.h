@@ -3,12 +3,12 @@
 #include <iostream>
 #include <ctime>
 #include "Test.h"
-#include "../Engine/Components/Entity.h"
-#include "../Engine/Components/Transform.h"
+#include "Components/Entity.h"
+#include "Components/Transform.h"
 
 using namespace havana;
 
-class EngineTest : public Test
+class engine_test : public test
 {
 public:
 #ifdef _WIN64
@@ -17,17 +17,17 @@ public:
 		srand((u32)time(nullptr));
 		return true;
 	}
-	virtual void Run() override
+	virtual void run() override
 	{
 		do
 		{
-			for (u32 i{ 0 }; i < 10000; i++)
+			for (u32 i{ 0 }; i < 10000; ++i)
 			{
-				CreateRandom();
-				RemoveRandom();
-				m_numEntities = (u32)m_entities.size();
+				create_random();
+				remove_random();
+				_num_entities = (u32)_entities.size();
 			}
-			PrintResults();
+			print_results();
 		} while (getchar() != 'q');
 	}
 #elif __linux__
@@ -37,17 +37,17 @@ public:
 		return true;
 	}
 	
-	virtual void Run(void* disp) override
+	virtual void run(void* disp) override
 	{
 		do
 		{
 			for (u32 i{ 0 }; i < 10000; i++)
 			{
-				CreateRandom();
-				RemoveRandom();
-				m_numEntities = (u32)m_entities.size();
+				create_random();
+				remove_random();
+				_num_entities = (u32)_entities.size();
 			}
-			PrintResults();
+			print_results();
 		} while (getchar() != 'q');
 	}
 #endif // _WIN64
@@ -57,53 +57,53 @@ public:
 	}
 
 private:
-	void CreateRandom()
+	void create_random()
 	{
 		u32 count = rand() % 20;
-		if (m_entities.empty()) count = 1000;
-		transform::init_info transformInfo{};
-		game_entity::entity_info entityInfo { &transformInfo };
+		if (_entities.empty()) count = 1000;
+		transform::init_info transform_info{};
+		game_entity::entity_info entity_info { &transform_info };
 
 		while (count > 0)
 		{
-			++m_added;
-			game_entity::entity entity{ game_entity::create(entityInfo) };
+			++_added;
+			game_entity::entity entity{ game_entity::create(entity_info) };
 			assert(entity.is_valid() && id::is_valid(entity.get_id()));
-			m_entities.push_back(entity);
+			_entities.push_back(entity);
 			assert(game_entity::is_alive(entity.get_id()));
 			--count;
 		}
 	}
 
-	void RemoveRandom()
+	void remove_random()
 	{
 		u32 count = rand() % 20;
-		if (m_entities.size() < 1000) return;
+		if (_entities.size() < 1000) return;
 
 		while (count > 0)
 		{
-			const u32 index{ (u32)rand() % ((u32)m_entities.size()) };
-			const game_entity::entity entity{ m_entities[index] };
+			const u32 index{ (u32)rand() % ((u32)_entities.size()) };
+			const game_entity::entity entity{ _entities[index] };
 			assert(entity.is_valid() && id::is_valid(entity.get_id()));
 			if (entity.is_valid())
 			{
 				game_entity::remove(entity.get_id());
-				m_entities.erase(m_entities.begin() + index);
+				_entities.erase(_entities.begin() + index);
 				assert(!game_entity::is_alive(entity.get_id()));
-				++m_removed;
+				++_removed;
 			}
 			--count;
 		}
 	}
 
-	void PrintResults()
+	void print_results()
 	{
-		std::cout << "Entities added: " << m_added << std::endl;
-		std::cout << "Entities removed: " << m_removed << std::endl;
+		std::cout << "Entities added: " << _added << std::endl;
+		std::cout << "Entities removed: " << _removed << std::endl;
 	}
 
-	utl::vector<game_entity::entity> m_entities;
-	u32 m_added{ 0 };
-	u32 m_removed{ 0 };
-	u32 m_numEntities{ 0 };
+	utl::vector<game_entity::entity> _entities;
+	u32 _added{ 0 };
+	u32 _removed{ 0 };
+	u32 _num_entities{ 0 };
 };

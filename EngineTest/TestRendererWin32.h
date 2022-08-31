@@ -4,11 +4,11 @@
 
 #include "Test.h"
 
-class EngineTest : public Test
+class engine_test : public test
 {
 public:
 	bool initialize() override;
-	void Run() override;
+	void run() override;
 	void shutdown() override;
 };
 

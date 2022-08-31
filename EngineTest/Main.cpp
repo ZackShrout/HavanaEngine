@@ -41,21 +41,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #endif
 
     set_current_directory_to_executable_path();
-    EngineTest test{};
+    engine_test test{};
 
     if (test.initialize())
     {
         MSG msg;
-        bool isRunning{ true };
-        while (isRunning)
+        bool is_running{ true };
+        while (is_running)
         {
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
             {
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
-                isRunning &= (msg.message != WM_QUIT);
+                is_running &= (msg.message != WM_QUIT);
             }
-            test.Run();
+            test.run();
         }
         test.shutdown();
         return 0;
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 {
 	XInitThreads();
     
-    EngineTest test{};
+    engine_test test{};
 
     // Open an X server connection
     Display* display { XOpenDisplay(NULL) };
@@ -82,8 +82,8 @@ int main(int argc, char* argv[])
 	if (test.initialize(display))
 	{
         XEvent xev;
-        bool isRunning{ true };
-        while (isRunning)
+        bool is_running{ true };
+        while (is_running)
         {
             // NOTE: we use an if statement here because we are not handling all events in this translation
             //       unit, so XPending(display) will often not ever be 0, and therefore this can create
@@ -105,16 +105,16 @@ int main(int argc, char* argv[])
                         }
                         if ((Atom)xev.xclient.data.l[0] == quit_msg)
                         {
-                            isRunning = false;
+                            is_running = false;
                         }
                         break;
                 }
             }
-            test.Run(display);
+            test.run(display);
         }
         test.shutdown();
         XCloseDisplay(display);
         return 0;
 	}
 }
-#endif // platforms
+#endif // _WIN64

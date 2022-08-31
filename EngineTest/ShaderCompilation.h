@@ -1,6 +1,7 @@
 #pragma once
+#include "CommonHeaders.h"
 
-struct ShaderType
+struct shader_type
 {
 	enum type : u32
 	{
@@ -17,11 +18,11 @@ struct ShaderType
 	};
 };
 
-struct ShaderFileInfo
+struct shader_file_info
 {
-	const char*			fileName;
+	const char*			file_name;
 	const char*			function;
-	ShaderType::type	type;
+	shader_type::type	type;
 };
 
-bool CompileShaders();
+bool compile_shaders();

@@ -94,7 +94,7 @@ GetScriptNames()
 /// <param name="height"> - Height of the window.</param>
 /// <returns>ID of the window.</returns>
 EDITOR_INTERFACE u32
-CreateRenderSurface(HWND host, s32 width, s32 height)
+create_render_surface(HWND host, s32 width, s32 height)
 {
 	assert(host);
 	platform::window_init_info info{ nullptr, host, nullptr, 0, 0, width, height };

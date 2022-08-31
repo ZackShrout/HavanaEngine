@@ -3,12 +3,12 @@
 #ifdef __linux__
 
 #include "Test.h"
-#include "../Platforms/PlatformTypes.h"
-#include "../Platforms/Platform.h"
+#include "Platforms/PlatformTypes.h"
+#include "Platforms/Platform.h"
 
 using namespace havana;
 
-Platform::Window windows[4];
+platform::window windows[4];
 
 enum Key
 {
@@ -20,12 +20,12 @@ enum State
 	ALT = 0x18
 };
 
-class EngineTest : public Test
+class engine_test : public test
 {
 public:
 	bool initialize(void* disp) override
 	{
-		Platform::window_init_info info[]
+		platform::window_init_info info[]
 		{
 			{ nullptr, nullptr, L"Test Window 1", 100, 100, 400, 800 },
 			{ nullptr, nullptr, L"Test Window 2", 150, 150, 800, 400 },
@@ -37,13 +37,13 @@ public:
 
 		for (u32 i{ 0 }; i < _countof(windows); i++)
 		{
-			windows[i] = Platform::create_window(&info[i], disp);
+			windows[i] = platform::create_window(&info[i], disp);
 		}
 
 		return true;
 	}
 
-	void Run(void* disp) override
+	void run(void* disp) override
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
@@ -71,9 +71,9 @@ public:
 				// NOTE: This event is generated for a variety of reasons, so
 				//		 we need to check to see which window generated the event, 
 				//		 and the check if this was a window resize.
-				for (u32 i{ 0 }; i < _countof(windows); i++)
+				for (u32 i{ 0 }; i < _countof(windows); ++i)
 				{
-					if (*((Window*)windows[i].Handle()) == xev.xany.window)
+					if (*((Window*)windows[i].handle()) == xev.xany.window)
 					{
 						if ((u32)xce.width != windows[i].width() || (u32)xce.height != windows[i].height())
 						{
@@ -89,22 +89,22 @@ public:
 					// Find which window was sent the close event, and call function
 					for (u32 i{ 0 }; i < _countof(windows); i++)
 					{
-						if (*((Window*)windows[i].Handle()) == xev.xany.window)
+						if (*((Window*)windows[i].handle()) == xev.xany.window)
 						{
-							windows[i].Close();
+							windows[i].close();
 						}
 					}
 
 					// Check if all windows are closed, and exit application if so
-					bool allClosed{ true };
-					for (u32 i{ 0 }; i < _countof(windows); i++)
+					bool all_closed{ true };
+					for (u32 i{ 0 }; i < _countof(windows); ++i)
 					{
-						if (!windows[i].IsClosed())
+						if (!windows[i].is_closed())
 						{
-							allClosed = false;
+							all_closed = false;
 						}
 					}
-					if (allClosed)
+					if (all_closed)
 					{
 						// Set up quit message and send it using dummy window
 						XEvent close;
@@ -129,11 +129,11 @@ public:
 				//		 keycode represents - the numeric evaluation is also different.
 				if (xev.xkey.state == State::ALT && xev.xkey.keycode == Key::ENTER)
 				{
-					for (u32 i{ 0 }; i < _countof(windows); i++)
+					for (u32 i{ 0 }; i < _countof(windows); ++i)
 					{
 						if (*((Window*)windows[i].Handle()) == xev.xany.window)
 						{
-							windows[i].SetFullscreen(!windows[i].IsFullscreen());
+							windows[i].set_fullscreen(!windows[i].is_fullscreen());
 						}
 					}
 				}
@@ -143,9 +143,9 @@ public:
 
 	void shutdown() override
 	{
-		for (u32 i{ 0 }; i < _countof(windows); i++)
+		for (u32 i{ 0 }; i < _countof(windows); ++i)
 		{
-			Platform::remove_window(windows[i].get_id());
+			platform::remove_window(windows[i].get_id());
 		}
 	}
 };

@@ -5,46 +5,50 @@
 
 using namespace havana;
 
-bool ReadFile(std::filesystem::path, std::unique_ptr<u8[]>&, u64&);
+bool read_file(std::filesystem::path, std::unique_ptr<u8[]>&, u64&);
 
 namespace
 {
-	id::id_type modelId{ id::invalid_id };
-	id::id_type vsId{ id::invalid_id };
-	id::id_type psId{ id::invalid_id };
+	id::id_type model_id{ id::invalid_id };
+	id::id_type vs_id{ id::invalid_id };
+	id::id_type ps_id{ id::invalid_id };
 
-	void LoadModel()
+	void
+	load_model()
 	{
 		std::unique_ptr<u8[]> model;
 		u64 size{ 0 };
-		ReadFile("..\\..\\enginetest\\model.model", model, size);
+		read_file("..\\..\\enginetest\\model.model", model, size);
 
-		modelId = content::create_resource(model.get(), content::asset_type::mesh);
-		assert(id::is_valid(modelId));
+		model_id = content::create_resource(model.get(), content::asset_type::mesh);
+		assert(id::is_valid(model_id));
 	}
 
-	void LoadShaders()
+	void
+	load_shaders()
 	{
 		// Let's say our material uses a vertex shader and a pixel shader
 
 	}
 } // anonymous namespace
 
-id::id_type CreateRenderItem(id::id_type entity_id)
+id::id_type
+create_render_item(id::id_type entity_id)
 {
 	// load a model, pretend it belongs to entity_id
-	auto _1 = std::thread{ [] { LoadModel(); } };
+	auto _1 = std::thread{ [] { load_model(); } };
 	// load material:
 	// 1) load textures
 	// 2) load shaders for that material
-	auto _2 = std::thread{ [] { LoadShaders(); } };
+	auto _2 = std::thread{ [] { load_shaders(); } };
 
 	_1.join();
 	_2.join();
 	// add a render item using the model and its materials
 }
 
-void DestroyRenderItem(id::id_type itemId)
+void
+destroy_render_item(id::id_type item_id)
 {
 
 }

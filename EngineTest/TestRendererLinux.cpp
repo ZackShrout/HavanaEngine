@@ -1,14 +1,14 @@
 #ifdef __linux__
 
-#include "TestRendererLinux.h"
-#include "../Platforms/PlatformTypes.h"
-#include "../Platforms/Platform.h"
-#include "../Graphics/Renderer.h"
-#include "../Graphics/Direct3D12/D3D12Core.h"
-#include "../Content/ContentToEngine.h"
-#include "ShaderCompilation.h"
 #include <filesystem>
 #include <fstream>
+#include "TestRendererLinux.h"
+#include "Platforms/PlatformTypes.h"
+#include "Platforms/Platform.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/Direct3D12/D3D12Core.h"
+#include "Content/ContentToEngine.h"
+#include "ShaderCompilation.h"
 
 #if TEST_RENDERER
 
@@ -17,13 +17,13 @@ using namespace havana;
 // Multithreading test worker span code /////////////////////////////////////
 #define ENABLE_TEST_WORKERS 0
 
-constexpr u32	numThreads{ 8 };
+constexpr u32	num_threads{ 8 };
 bool			close{ false };
-std::thread		workers[numThreads];
+std::thread		workers[num_threads];
 
 utl::vector<u8> buffer(1024 * 1024, 0);
 // Test worker for upload context
-void BufferTestWorker()
+void buffer_test_worker()
 {
 	//while (!close)
 	//{
@@ -35,7 +35,7 @@ void BufferTestWorker()
 }
 
 template<class FnPtr, class... Args>
-void InitTestWorkers(FnPtr&& fnPtr, Args&&... args)
+void init_test_workers(FnPtr&& fnPtr, Args&&... args)
 {
 #if ENABLE_TEST_WORKERS
 	close = false;
@@ -44,7 +44,7 @@ void InitTestWorkers(FnPtr&& fnPtr, Args&&... args)
 #endif
 }
 
-void JointTestWorkers()
+void joint_test_workers()
 {
 #if ENABLE_TEST_WORKERS
 	close = true;
@@ -53,17 +53,18 @@ void JointTestWorkers()
 }
 /////////////////////////////////////////////////////////////////////////////
 
-id::id_type modelId{ id::invalid_id };
+id::id_type model_id{ id::invalid_id };
 Graphics::render_surface surfaces[4];
-TimeIt timer{};
+time_it timer{};
 
 bool resized{ false };
-bool isRestarting{ false };
-void DestroyRenderSurface(Graphics::render_surface &surface);
-bool TestInitialize();
-void TestShutdown();
+bool is_restarting{ false };
+void destroy_render_surface(graphics::render_surface &surface);
+bool test_initialize();
+void test_shutdown();
 
-bool ReadFile(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
+bool
+read_file(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
 {
 	if (!std::filesystem::exists(path)) return false;
 
@@ -83,23 +84,26 @@ bool ReadFile(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size
 	return true;
 }
 
-void CreateRenderSurface(Graphics::render_surface &surface, Platform::window_init_info info, void* disp)
+void
+create_render_surface(Graphics::render_surface &surface, Platform::window_init_info info, void* disp)
 {
-	surface.window = Platform::create_window(&info, disp);
-	surface.surface = Graphics::create_surface(surface.window);
+	surface.window = platform::create_window(&info, disp);
+	surface.surface = graphics::create_surface(surface.window);
 }
 
-void DestroyRenderSurface(Graphics::render_surface &surface)
+void
+destroy_render_surface(Graphics::render_surface &surface)
 {
-	Graphics::render_surface temp{ surface };
+	graphics::render_surface temp{ surface };
 	surface = {};
 	if (temp.surface.is_valid())
-		Graphics::remove_surface(temp.surface.get_id());
+		graphics::remove_surface(temp.surface.get_id());
 	if (temp.window.is_valid())
-		Platform::remove_window(temp.window.get_id());
+		platform::remove_window(temp.window.get_id());
 }
 
-bool TestInitialize(void *disp)
+bool
+test_initialize(void *disp)
 {
 	// if (!CompileShaders())
 	// {
@@ -107,9 +111,9 @@ bool TestInitialize(void *disp)
 	// 	return false;
 	// }
 
-	if (!Graphics::initialize(Graphics::graphics_platform::VulkanAPI)) return false;
+	if (!graphics::initialize(graphics::graphics_platform::vulkan_1)) return false;
 
-	Platform::window_init_info info[]{
+	platform::window_init_info info[]{
 		{nullptr, nullptr, L"Render Window 1", 100, 100, 400, 800},
 		{nullptr, nullptr, L"Render Window 2", 150, 150, 800, 400},
 		{nullptr, nullptr, L"Render Window 3", 200, 200, 400, 400},
@@ -118,50 +122,53 @@ bool TestInitialize(void *disp)
 
 	static_assert(_countof(info) == _countof(surfaces));
 
-	for (u32 i{ 0 }; i < _countof(surfaces); i++)
-		CreateRenderSurface(surfaces[i], info[i], disp);
+	for (u32 i{ 0 }; i < _countof(surfaces); ++i)
+		create_render_surface(surfaces[i], info[i], disp);
 
 	// Load test model
 	std::unique_ptr<u8[]> model;
 	u64 size{ 0 };
-	if (!ReadFile("..\\..\\enginetest\\model.model", model, size)) return false;
+	if (!read_file("..\\..\\enginetest\\model.model", model, size)) return false;
 
-	modelId = content::create_resource(model.get(), content::asset_type::mesh);
-	if (!id::is_valid(modelId)) return false;
+	model_id = content::create_resource(model.get(), content::asset_type::mesh);
+	if (!id::is_valid(model_id)) return false;
 
-	InitTestWorkers(BufferTestWorker);
+	init_test_workers(buffer_test_worker);
 
-	isRestarting = false;
+	is_restarting = false;
 	return true;
 }
 
-void TestShutdown()
+void
+test_shutdown()
 {
-	JointTestWorkers();
+	joint_test_workers();
 
-	if (id::is_valid(modelId))
+	if (id::is_valid(model_id))
 	{
-		content::destroy_resource(modelId, content::asset_type::mesh);
+		content::destroy_resource(model_id, content::asset_type::mesh);
 	}
 
-	for (u32 i{ 0 }; i < _countof(surfaces); i++)
-		DestroyRenderSurface(surfaces[i]);
+	for (u32 i{ 0 }; i < _countof(surfaces); ++i)
+		destroy_render_surface(surfaces[i]);
 
-	Graphics::shutdown();
+	graphics::shutdown();
 }
 
-bool EngineTest::initialize(void *disp)
+bool
+engine_test::initialize(void *disp)
 {
-	return TestInitialize(disp);
+	return test_initialize(disp);
 }
 
-void EngineTest::Run(void *disp)
+void
+engine_test::run(void *disp)
 {
-	timer.Begin();
+	timer.begin();
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-	for (u32 i{ 0 }; i < _countof(surfaces); i++)
+	for (u32 i{ 0 }; i < _countof(surfaces); ++i)
 	{
 		if (surfaces[i].surface.is_valid())
 		{
@@ -169,7 +176,7 @@ void EngineTest::Run(void *disp)
 		}
 	}
 
-	timer.End();
+	timer.end();
 
 	// Cache a casted pointer of the display to save on casting later
 	Display* display{ (Display*)disp };
@@ -195,7 +202,7 @@ void EngineTest::Run(void *disp)
 			// NOTE: This event is generated for a variety of reasons, so
 			//		 we need to check to see which window generated the event, 
 			//		 and the check if this was a window resize.
-			for (u32 i{ 0 }; i < _countof(surfaces); i++)
+			for (u32 i{ 0 }; i < _countof(surfaces); ++i)
 			{
 				if (!surfaces[i].window.is_valid()) continue;
 				if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
@@ -212,27 +219,27 @@ void EngineTest::Run(void *disp)
 			if ((Atom)xev.xclient.data.l[0] == wm_delete_window)
 			{
 				// Find which window was sent the close event, and call function
-				for (u32 i{ 0 }; i < _countof(surfaces); i++)
+				for (u32 i{ 0 }; i < _countof(surfaces); ++i)
 				{
 					if (!surfaces[i].window.is_valid()) continue;
 					if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
 					{
-						DestroyRenderSurface(surfaces[i]);
+						destroy_render_surface(surfaces[i]);
 						break;
 					}
 				}
 
 				// Check if all windows are closed, and exit application if so
-				bool allClosed{ true };
+				bool all_closed{ true };
 				for (u32 i{ 0 }; i < _countof(surfaces); i++)
 				{
 					if (!surfaces[i].window.is_valid()) continue;
-					if (!surfaces[i].window.IsClosed())
+					if (!surfaces[i].window.is_closed())
 					{
-						allClosed = false;
+						all_closed = false;
 					}
 				}
-				if (allClosed)
+				if (all_closed)
 				{
 					// Set up quit message and send it using dummy window
 					XEvent close;
@@ -262,7 +269,7 @@ void EngineTest::Run(void *disp)
 					if (!surfaces[i].window.is_valid()) continue;
 					if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
 					{
-						surfaces[i].window.SetFullscreen(!surfaces[i].window.IsFullscreen());
+						surfaces[i].window.set_fullscreen(!surfaces[i].window.is_fullscreen());
 					}
 				}
 			}
@@ -270,9 +277,10 @@ void EngineTest::Run(void *disp)
 	}
 }
 
-void EngineTest::shutdown()
+void
+engine_test::shutdown()
 {
-	TestShutdown();
+	test_shutdown();
 }
 #endif //TEST_RENDERER
 

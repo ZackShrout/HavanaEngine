@@ -3,11 +3,11 @@
 
 #include "Test.h"
 
-class EngineTest : public Test
+class engine_test : public test
 {
 public:
 	bool initialize(void* disp) override;
-	void Run(void* disp) override;
+	void run(void* disp) override;
 	void shutdown() override;
 };
 

@@ -1,5 +1,7 @@
 #ifdef _WIN64
 
+#include <filesystem>
+#include <fstream>
 #include "Platforms/PlatformTypes.h"
 #include "Platforms/Platform.h"
 #include "Graphics/Renderer.h"
@@ -9,8 +11,6 @@
 #include "Components/Transform.h"
 #include "TestRendererWin32.h"
 #include "ShaderCompilation.h"
-#include <filesystem>
-#include <fstream>
 
 #if TEST_RENDERER
 
@@ -21,13 +21,13 @@ using namespace havana;
 // Multithreading test worker span code /////////////////////////////////////
 #define ENABLE_TEST_WORKERS 0
 
-constexpr u32	numThreads{ 8 };
+constexpr u32	num_threads{ 8 };
 bool			close{ false };
-std::thread		workers[numThreads];
+std::thread		workers[num_threads];
 
 utl::vector<u8> buffer(1024 * 1024, 0);
 // Test worker for upload context
-void BufferTestWorker()
+void buffer_test_worker()
 {
 	while (!close)
 	{
@@ -39,7 +39,7 @@ void BufferTestWorker()
 }
 
 template<class FnPtr, class... Args>
-void InitTestWorkers(FnPtr&& fnPtr, Args&&... args)
+void init_test_workers(FnPtr&& fnPtr, Args&&... args)
 {
 #if ENABLE_TEST_WORKERS
 	close = false;
@@ -48,7 +48,7 @@ void InitTestWorkers(FnPtr&& fnPtr, Args&&... args)
 #endif
 }
 
-void JointTestWorkers()
+void joint_test_workers()
 {
 #if ENABLE_TEST_WORKERS
 	close = true;
@@ -63,43 +63,43 @@ struct
 	graphics::camera camera{};
 } camera;
 
-id::id_type itemId{ id::invalid_id };
-id::id_type modelId{ id::invalid_id };
+id::id_type item_id{ id::invalid_id };
+id::id_type model_id{ id::invalid_id };
 graphics::render_surface surfaces[4];
-TimeIt timer{};
+time_it timer{};
 
 bool resized{ false };
-bool isRestarting{ false };
-void DestroyRenderSurface(graphics::render_surface &surface);
-bool TestInitialize();
-void TestShutdown();
-id::id_type CreateRenderItem(id::id_type entity_id);
-void DestroyRenderItem(id::id_type itemId);
+bool is_restarting{ false };
+void destroy_render_surface(graphics::render_surface &surface);
+bool test_initialize();
+void test_shutdown();
+id::id_type create_render_item(id::id_type entity_id);
+void destroy_render_item(id::id_type item_id);
 
 LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	bool toggleFullscreen{ false };
+	bool toggle_fullscreen{ false };
 
 	switch (msg)
 	{
 	case WM_DESTROY:
 	{
-		bool allClosed{ true };
+		bool all_closed{ true };
 		for (u32 i{ 0 }; i < _countof(surfaces); i++)
 		{
 			if (surfaces[i].window.is_valid())
 			{
 				if (surfaces[i].window.is_closed())
 				{
-					DestroyRenderSurface(surfaces[i]);
+					destroy_render_surface(surfaces[i]);
 				}
 				else
 				{
-					allClosed = false;
+					all_closed = false;
 				}
 			}
 		}
-		if (allClosed && !isRestarting)
+		if (all_closed && !is_restarting)
 		{
 			PostQuitMessage(0);
 			return 0;
@@ -110,7 +110,7 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		resized = (wparam != SIZE_MINIMIZED);
 		break;
 	case WM_SYSCHAR:
-		toggleFullscreen = (wparam == VK_RETURN && (HIWORD(lparam) & KF_ALTDOWN));
+		toggle_fullscreen = (wparam == VK_RETURN && (HIWORD(lparam) & KF_ALTDOWN));
 		break;
 	case WM_KEYDOWN:
 		if (wparam == VK_ESCAPE)
@@ -120,22 +120,22 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		}
 		else if (wparam == VK_F11)
 		{
-			isRestarting = true;
-			TestShutdown();
-			TestInitialize();
+			is_restarting = true;
+			test_shutdown();
+			test_initialize();
 		}
 	default:
 		break;
 	}
 
-	if ((resized && GetAsyncKeyState(VK_LBUTTON) >= 0) || toggleFullscreen)
+	if ((resized && GetAsyncKeyState(VK_LBUTTON) >= 0) || toggle_fullscreen)
 	{
 		platform::window win{ platform::window_id{(id::id_type)GetWindowLongPtr(hwnd, GWLP_USERDATA)} };
 		for (u32 i{ 0 }; i < _countof(surfaces); i++)
 		{
 			if (win.get_id() == surfaces[i].window.get_id())
 			{
-				if (toggleFullscreen)
+				if (toggle_fullscreen)
 				{
 					win.set_fullscreen(!win.is_fullscreen());
 					// The default window procedure will play a system notification sound
@@ -157,23 +157,25 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-game_entity::entity CreateOneGameEntity()
+game_entity::entity
+create_one_game_entity()
 {
-	transform::init_info transformInfo{};
+	transform::init_info transform_info{};
 	math::v3a rot{ 0, 3.14f, 0 };
 	DirectX::XMVECTOR quat{ DirectX::XMQuaternionRotationRollPitchYawFromVector(DirectX::XMLoadFloat3A(&rot)) };
-	math::v4a rotQuat;
-	DirectX::XMStoreFloat4A(&rotQuat, quat);
-	memcpy(&transformInfo.rotation[0], &rotQuat.x, sizeof(transformInfo.rotation));
+	math::v4a rot_quat;
+	DirectX::XMStoreFloat4A(&rot_quat, quat);
+	memcpy(&transform_info.rotation[0], &rot_quat.x, sizeof(transform_info.rotation));
 
-	game_entity::entity_info entityInfo{};
-	entityInfo.transform = &transformInfo;
-	game_entity::entity ntt{ game_entity::create(entityInfo) };
+	game_entity::entity_info entity_info{};
+	entity_info.transform = &transform_info;
+	game_entity::entity ntt{ game_entity::create(entity_info) };
 	assert(ntt.is_valid());
 	return ntt;
 }
 
-bool ReadFile(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
+bool
+read_file(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
 {
 	if (!std::filesystem::exists(path)) return false;
 
@@ -193,7 +195,8 @@ bool ReadFile(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size
 	return true;
 }
 
-void ActivateConsole()
+void
+activate_console()
 {
 	FILE* out;
 	FILE* err;
@@ -205,13 +208,15 @@ void ActivateConsole()
 	SetConsoleTitle(TEXT("Render Test"));
 }
 
-void CreateRenderSurface(graphics::render_surface &surface, platform::window_init_info info, void* disp)
+void
+create_render_surface(graphics::render_surface &surface, platform::window_init_info info, void* disp)
 {
 	surface.window = platform::create_window(&info, disp);
 	surface.surface = graphics::create_surface(surface.window);
 }
 
-void DestroyRenderSurface(graphics::render_surface &surface)
+void
+destroy_render_surface(graphics::render_surface &surface)
 {
 	graphics::render_surface temp{ surface };
 	surface = {};
@@ -221,9 +226,10 @@ void DestroyRenderSurface(graphics::render_surface &surface)
 		platform::remove_window(temp.window.get_id());
 }
 
-bool TestInitialize()
+bool
+test_initialize()
 {
-	while (!CompileShaders())
+	while (!compile_shaders())
 	{
 		// Pop up a message box allowing the user to retry compilation.
 		if (MessageBox(nullptr, L"Failed to compile engine shaders!", L"Shader Compilation Error", MB_RETRYCANCEL) != IDRETRY)
@@ -241,65 +247,68 @@ bool TestInitialize()
 
 	static_assert(_countof(info) == _countof(surfaces));
 
-	for (u32 i{ 0 }; i < _countof(surfaces); i++)
-		CreateRenderSurface(surfaces[i], info[i], nullptr);
+	for (u32 i{ 0 }; i < _countof(surfaces); ++i)
+		create_render_surface(surfaces[i], info[i], nullptr);
 
 	// Load test model
 	std::unique_ptr<u8[]> model;
 	u64 size{ 0 };
-	if (!ReadFile("..\\..\\enginetest\\model.model", model, size)) return false;
+	if (!read_file("..\\..\\enginetest\\model.model", model, size)) return false;
 
-	modelId = content::create_resource(model.get(), content::asset_type::mesh);
-	if (!id::is_valid(modelId)) return false;
+	model_id = content::create_resource(model.get(), content::asset_type::mesh);
+	if (!id::is_valid(model_id)) return false;
 
-	InitTestWorkers(BufferTestWorker);
+	init_test_workers(buffer_test_worker);
 
-	camera.entity = CreateOneGameEntity();
+	camera.entity = create_one_game_entity();
 	camera.camera = graphics::create_camera(graphics::perspective_camera_init_info(camera.entity.get_id()));
 	assert(camera.camera.is_valid());
 
-	itemId = CreateRenderItem(CreateOneGameEntity().get_id());
+	item_id = create_render_item(create_one_game_entity().get_id());
 
-	isRestarting = false;
+	is_restarting = false;
 	return true;
 }
 
-void TestShutdown()
+void
+test_shutdown()
 {
-	DestroyRenderItem(itemId);
+	destroy_render_item(item_id);
 	
 	if (camera.camera.is_valid()) graphics::remove_camera(camera.camera.get_id());
 	if (camera.entity.is_valid()) game_entity::remove(camera.entity.get_id());
 	
-	JointTestWorkers();
+	joint_test_workers();
 
-	if (id::is_valid(modelId))
+	if (id::is_valid(model_id))
 	{
-		content::destroy_resource(modelId, content::asset_type::mesh);
+		content::destroy_resource(model_id, content::asset_type::mesh);
 	}
 
 	for (u32 i{ 0 }; i < _countof(surfaces); i++)
-		DestroyRenderSurface(surfaces[i]);
+		destroy_render_surface(surfaces[i]);
 
 	graphics::shutdown();
 }
 
-bool EngineTest::initialize()
+bool
+engine_test::initialize()
 {
 #if USE_CONSOLE
-	ActivateConsole();
+	activate_console();
 #endif // USE_CONSOLE
 
-	return TestInitialize();
+	return test_initialize();
 }
 
-void EngineTest::Run()
+void
+engine_test::run()
 {
-	timer.Begin();
+	timer.begin();
 
 	//std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-	for (u32 i{ 0 }; i < _countof(surfaces); i++)
+	for (u32 i{ 0 }; i < _countof(surfaces); ++i)
 	{
 		if (surfaces[i].surface.is_valid())
 		{
@@ -307,12 +316,13 @@ void EngineTest::Run()
 		}
 	}
 
-	timer.End();
+	timer.end();
 }
 
-void EngineTest::shutdown()
+void
+engine_test::shutdown()
 {
-	TestShutdown();
+	test_shutdown();
 }
 #endif // TEST_RENDERER
 #endif // _WIN64

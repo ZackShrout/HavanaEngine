@@ -1,49 +1,37 @@
-#ifdef _WIN64
-#include "..\packages\DirectXShaderCompiler\inc\d3d12shader.h"
-#include "..\packages\DirectXShaderCompiler\inc\dxcapi.h"
-#include "Graphics\Direct3D12\D3D12Core.h"
-#include "Graphics\Direct3D12\D3D12Shaders.h"
-
-#pragma comment(lib, "../packages/DirectXShaderCompiler/lib/x64/dxcompiler.lib")
-
-using namespace havana::graphics::d3d12::shaders;
-using namespace Microsoft::WRL;
-#elif __linux__
-
-#include "../Graphics/Vulkan/VulkanShaders.h"
-using namespace havana::Graphics::Vulkan::shaders;
-#endif // _WIN64
-
-#include <glslang/Public/ShaderLang.h>
-#include "ShaderCompilation.h"
-#include "../Graphics/Vulkan/VulkanCore.h"
-
 #include <fstream>
 #include <filesystem>
 
-#define D3D12API 0
-#define VULKANAPI 1
+#include "ShaderCompilation.h"
+#include "../packages/DirectXShaderCompiler/inc/d3d12shader.h"
+#include "../packages/DirectXShaderCompiler/inc/dxcapi.h"
+
+#include "Graphics/Direct3D12/D3D12Core.h"
+#include "Graphics/Direct3D12/D3D12Shaders.h"
+
+#pragma comment(lib, "../packages/DirectXShaderCompiler/lib/x64/dxcompiler.lib")
 
 using namespace havana;
+using namespace havana::graphics::d3d12::shaders;
+using namespace Microsoft::WRL;
 
 namespace
 {
-	constexpr const char* shadersSourcePath{ "../../Engine/Graphics/Direct3D12/Shaders/" };
+	constexpr const char* shaders_source_path{ "../../Engine/Graphics/Direct3D12/Shaders/" };
 
-	struct EngineShaderInfo
+	struct engine_shader_info
 	{
 		engine_shader::id	id;
-		ShaderFileInfo		info;
+		shader_file_info	info;
 	};
 	
-	constexpr EngineShaderInfo engineShaderFiles[]
+	constexpr engine_shader_info engine_shader_files[]
 	{
-		engine_shader::fullscreen_triangle_vs, {"FullScreenTriangle.hlsl", "FullScreenTriangleVS", ShaderType::vertex},
-		engine_shader::fill_color_ps, {"FillColor.hlsl", "FillColorPS", ShaderType::pixel},
-		engine_shader::post_process_ps, {"PostProcess.hlsl", "PostProcessPS", ShaderType::pixel},
+		engine_shader::fullscreen_triangle_vs, {"FullScreenTriangle.hlsl", "FullScreenTriangleVS", shader_type::vertex},
+		engine_shader::fill_color_ps, {"FillColor.hlsl", "FillColorPS", shader_type::pixel},
+		engine_shader::post_process_ps, {"PostProcess.hlsl", "PostProcessPS", shader_type::pixel},
 	};
 
-	static_assert(_countof(engineShaderFiles) == engine_shader::count);
+	static_assert(_countof(engine_shader_files) == engine_shader::count);
 
 	struct dxc_compiled_shader
 	{
@@ -52,42 +40,43 @@ namespace
 		DxcShaderHash			hash;
 	};
 
-	std::wstring ToWString(const char* c)
+	std::wstring
+	to_wstring(const char* c)
 	{
 		std::string s{ c };
 		return { s.begin(), s.end() };
 	}
 
-	class ShaderCompiler
+	class shader_compiler
 	{
 	public:
-		ShaderCompiler()
+		shader_compiler()
 		{
 			HRESULT hr{ S_OK };
-			DXCall(hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_compiler)));
+			DXCall(hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&_compiler)));
 			if (FAILED(hr)) return;
-			DXCall(hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&m_utils)));
+			DXCall(hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&_utils)));
 			if (FAILED(hr)) return;
-			DXCall(hr = m_utils->CreateDefaultIncludeHandler(&m_includeHandler));
+			DXCall(hr = _utils->CreateDefaultIncludeHandler(&_include_handler));
 			if (FAILED(hr)) return;
 		}
-		DISABLE_COPY_AND_MOVE(ShaderCompiler);
+		DISABLE_COPY_AND_MOVE(shader_compiler);
 
-		dxc_compiled_shader Compile(ShaderFileInfo info, std::filesystem::path fullPath)
+		dxc_compiled_shader compile(shader_file_info info, std::filesystem::path full_path)
 		{
-			assert(m_compiler && m_utils && m_includeHandler);
+			assert(_compiler && _utils && _include_handler);
 			HRESULT hr{ S_OK };
 
 			// Load the source file using utl interface
-			ComPtr<IDxcBlobEncoding> sourceBlob{ nullptr };
-			DXCall(hr = m_utils->LoadFile(fullPath.c_str(), nullptr, &sourceBlob));
+			ComPtr<IDxcBlobEncoding> source_blob{ nullptr };
+			DXCall(hr = _utils->LoadFile(full_path.c_str(), nullptr, &source_blob));
 			if (FAILED(hr)) return {};
-			assert(sourceBlob && sourceBlob->GetBufferSize());
+			assert(source_blob && source_blob->GetBufferSize());
 
-			std::wstring file{ ToWString(info.fileName) };
-			std::wstring func{ ToWString(info.function) };
-			std::wstring prof{ ToWString(m_profileStrings[(u32)info.type]) };
-			std::wstring inc{ ToWString(shadersSourcePath) };
+			std::wstring file{ to_wstring(info.file_name) };
+			std::wstring func{ to_wstring(info.function) };
+			std::wstring prof{ to_wstring(_profile_strings[(u32)info.type]) };
+			std::wstring inc{ to_wstring(shaders_source_path) };
 
 			LPCWSTR args[]
 			{
@@ -109,15 +98,15 @@ namespace
 			};
 
 			OutputDebugStringA("Compiling ");
-			OutputDebugStringA(info.fileName);
+			OutputDebugStringA(info.file_name);
 			OutputDebugStringA(" : ");
 			OutputDebugStringA(info.function);
 			OutputDebugStringA("\n");
 
-			return Compile(sourceBlob.Get(), args, _countof(args));
+			return compile(source_blob.Get(), args, _countof(args));
 		}
 
-		dxc_compiled_shader Compile(IDxcBlobEncoding* sourceBlob, LPCWSTR* args, u32 numArgs)
+		dxc_compiled_shader compile(IDxcBlobEncoding* sourceBlob, LPCWSTR* args, u32 numArgs)
 		{
 			DxcBuffer buffer{};
 			buffer.Encoding = DXC_CP_ACP;					// auto detect format
@@ -126,7 +115,7 @@ namespace
 
 			HRESULT hr{ S_OK };
 			ComPtr<IDxcResult> results{ nullptr };
-			DXCall(hr = m_compiler->Compile(&buffer, args, numArgs, m_includeHandler.Get(), IID_PPV_ARGS(&results)));
+			DXCall(hr = _compiler->Compile(&buffer, args, numArgs, _include_handler.Get(), IID_PPV_ARGS(&results)));
 			if (FAILED(hr)) return {};
 
 			ComPtr<IDxcBlobUtf8> errors{ nullptr };
@@ -171,7 +160,7 @@ namespace
 			buffer.Size = shader->GetBufferSize();
 
 			ComPtr<IDxcResult> disasm_results{ nullptr };
-			DXCall(hr = m_compiler->Disassemble(&buffer, IID_PPV_ARGS(&disasm_results)));
+			DXCall(hr = _compiler->Disassemble(&buffer, IID_PPV_ARGS(&disasm_results)));
 
 			ComPtr<IDxcBlobUtf8> disassembly{ nullptr };
 			DXCall(hr = disasm_results->GetOutput(DXC_OUT_DISASSEMBLY, IID_PPV_ARGS(&disassembly), nullptr));
@@ -183,39 +172,41 @@ namespace
 		}
 	private:
 		// NOTE: Shader Model 6.x can also be used (AS and MS are only supported from SM6.5 and up)
-		constexpr static const char* m_profileStrings[]{ "vs_6_6", "hs_6_6", "ds_6_6", "gs_6_6", "ps_6_6", "cs_6_6", "as_6_6", "ms_6_6" };
-		static_assert(_countof(m_profileStrings) == ShaderType::count);
+		constexpr static const char* _profile_strings[]{ "vs_6_6", "hs_6_6", "ds_6_6", "gs_6_6", "ps_6_6", "cs_6_6", "as_6_6", "ms_6_6" };
+		static_assert(_countof(_profile_strings) == shader_type::count);
 
-		ComPtr<IDxcCompiler3>		m_compiler{ nullptr };
-		ComPtr<IDxcUtils>			m_utils{ nullptr };
-		ComPtr<IDxcIncludeHandler>	m_includeHandler{ nullptr };
+		ComPtr<IDxcCompiler3>		_compiler{ nullptr };
+		ComPtr<IDxcUtils>			_utils{ nullptr };
+		ComPtr<IDxcIncludeHandler>	_include_handler{ nullptr };
 	};
 
 	// Get the path to the compiled shader's binary file
-	decltype(auto) get_engine_shaders_path()
+	decltype(auto)
+	get_engine_shaders_path()
 	{
 		return std::filesystem::path{ graphics::get_engine_shaders_path(graphics::graphics_platform::direct3d12) };
 	}
 
-	bool CompiledShadersAreUpToData()
+	bool
+	compiled_shaders_are_up_to_date()
 	{
-		auto engineShadersPath = get_engine_shaders_path();
-		if (!std::filesystem::exists(engineShadersPath)) return false;
-		auto shadersCompilationTime = std::filesystem::last_write_time(engineShadersPath);
+		auto engine_shaders_path = get_engine_shaders_path();
+		if (!std::filesystem::exists(engine_shaders_path)) return false;
+		auto shaders_compilation_time = std::filesystem::last_write_time(engine_shaders_path);
 
-		std::filesystem::path fullPath{};
+		std::filesystem::path full_path{};
 
 		// Check if either of the engine shader source files are newer than the compiled shader file,
 		// in which case, we need to recompile
-		for (u32 i{ 0 }; i < engine_shader::count; i++)
+		for (u32 i{ 0 }; i < engine_shader::count; ++i)
 		{
-			auto& file = engineShaderFiles[i];
-			fullPath = shadersSourcePath;
-			fullPath += file.info.fileName;
-			if (!std::filesystem::exists(fullPath)) return false;
+			auto& file = engine_shader_files[i];
+			full_path = shaders_source_path;
+			full_path += file.info.file_name;
+			if (!std::filesystem::exists(full_path)) return false;
 
-			auto shaderFileTime = std::filesystem::last_write_time(fullPath);
-			if (shaderFileTime > shadersCompilationTime)
+			auto shader_file_time = std::filesystem::last_write_time(full_path);
+			if (shader_file_time > shaders_compilation_time)
 			{
 				return false;
 			}
@@ -224,14 +215,14 @@ namespace
 		return true;
 	}
 
-#ifdef _WIN64
-	bool SaveCompiledShaders(utl::vector<dxc_compiled_shader>& shaders)
+	bool
+	save_compiled_shaders(utl::vector<dxc_compiled_shader>& shaders)
 	{
-		auto engineShadersPath = get_engine_shaders_path();
-		std::filesystem::create_directories(engineShadersPath.parent_path());
-		std::ofstream file(engineShadersPath, std::ios::out | std::ios::binary);
+		auto engine_shaders_path = get_engine_shaders_path();
+		std::filesystem::create_directories(engine_shaders_path.parent_path());
+		std::ofstream file(engine_shaders_path, std::ios::out | std::ios::binary);
 		
-		if (!file || !std::filesystem::exists(engineShadersPath))
+		if (!file || !std::filesystem::exists(engine_shaders_path))
 		{
 			file.close();
 			return false;
@@ -248,39 +239,29 @@ namespace
 		file.close();
 		return true;
 	}
-#elif __linux__
-	bool SaveCompiledShaders(utl::vector<u8*> shaders)
-	{
-		auto engineShadersPath = get_engine_shaders_path();
-
-		// TODO: implement
-
-		return true;
-	}
-#endif // _WIN64
 } // anonymous namespace
 
-#ifdef _WIN64
-bool CompileShaders()
+bool
+compile_shaders()
 {
-	if (CompiledShadersAreUpToData()) return true;
+	if (compiled_shaders_are_up_to_date()) return true;
 
-	ShaderCompiler compiler{};
+	shader_compiler compiler{};
 	utl::vector<dxc_compiled_shader> shaders;
-	std::filesystem::path fullPath{};
+	std::filesystem::path full_path{};
 
 	// Compile shaders put all shaders together in a buffer in the same order of compilation
 	for (u32 i{ 0 }; i < engine_shader::count; i++)
 	{
-		auto& file = engineShaderFiles[i];
+		auto& file = engine_shader_files[i];
 
-		fullPath = shadersSourcePath;
-		fullPath += file.info.fileName;
-		if (!std::filesystem::exists(fullPath)) return false;
-		dxc_compiled_shader compiledShader{ compiler.Compile(file.info, fullPath) };
-		if (compiledShader.byte_code && compiledShader.byte_code->GetBufferPointer() && compiledShader.byte_code->GetBufferSize())
+		full_path = shaders_source_path;
+		full_path += file.info.file_name;
+		if (!std::filesystem::exists(full_path)) return false;
+		dxc_compiled_shader compiled_shader{ compiler.compile(file.info, full_path) };
+		if (compiled_shader.byte_code && compiled_shader.byte_code->GetBufferPointer() && compiled_shader.byte_code->GetBufferSize())
 		{
-			shaders.emplace_back(std::move(compiledShader));
+			shaders.emplace_back(std::move(compiled_shader));
 		}
 		else
 		{
@@ -288,23 +269,5 @@ bool CompileShaders()
 		}
 	}
 
-	return SaveCompiledShaders(shaders);
+	return save_compiled_shaders(shaders);
 }
-#elif __linux__
-bool CompileShaders()
-{
-	if (CompiledShadersAreUpToData()) return true;
-
-	utl::vector<u8*> shaders;
-
-	// TODO: implement
-
-	return SaveCompiledShaders(shaders);
-}
-#endif // _WIN64
-
-#if D3D12API
-// Compile direct3d12 hlsl into bytecode
-#elif VULKANAPI
-// Compile vulkan glsl into SPIR-V
-#endif
