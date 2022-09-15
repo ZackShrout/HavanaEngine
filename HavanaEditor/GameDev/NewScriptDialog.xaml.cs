@@ -32,12 +32,12 @@ namespace HavanaEditor.GameDev
 namespace {1}
 {{
 	REGISTER_SCRIPT({0});
-    void {0}::BeginPlay()
+    void {0}::begin_play()
     {{
     
     }}
 
-    void {0}::Update(float dt)
+    void {0}::update(float dt)
     {{
     
     }}
@@ -47,12 +47,12 @@ namespace {1}
 
 namespace {1}
 {{
-	class {0} : public Havana::Script::EntityScript
+	class {0} : public havana::script::entity_script
 	{{
 	public:
-		constexpr explicit {0}(Havana::Entity::Entity entity) : Havana::Script::EntityScript{{entity}} {{}}
-        void BeginPlay() override;
-		void Update(float dt) override;
+		constexpr explicit {0}(havana::game_entity::entity entity) : havana::script::entity_script{{entity}} {{}}
+        void begin_play() override;
+		void update(float dt) override;
     private:
 	}};
 }} // namespace {1}" ;
