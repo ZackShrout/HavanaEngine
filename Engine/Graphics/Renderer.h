@@ -26,8 +26,8 @@ namespace havana::graphics
 
 	struct render_surface
 	{
-		platform::window window{};
-		havana::graphics::surface surface{};
+		platform::window			window{};
+		havana::graphics::surface	surface{};
 	};
 
 	struct camera_parameter

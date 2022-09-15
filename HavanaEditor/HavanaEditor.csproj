@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <XamlDebuggingInformation>True</XamlDebuggingInformation>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -13,11 +13,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugEditor|x64'">
     <OutputPath>..\x64\DebugEditor\</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
+    <Optimize>False</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseEditor|x64'">
     <OutputPath>..\x64\ReleaseEditor\</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
+    <Optimize>True</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,31 +33,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <COMReference Include="EnvDTE80">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>0</VersionMinor>
-      <VersionMajor>8</VersionMajor>
-      <Guid>1a31287a-4d7d-413e-8e32-3b374931bd89</Guid>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </COMReference>
-    <COMReference Include="EnvDTE">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>0</VersionMinor>
-      <VersionMajor>8</VersionMajor>
-      <Guid>80cc9f66-e7d8-4ddd-85b6-d9e6cd0e93e2</Guid>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-      <EmbedInteropTypes>false</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="ProjectTemplates\EmptyProject\" />
     <Folder Include="ProjectTemplates\FirstPersonProject\" />
     <Folder Include="ProjectTemplates\TopDownProject\" />
     <Folder Include="ProjectTemplates\ThirdPersonProject\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="envdte" Version="17.3.32804.24" />
+    <PackageReference Include="envdte80" Version="17.3.32804.24" />
   </ItemGroup>
 
   <ItemGroup>

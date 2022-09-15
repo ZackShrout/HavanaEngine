@@ -264,9 +264,9 @@ namespace havana::tools
 		{
 			FbxArray<FbxVector4> normals;
 			// Calculate normals using FBX's built-in method, but only if no normal data is already there
-			if (fbx_mesh->GenerateNormals() && fbx_mesh->GetPolygonVertexNormals(normals) && normals.size() > 0)
+			if (fbx_mesh->GenerateNormals() && fbx_mesh->GetPolygonVertexNormals(normals) && normals.Size() > 0)
 			{
-				const s32 num_normals{ normals.size() };
+				const s32 num_normals{ normals.Size() };
 				for (s32 i{ 0 }; i < num_normals; ++i)
 				{
 					FbxVector4 n{ inverse_transpose.MultT(normals[i]) };
@@ -322,7 +322,7 @@ namespace havana::tools
 			FbxArray<FbxVector2> uvs;
 			if (fbx_mesh->GetPolygonVertexUVs(uv_names.GetStringAt(i), uvs))
 			{
-				const s32 num_uvs{ uvs.size() };
+				const s32 num_uvs{ uvs.Size() };
 				for (s32 j{ 0 }; j < num_uvs; ++j)
 				{
 					m.uv_sets[i].emplace_back((f32)uvs[j][0], (f32)uvs[j][1]);

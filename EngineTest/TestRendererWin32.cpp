@@ -25,13 +25,13 @@ constexpr u32	num_threads{ 8 };
 bool			close{ false };
 std::thread		workers[num_threads];
 
-utl::vector<u8> buffer(1024 * 1024, 0);
+utl::vector<u8> null_buffer(1024 * 1024, 0);
 // Test worker for upload context
 void buffer_test_worker()
 {
 	while (!close)
 	{
-		auto* resource = graphics::d3d12::d3dx::create_buffer(buffer.data(), (u32)buffer.size());
+		auto* resource = graphics::d3d12::d3dx::create_buffer(null_buffer.data(), (u32)null_buffer.size());
 		// NOTE: We can also use core::release(resource) since we're not using the buffer for rendering.
 		//		 However, this is a nice test for deferred_release functionality.
 		graphics::d3d12::core::deferred_release(resource);
@@ -39,7 +39,7 @@ void buffer_test_worker()
 }
 
 template<class FnPtr, class... Args>
-void init_test_workers(FnPtr&& fnPtr, Args&&... args)
+void init_test_workers([[maybe_unused]] FnPtr&& fnPtr, [[maybe_unused]] Args&&... args)
 {
 #if ENABLE_TEST_WORKERS
 	close = false;

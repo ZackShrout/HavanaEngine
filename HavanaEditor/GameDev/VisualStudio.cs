@@ -21,7 +21,7 @@ namespace HavanaEditor.GameDev
     static class VisualStudio
     {
         // STATE
-        private static readonly string _progID = "VisualStudio.DTE.16.0";
+        private static readonly string _progID = "VisualStudio.DTE.17.0";
         private static readonly object _lock = new object();
         private static readonly string[] _buildConfigurationNames = new string[] { "Debug", "DebugEditor", "Release", "ReleaseEditor" };
         private static EnvDTE80.DTE2 _vsInstance = null;
@@ -233,8 +233,8 @@ namespace HavanaEditor.GameDev
 
             CallOnSTAThread(() =>
             {
-                if (!_vsInstance.Solution.IsOpen) _vsInstance.Solution.Open(project.Solution);
                 _vsInstance.MainWindow.Visible = showWindow;
+                if (!_vsInstance.Solution.IsOpen) _vsInstance.Solution.Open(project.Solution);
                 _vsInstance.Events.BuildEvents.OnBuildProjConfigBegin += OnBuildSolutionBegin;
                 _vsInstance.Events.BuildEvents.OnBuildProjConfigDone += OnBuildSolutionDone;
             });

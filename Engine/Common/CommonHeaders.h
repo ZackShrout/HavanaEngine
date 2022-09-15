@@ -1,14 +1,18 @@
 #pragma once
+
+#ifdef _WIN64
 #pragma warning(disable: 4530) // disable exception warning
+#endif
 
 // C/C++
 // NOTE: don't include any headers that include std::vector or std::deque
-#include <stdint.h>
+#include <cstdint>
 #include <assert.h>
 #include <typeinfo>
 #include <memory>
 #include <unordered_map>
 #include <mutex>
+#include <cstring>
 
 // TODO: check Linux implementation now that it has DirectXMath, not GLM
 #if defined (_WIN64)
@@ -17,7 +21,6 @@
 
 #if defined (__linux__)
 	#include <glm/glm.hpp>
-	#include <cstring>
 #endif
 
 #ifndef DISABLE_COPY
@@ -44,7 +47,7 @@
 
 // COMMON HEADERS
 #include "PrimitiveTypes.h"
-#include "Utilities/Math.h"
-#include "Utilities/Utilities.h"
+#include "../Utilities/Math.h"
+#include "../Utilities/Utilities.h"
 #include "Id.h"
-#include "Utilities/MathTypes.h"
+#include "../Utilities/MathTypes.h"
