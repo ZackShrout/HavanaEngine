@@ -10,16 +10,118 @@ namespace havana::graphics::d3d12::content
 	{
 		struct submesh_view
 		{
-			D3D12_VERTEX_BUFFER_VIEW		position_buffer_view{};
-			D3D12_VERTEX_BUFFER_VIEW		element_buffer_view{};
-			D3D12_INDEX_BUFFER_VIEW			index_buffer_view{};
-			D3D_PRIMITIVE_TOPOLOGY			primitive_topology;
-			u32								elements_type{};
+			D3D12_VERTEX_BUFFER_VIEW			position_buffer_view{};
+			D3D12_VERTEX_BUFFER_VIEW			element_buffer_view{};
+			D3D12_INDEX_BUFFER_VIEW				index_buffer_view{};
+			D3D_PRIMITIVE_TOPOLOGY				primitive_topology;
+			u32									elements_type{};
 		};
 
-		utl::free_list<ID3D12Resource*>		submesh_buffers{};
-		utl::free_list<submesh_view>		submesh_views{};
-		std::mutex							submesh_mutex{};
+		utl::free_list<ID3D12Resource*>			submesh_buffers{};
+		utl::free_list<submesh_view>			submesh_views{};
+		std::mutex								submesh_mutex{};
+		
+		utl::free_list<d3d12_texture>			textures;
+		std::mutex								texture_mutex{};
+
+		utl::vector<ID3D12RootSignature*>		root_signatures;
+		std::unordered_map<u64, id::id_type>	mtl_rs_map; // maps a material's type and shader flags to an index in the array of root signatures
+		utl::free_list<std::unique_ptr<u8[]>>	materials;
+		std::mutex								material_mutex{};
+
+		class d3d12_material_stream
+		{
+		public:
+			DISABLE_COPY_AND_MOVE(d3d12_material_stream);
+			explicit d3d12_material_stream(u8* const material_buffer) : _buffer{ material_buffer }
+			{
+				initialize();
+			}
+
+			explicit d3d12_material_stream(std::unique_ptr<u8[]>& material_buffer, material_init_info info)
+			{
+				assert(!material_buffer);
+
+				u32 shader_count{ 0 };
+				u32 flags{ 0 };
+				for (u32 i{ 0 }; i < shader_type::count; ++i)
+				{
+					if (id::is_valid(info.shader_ids[i]))
+					{
+						++shader_count;
+						flags |= (1 << i);
+					}
+				}
+
+				assert(shader_count && flags);
+
+				const u32 buffer_size{
+					sizeof(material_type::type) +								// material type
+					sizeof(shader_flags::flags) +								// shader flags	
+					sizeof(id::id_type) +										// root signature id
+					sizeof(u32) +												// texture count
+					sizeof(id::id_type) * shader_count +						// shader ids
+					(sizeof(id::id_type) + sizeof(u32)) * info.texture_count	// texture ids and descriptor indices (may be 0 if no textures used)
+				};
+
+				material_buffer = std::make_unique<u8[]>(buffer_size);
+				_buffer = material_buffer.get();
+				u8* const buffer{ _buffer };
+
+				*(material_type::type*)buffer = info.type;
+				*(shader_flags::flags*)(&buffer[shader_flags_index]) = (shader_flags::flags)flags;
+				*(id::id_type*)(&buffer[root_signature_index]) = create_root_signature(info.type, (shader_flags::flags)flags);
+				*(u32*)(&buffer[texture_count_index]) = info.texture_count;
+
+				initialize();
+
+				if (info.texture_count)
+				{
+					memcpy(_texture_ids, info.texture_ids, info.texture_count * sizeof(id::id_type));
+					texture::get_descriptor_indices(_texture_ids, info.texture_count, _descriptor_indices);
+				}
+
+				u32 shader_index{ 0 };
+				for (u32 i{ 0 }; i < shader_type::count; ++i)
+				{
+					if (id::is_valid(info.shader_ids[i]))
+					{
+						_shader_ids[shader_index] = info.shader_ids[i];
+						++shader_index;
+					}
+				}
+
+				assert(shader_index == (u32)_mm_popcnt_u32(_shader_flags));
+			}
+		private:
+			void initialize()
+			{
+				assert(_buffer);
+				u8* const buffer{ _buffer };
+
+				_type = *(material_type::type*)buffer;
+				_shader_flags = *(shader_flags::flags*)(&buffer[shader_flags_index]);
+				_root_signature_id = *(id::id_type*)(&buffer[root_signature_index]);
+				_texture_count = *(u32*)(&buffer[texture_count_index]);
+
+				_shader_ids = (id::id_type*)(&buffer[texture_count_index + sizeof(u32)]);
+				_texture_ids = _texture_count ? &_shader_ids[_mm_popcnt_u32(_shader_flags)] : nullptr;
+				_descriptor_indices = _texture_count ? (u32*)(&_texture_ids[_texture_count]) : nullptr;
+			}
+
+			constexpr static u32	shader_flags_index{ sizeof(material_type::type) };
+			constexpr static u32	root_signature_index{ shader_flags_index + sizeof(shader_flags::flags) };
+			constexpr static u32	texture_count_index{ root_signature_index + sizeof(id::id_type) };
+
+			u8*						_buffer;
+			id::id_type*			_texture_ids;
+			u32*					_descriptor_indices;
+			id::id_type*			_shader_ids;
+			id::id_type				_root_signature_id;
+			u32						_texture_count;
+			material_type::type		_type;
+			shader_flags::flags		_shader_flags;
+		};
 
 		D3D_PRIMITIVE_TOPOLOGY
 		get_d3d_primitive_topology(primitive_topology::type type)
@@ -120,5 +222,49 @@ namespace havana::graphics::d3d12::content
 			core::deferred_release(submesh_buffers[id]);
 			submesh_buffers.remove(id);
 		}
-	}
+	} // namespace submesh
+
+	namespace texture
+	{
+		void
+		get_descriptor_indices(const id::id_type* const texture_ids, u32 id_count, u32* const indices)
+		{
+			assert(texture_ids && id_count && indices);
+			std::lock_guard lock{ texture_mutex };
+			for (u32 i{ 0 }; i < id_count; ++i)
+			{
+				indices[i] = textures[i].srv().index;
+			}
+		}
+	} // namespace texture
+
+	namespace material
+	{
+		// Output format:
+		// struct {
+		// material_type::type	type;
+		// shaer_flags::flags	flags;
+		// id::id_type			root_signature_id;
+		// u32					texture_count;
+		// id::id_type			shader_ids[shader_count];
+		// id::id_type			texture_ids[texture_count;
+		// u32*					descriptor_indices[texture_count];
+		// } d3d12_material
+		id::id_type
+		add(material_init_info info)
+		{
+			std::unique_ptr<u8[]> buffer;
+			std::lock_guard lock{ material_mutex };
+			// Create material form info
+			assert(buffer);
+			return materials.add(std::move(buffer));
+		}
+
+		void
+		remove(id::id_type id)
+		{
+			std::lock_guard lock{ material_mutex };
+			materials.remove(id);
+		}
+	} // namespace material
 }

@@ -29,6 +29,9 @@ namespace havana::graphics
 			pi.resources.add_submesh = content::submesh::add;
 			pi.resources.remove_submesh = content::submesh::remove;
 
+			pi.resources.add_material = content::material::add;
+			pi.resources.remove_material = content::material::remove;
+
 			pi.platform = graphics_platform::direct3d12;
 		}
 	} // d3d12 namespace
