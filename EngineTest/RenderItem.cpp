@@ -100,6 +100,10 @@ destroy_render_item(id::id_type item_id)
 	}
 
 	// remove material
+	if (id::is_valid(mtl_id))
+	{
+		content::destroy_resource(mtl_id, content::asset_type::material);
+	}
 	
 	// remove shaders and textures
 	if (id::is_valid(vs_id))

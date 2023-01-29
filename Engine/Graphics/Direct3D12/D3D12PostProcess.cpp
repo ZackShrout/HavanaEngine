@@ -13,7 +13,6 @@ namespace havana::graphics::d3d12::fx
 			enum : u32
 			{
 				root_constants,
-				descriptor_table,
 
 				count
 			};
@@ -27,19 +26,12 @@ namespace havana::graphics::d3d12::fx
 			assert(!fx_root_sig && !fx_pso);
 			
 			// Create Post-Process FX root signature
-			d3dx::d3d12_descriptor_range range
-			{
-				D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
-				D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND, 0, 0,
-				D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE
-			};
-
 			using idx = fx_root_param_indices;
 			d3dx::d3d12_root_parameter paramters[idx::count]{};
 			paramters[idx::root_constants].as_constants(1, D3D12_SHADER_VISIBILITY_PIXEL, 1);
-			paramters[idx::descriptor_table].as_descriptor_table(D3D12_SHADER_VISIBILITY_PIXEL, &range, 1);
 
-			const d3dx::d3d12_root_signature_desc root_signature{ &paramters[0], _countof(paramters) };
+			d3dx::d3d12_root_signature_desc root_signature{ &paramters[0], _countof(paramters) };
+			root_signature.Flags &= ~D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
 			fx_root_sig = root_signature.create();
 			assert(fx_root_sig);
 			NAME_D3D12_OBJECT(fx_root_sig, L"Post-Process FX Root Signature");
@@ -89,7 +81,6 @@ namespace havana::graphics::d3d12::fx
 
 		using idx = fx_root_param_indices;
 		cmd_list->SetGraphicsRoot32BitConstant(idx::root_constants, gpass::main_buffer().srv().index, 0);
-		cmd_list->SetGraphicsRootDescriptorTable(idx::descriptor_table, core::srv_heap().gpu_start());
 		cmd_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		// NOTE: we don't need to clear the render target, because each pixel will
 		//		 be overwritten by pixels from the gpass main buffer.

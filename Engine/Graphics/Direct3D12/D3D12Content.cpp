@@ -3,6 +3,7 @@
 #include "D3D12Core.h"
 #include "Utilities/IOStream.h"
 #include "Content/ContentToEngine.h"
+#include "D3D12GPass.h"
 
 namespace havana::graphics::d3d12::content
 {
@@ -28,6 +29,8 @@ namespace havana::graphics::d3d12::content
 		std::unordered_map<u64, id::id_type>	mtl_rs_map; // maps a material's type and shader flags to an index in the array of root signatures
 		utl::free_list<std::unique_ptr<u8[]>>	materials;
 		std::mutex								material_mutex{};
+
+		id::id_type create_root_signature(material_type::type type, shader_flags::flags flags);
 
 		class d3d12_material_stream
 		{
@@ -93,6 +96,15 @@ namespace havana::graphics::d3d12::content
 
 				assert(shader_index == (u32)_mm_popcnt_u32(_shader_flags));
 			}
+
+			[[nodiscard]] constexpr u32 texture_count() const { return _texture_count; }
+			[[nodiscard]] constexpr material_type::type material_type() const { return _type; }
+			[[nodiscard]] constexpr shader_flags::flags shader_flags() const { return _shader_flags; }
+			[[nodiscard]] constexpr id::id_type root_signature_id() const { return _root_signature_id; }
+			[[nodiscard]] constexpr id::id_type* texture_ids() const { return _texture_ids; }
+			[[nodiscard]] constexpr u32* descriptor_indices() const { return _descriptor_indices; }
+			[[nodiscard]] constexpr id::id_type* shader_ids() const { return _shader_ids; }
+
 		private:
 			void initialize()
 			{
@@ -145,7 +157,117 @@ namespace havana::graphics::d3d12::content
 			return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 		}
 
+		constexpr D3D12_ROOT_SIGNATURE_FLAGS
+		get_root_signature_flags(shader_flags::flags flags)
+		{
+			D3D12_ROOT_SIGNATURE_FLAGS default_flags{ d3dx::d3d12_root_signature_desc::default_flags };
+			
+			if (flags & shader_flags::vertex)			default_flags &= ~D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
+			if (flags & shader_flags::hull)				default_flags &= ~D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
+			if (flags & shader_flags::domain)			default_flags &= ~D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
+			if (flags & shader_flags::geometry)			default_flags &= ~D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+			if (flags & shader_flags::pixel)			default_flags &= ~D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+			if (flags & shader_flags::amplification)	default_flags &= ~D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS;
+			if (flags & shader_flags::mesh)				default_flags &= ~D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS;
+			
+			return default_flags;
+		}
+
+		id::id_type
+		create_root_signature(material_type::type type, shader_flags::flags flags)
+		{
+			assert(type < material_type::count);
+			static_assert(sizeof(type) == sizeof(u32) && sizeof(flags) == sizeof(u32));
+			const u64 key{ ((u64)type << 32) | flags };
+			auto pair = mtl_rs_map.find(key);
+			
+			if (pair != mtl_rs_map.end())
+			{
+				assert(pair->first == key);
+				return pair->second;
+			}
+			
+			ID3D12RootSignature* root_signature{ nullptr };
+
+			switch (type)
+			{
+			case material_type::opaque:
+			{
+				using params = gpass::opaque_root_parameters;
+				d3dx::d3d12_root_parameter parameters[params::count]{};
+				parameters[params::per_frame_data].as_cbv(D3D12_SHADER_VISIBILITY_ALL, 0);
+
+				D3D12_SHADER_VISIBILITY buffer_visibility{};
+				D3D12_SHADER_VISIBILITY data_visibility{};
+
+				if (flags & shader_flags::vertex)
+				{
+					buffer_visibility = D3D12_SHADER_VISIBILITY_VERTEX;
+					data_visibility = D3D12_SHADER_VISIBILITY_VERTEX;
+				}
+				else if (flags & shader_flags::mesh)
+				{
+					buffer_visibility = D3D12_SHADER_VISIBILITY_MESH;
+					data_visibility = D3D12_SHADER_VISIBILITY_MESH;
+				}
+
+				if ((flags & shader_flags::hull) || (flags & shader_flags::geometry) ||
+					(flags & shader_flags::amplification))
+				{
+					buffer_visibility = D3D12_SHADER_VISIBILITY_ALL;
+					data_visibility = D3D12_SHADER_VISIBILITY_ALL;
+				}
+
+				if ((flags & shader_flags::pixel) || (flags & shader_flags::compute))
+				{
+					data_visibility = D3D12_SHADER_VISIBILITY_ALL;
+				}
+
+				parameters[params::position_buffer].as_srv(buffer_visibility, 0);
+				parameters[params::element_buffer].as_srv(buffer_visibility, 1);
+				parameters[params::srv_indices].as_srv(D3D12_SHADER_VISIBILITY_PIXEL, 2); // TODO: needs to be visible to any stage that needs to sample textures
+				parameters[params::per_object_data].as_cbv(data_visibility, 1);
+
+				root_signature = d3dx::d3d12_root_signature_desc{ &parameters[0], _countof(parameters), get_root_signature_flags(flags) }.create();
+			}
+				break;
+			case material_type::count:
+			{
+
+			}
+				break;
+			default:
+				break;
+			}
+
+			assert(root_signature);
+			const id::id_type id{ (id::id_type)root_signatures.size() };
+			root_signatures.emplace_back(root_signature);
+			mtl_rs_map[key] = id;
+			NAME_D3D12_OBJECT_INDEXED(root_signature, key, L"GPass Root Signature = key");
+
+			return id;
+		}
+
 	} // anonymous namespace
+
+	bool
+	initialize()
+	{
+		return true;
+	}
+
+	void
+	shutdown()
+	{
+		for (auto& item : root_signatures)
+		{
+			core::release(item);
+		}
+
+		mtl_rs_map.clear();
+		root_signatures.clear();
+	}
 	
 	namespace submesh
 	{
@@ -255,7 +377,7 @@ namespace havana::graphics::d3d12::content
 		{
 			std::unique_ptr<u8[]> buffer;
 			std::lock_guard lock{ material_mutex };
-			// Create material form info
+			d3d12_material_stream stream{ buffer, info };
 			assert(buffer);
 			return materials.add(std::move(buffer));
 		}

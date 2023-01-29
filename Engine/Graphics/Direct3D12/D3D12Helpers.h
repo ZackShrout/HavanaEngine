@@ -237,7 +237,7 @@ namespace havana::graphics::d3d12::d3dx
 			Descriptor.Flags = flags;
 		}
 	};
-
+	
 	// Maximum 64 DWORDs (u32's) divided up amongst all root parameters:
 	// Root constants = 1 DWORD per 32-bit constant
 	// Root descriptor (CBV, SRV, UAV) = 2 DWORDs each
@@ -245,14 +245,21 @@ namespace havana::graphics::d3d12::d3dx
 	// Static samplers = 0 DWORDs (compiled into shader)
 	struct d3d12_root_signature_desc : public D3D12_ROOT_SIGNATURE_DESC1
 	{
+		constexpr static D3D12_ROOT_SIGNATURE_FLAGS default_flags{
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED |
+			D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED
+		};
+
 		constexpr explicit d3d12_root_signature_desc(const d3d12_root_parameter* parameters, u32 parameter_count,
-													 const D3D12_STATIC_SAMPLER_DESC* static_samplers = nullptr, u32 sampler_count = 0,
-													 D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
-													 D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-													 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-													 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-													 D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS |
-													 D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS)
+													 D3D12_ROOT_SIGNATURE_FLAGS flags = default_flags,
+													 const D3D12_STATIC_SAMPLER_DESC* static_samplers = nullptr, u32 sampler_count = 0)
 			: D3D12_ROOT_SIGNATURE_DESC1{ parameter_count, parameters, sampler_count, static_samplers, flags }
 		{}
 
