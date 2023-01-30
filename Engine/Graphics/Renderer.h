@@ -5,6 +5,14 @@
 
 namespace havana::graphics
 {
+	struct frame_info
+	{
+		id::id_type*	render_item_ids{ nullptr };
+		f32*			thresholds{ nullptr };
+		u32				render_item_count{ 0 };
+		camera_id		camera_id{ id::invalid_id };
+	};
+	
 	DEFINE_TYPED_ID(surface_id);
 	
 	class surface
