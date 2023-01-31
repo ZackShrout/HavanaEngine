@@ -3,10 +3,17 @@
 
 namespace havana::graphics::d3d12
 {
+	namespace camera { class d3d12_camera; }
+	
 	struct d3d12_frame_info
 	{
-		u32 surface_width{};
-		u32 surface_height{};
+		const frame_info*			info;
+		camera::d3d12_camera*		camera;
+		D3D12_GPU_VIRTUAL_ADDRESS	global_shader_data;
+		u32							surface_width;
+		u32							surface_height;
+		u32							frame_index;
+		f32							delta_time;
 	};
 }
 
@@ -55,5 +62,5 @@ namespace havana::graphics::d3d12::core
 	void resize_surface(surface_id id, u32, u32);
 	[[nodiscard]] u32 surface_width(surface_id id);
 	[[nodiscard]] u32 surface_height(surface_id id);
-	void render_surface(surface_id id);
+	void render_surface(surface_id id, frame_info info);
 }

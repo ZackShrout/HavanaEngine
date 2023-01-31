@@ -801,7 +801,7 @@ namespace havana::graphics::vulkan::core
     }
 
     void
-    render_surface(surface_id id)
+    render_surface(surface_id id, frame_info info)
     {
         if (gfx_command.begin_frame(&surfaces[id]))
         {

@@ -24,5 +24,5 @@ namespace havana::graphics::vulkan::core
 	void resize_surface(surface_id id, u32 width, u32 height);
 	u32 surface_width(surface_id id);
 	u32 surface_height(surface_id id);
-	void render_surface(surface_id id);
+	void render_surface(surface_id id, frame_info info);
 }

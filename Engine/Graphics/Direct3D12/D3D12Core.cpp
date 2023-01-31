@@ -5,6 +5,8 @@
 #include "D3D12PostProcess.h"
 #include "D3D12Upload.h"
 #include "D3D12Content.h"
+#include "D3D12Camera.h"
+#include "Shaders/SharedTypes.h"
 
 extern "C" { __declspec(dllexport) extern const UINT D3D12SDKVersion = 608; }
 extern "C" { __declspec(dllexport) extern const char* D3D12SDKPath = u8".\\D3D12\\"; }
@@ -277,6 +279,44 @@ namespace havana::graphics::d3d12::core
 				resources.clear();
 			}
 		}
+
+		d3d12_frame_info
+		get_d3d12_frame_info(const frame_info& info, constant_buffer& cbuffer,
+							 const d3d12_surface& surface, u32 frame_idx, f32 delta_time)
+		{
+			camera::d3d12_camera& camera{ camera::get(info.camera_id) };
+			camera.update();
+			hlsl::GlobalShaderData data{};
+
+			using namespace DirectX;
+			XMStoreFloat4x4A(&data.View, camera.view());
+			XMStoreFloat4x4A(&data.Projection, camera.projection());
+			XMStoreFloat4x4A(&data.InvProjection, camera.inverse_projection());
+			XMStoreFloat4x4A(&data.InViewProjection, camera.inverse_view_projection());
+			XMStoreFloat3(&data.CameraPosition, camera.position());
+			XMStoreFloat3(&data.CameraDirection, camera.direction());
+			data.ViewWidth = surface.width();
+			data.ViewHieght = surface.height();
+			data.DeltaTime = delta_time;
+
+			// NOTE: be careful not to read from this buffer. Reads are very slow.
+			hlsl::GlobalShaderData* const shader_data{ cbuffer.allocate<hlsl::GlobalShaderData>() };
+			// TODO: handle case when cbuffer is full
+			memcpy(shader_data, &data, sizeof(hlsl::GlobalShaderData));
+
+			d3d12_frame_info d3d12_info
+			{
+				&info,
+				&camera,
+				cbuffer.gpu_address(shader_data),
+				data.ViewWidth,
+				data.ViewHieght,
+				frame_idx,
+				delta_time
+			};
+
+			return d3d12_info;
+		}
 	} // anonymous namespace
 
 	namespace detail
@@ -508,7 +548,7 @@ namespace havana::graphics::d3d12::core
 	}
 
 	void
-	render_surface(surface_id id)
+	render_surface(surface_id id, frame_info info)
 	{
 		// Wait for the GPU to finish with the command allocator and
 		// reset the allocator once the GPU is done with it.
@@ -531,13 +571,12 @@ namespace havana::graphics::d3d12::core
 		const d3d12_surface& surface{ surfaces[id] };
 		ID3D12Resource* const current_back_buffer{ surface.back_buffer() };
 
-		d3d12_frame_info frame_info
+		const d3d12_frame_info d3d12_info
 		{
-			surface.width(),
-			surface.height()
+			get_d3d12_frame_info(info, cbuffer, surface, frame_idx, 16.7f)
 		};
 
-		gpass::set_size({ frame_info.surface_width, frame_info.surface_height });
+		gpass::set_size({ d3d12_info.surface_width, d3d12_info.surface_height });
 		d3dx::d3d12_resource_barrier& barriers{ resource_barriers };
 
 		// Record commands
@@ -555,13 +594,13 @@ namespace havana::graphics::d3d12::core
 		gpass::add_transitions_for_depth_prepass(barriers);
 		barriers.apply(cmd_list);
 		gpass::set_render_targets_for_depth_prepass(cmd_list);
-		gpass::depth_prepass(cmd_list, frame_info);
+		gpass::depth_prepass(cmd_list, d3d12_info);
 
 		// Geometry and Lighting Pass
 		gpass::add_transitions_for_gpass(barriers);
 		barriers.apply(cmd_list);
 		gpass::set_render_targets_for_gpass(cmd_list);
-		gpass::render(cmd_list, frame_info);
+		gpass::render(cmd_list, d3d12_info);
 
 		// Post-process
 		barriers.add(current_back_buffer, 
@@ -571,7 +610,7 @@ namespace havana::graphics::d3d12::core
 		gpass::add_transitions_for_post_process(barriers);
 		barriers.apply(cmd_list);
 		// -- Will write final image to the current back buffer, so the back buffer is a render target
-		fx::post_process(cmd_list, surface.rtv());
+		fx::post_process(cmd_list, d3d12_info, surface.rtv());
 		// After post-process
 		d3dx::transition_resource(cmd_list, current_back_buffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 

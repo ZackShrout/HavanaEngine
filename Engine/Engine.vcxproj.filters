@@ -48,6 +48,7 @@
     <ClInclude Include="Graphics\Vulkan\VulkanSurface.h" />
     <ClInclude Include="Graphics\Vulkan\VulkanValidation.h" />
     <ClInclude Include="Graphics\GraphicsPlatform.h" />
+    <ClInclude Include="Graphics\Direct3D12\Shaders\SharedTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\Entity.cpp" />

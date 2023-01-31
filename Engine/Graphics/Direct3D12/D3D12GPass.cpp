@@ -1,6 +1,7 @@
 #include "D3D12GPass.h"
 #include "D3D12Core.h"
 #include "D3D12Shaders.h"
+#include "D3D12Content.h"
 
 namespace havana::graphics::d3d12::gpass
 {
@@ -30,6 +31,114 @@ namespace havana::graphics::d3d12::gpass
 #else
 		constexpr f32					clear_value[4]{ };
 #endif
+
+		struct gpass_cache
+		{
+			utl::vector<id::id_type>	d3d12_render_item_ids;
+
+			// NOTE: when adding new arrays, make sure to update resize() and struct_size.
+			id::id_type* entity_ids{ nullptr };
+			id::id_type* submesh_gpu_ids{ nullptr };
+			id::id_type* material_ids{ nullptr };
+			ID3D12PipelineState** gpass_pipline_states{ nullptr };
+			ID3D12PipelineState** depth_pipline_states{ nullptr };
+			ID3D12RootSignature** root_signatures{ nullptr };
+			material_type::type* material_types{ nullptr };
+			D3D12_GPU_VIRTUAL_ADDRESS* position_buffers{ nullptr };
+			D3D12_GPU_VIRTUAL_ADDRESS* element_buffers{ nullptr };
+			D3D12_INDEX_BUFFER_VIEW* index_buffer_views{ nullptr };
+			D3D12_PRIMITIVE_TOPOLOGY* primitive_topologies{ nullptr };
+			u32* elements_types{ nullptr };
+			D3D12_GPU_VIRTUAL_ADDRESS* per_object_data{ nullptr };
+
+			constexpr content::render_item::items_cache items_cache() const
+			{
+				return {
+					entity_ids,
+					submesh_gpu_ids,
+					material_ids,
+					gpass_pipline_states,
+					depth_pipline_states
+				};
+			}
+
+			constexpr content::submesh::views_cache views_cache() const
+			{
+				return {
+					position_buffers,
+					element_buffers,
+					index_buffer_views,
+					primitive_topologies,
+					elements_types
+				};
+			}
+
+			constexpr content::material::materials_cache materials_cache() const
+			{
+				return {
+					root_signatures,
+					material_types
+				};
+			}
+
+			constexpr u32 size() const
+			{
+				return (u32)d3d12_render_item_ids.size();
+			}
+
+			constexpr void clear()
+			{
+				d3d12_render_item_ids.clear();
+			}
+
+			constexpr void resize()
+			{
+				const u64 items_count{ d3d12_render_item_ids.size() };
+				const u64 new_buffer_size{ items_count * struct_size };
+				const u64 old_buffer_size{ _buffer.size() };
+				if (new_buffer_size > old_buffer_size)
+				{
+					_buffer.resize(new_buffer_size);
+				}
+
+				if (new_buffer_size != old_buffer_size)
+				{
+					entity_ids = (id::id_type*)_buffer.data();
+					submesh_gpu_ids = (id::id_type*)(&entity_ids[items_count]);
+					material_ids = (id::id_type*)(&submesh_gpu_ids[items_count]);
+					gpass_pipline_states = (ID3D12PipelineState**)(&material_ids[items_count]);
+					depth_pipline_states = (ID3D12PipelineState**)(&gpass_pipline_states[items_count]);
+					root_signatures = (ID3D12RootSignature**)(&depth_pipline_states[items_count]);
+					material_types = (material_type::type*)(&root_signatures[items_count]);
+					position_buffers = (D3D12_GPU_VIRTUAL_ADDRESS*)(&material_types[items_count]);
+					element_buffers = (D3D12_GPU_VIRTUAL_ADDRESS*)(&position_buffers[items_count]);
+					index_buffer_views = (D3D12_INDEX_BUFFER_VIEW*)(&element_buffers[items_count]);
+					primitive_topologies = (D3D12_PRIMITIVE_TOPOLOGY*)(&index_buffer_views[items_count]);
+					elements_types = (u32*)(&primitive_topologies[items_count]);
+					per_object_data = (D3D12_GPU_VIRTUAL_ADDRESS*)(&elements_types[items_count]);
+				}
+			}
+
+		private:
+			constexpr static u32 struct_size
+			{
+				sizeof(id::id_type) +					// entity_ids
+				sizeof(id::id_type) +					// submesh_ids
+				sizeof(id::id_type) +					// material_ids
+				sizeof(ID3D12PipelineState*) +			// gpass_pipline_states
+				sizeof(ID3D12PipelineState*) +			// depth_pipline_states
+				sizeof(ID3D12RootSignature*) +			// root_signatures
+				sizeof(material_type::type) +			// material_types
+				sizeof(D3D12_GPU_VIRTUAL_ADDRESS) +		// position_buffers
+				sizeof(D3D12_GPU_VIRTUAL_ADDRESS) +		// element_buffers
+				sizeof(D3D12_INDEX_BUFFER_VIEW) +		// index_buffer_views
+				sizeof(D3D12_PRIMITIVE_TOPOLOGY) +		// primitive_topologies
+				sizeof(u32) +							// element_types
+				sizeof(D3D12_GPU_VIRTUAL_ADDRESS)		// per_object_data
+			};
+
+			utl::vector<u8> _buffer;
+		} frame_cache;
 
 		bool
 		create_buffers(math::u32v2 size)
@@ -122,6 +231,12 @@ namespace havana::graphics::d3d12::gpass
 
 			return gpass_root_sig && gpass_pso;
 		}
+
+		void
+		prepare_render_frame(const d3d12_frame_info& d3d12_info)
+		{
+
+		}
 	} // anonymous namespace
 
 	bool
@@ -165,11 +280,13 @@ namespace havana::graphics::d3d12::gpass
 	}
 	
 	void
-	depth_prepass(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& info)
-	{}
+	depth_prepass(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& d3d12_info)
+	{
+		prepare_render_frame(d3d12_info);
+	}
 
 	void
-	render(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& info)
+	render(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& d3d12_info)
 	{
 		cmd_list->SetGraphicsRootSignature(gpass_root_sig);
 		cmd_list->SetPipelineState(gpass_pso);
@@ -180,7 +297,7 @@ namespace havana::graphics::d3d12::gpass
 			f32 width;
 			f32 height;
 			u32 frame;
-		} constants{ (f32)info.surface_width, (f32)info.surface_height, ++frame };
+		} constants{ (f32)d3d12_info.surface_width, (f32)d3d12_info.surface_height, ++frame };
 
 		using idx = gpass_root_param_indices;
 		cmd_list->SetGraphicsRoot32BitConstants(idx::root_constants, 3, &constants, 0);
