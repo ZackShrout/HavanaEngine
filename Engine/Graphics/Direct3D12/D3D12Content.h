@@ -14,7 +14,7 @@ namespace havana::graphics::d3d12::content
 			D3D12_GPU_VIRTUAL_ADDRESS* const	element_buffers;
 			D3D12_INDEX_BUFFER_VIEW* const		index_buffer_views;
 			D3D12_PRIMITIVE_TOPOLOGY* const		primitive_topologies;
-			u32* const							elements_type;
+			u32* const							elements_types;
 		};
 		
 		id::id_type add(const u8* &data);

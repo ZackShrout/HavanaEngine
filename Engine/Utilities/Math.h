@@ -74,6 +74,21 @@ namespace havana::math
 		static_assert(alignment, "Alignment must be non-zero");
 		constexpr u64 mask{ alignment - 1 };
 		static_assert(!(alignment & mask), "Alignment must be a power of 2.");
-		return (size & -mask);
+		return (size & ~mask);
+	}
+
+	[[nodiscard]] constexpr u64 calc_crc32_u64(const u8* const data, u64 size)
+	{
+		assert(size >= sizeof(u64));
+		u64 crc{ 0 };
+		const u8* at{ data };
+		const u8* const end{ data + align_size_down<sizeof(u64)>(size) };
+		while (at < end)
+		{
+			crc = _mm_crc32_u64(crc, *((const u64*)at));
+			at += sizeof(u64);
+		}
+
+		return crc;
 	}
 }
