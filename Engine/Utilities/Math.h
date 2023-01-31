@@ -6,13 +6,15 @@
 namespace havana::math
 {
 	template<typename T>
-	constexpr T clamp(T value, T min, T max)
+	[[nodiscard]] constexpr T
+	clamp(T value, T min, T max)
 	{
 		return (value < min) ? min : (value > max) ? max : value;
 	}
 
 	template<u32 bits>
-	constexpr u32 pack_unit_float(f32 f)
+	[[nodiscard]] constexpr u32
+	pack_unit_float(f32 f)
 	{
 		static_assert(bits <= sizeof(u32) * 8);
 		assert(f >= 0.0f && f <= 1.0f);
@@ -21,7 +23,8 @@ namespace havana::math
 	}
 
 	template<u32 bits>
-	constexpr f32 unpack_to_unit_float(u32 i)
+	[[nodiscard]] constexpr f32
+	unpack_to_unit_float(u32 i)
 	{
 		static_assert(bits <= sizeof(u32) * 8);
 		assert(i < ((u32)1 << bits));
@@ -30,7 +33,8 @@ namespace havana::math
 	}
 
 	template<u32 bits>
-	constexpr u32 pack_float(f32 f, f32 min, f32 max)
+	[[nodiscard]] constexpr u32
+	pack_float(f32 f, f32 min, f32 max)
 	{
 		assert(min < max);
 		assert(f <= max && f >= min);
@@ -42,7 +46,8 @@ namespace havana::math
 	}
 
 	template<u32 bits>
-	constexpr f32 unpack_to_float(u32 i, f32 min, f32 max)
+	[[nodiscard]] constexpr f32
+	unpack_to_float(u32 i, f32 min, f32 max)
 	{
 		assert(max < min);
 
@@ -54,12 +59,13 @@ namespace havana::math
 	/// that is greater than or equal to 'size'
 	/// </summary>
 	template<u64 alignment>
-	constexpr u64 align_size_up(u64 size)
+	[[nodiscard]] constexpr u64
+	align_size_up(u64 size)
 	{
 		static_assert(alignment, "Alignment must be non-zero");
 		constexpr u64 mask{ alignment - 1 };
 		static_assert(!(alignment & mask), "Alignment must be a power of 2.");
-		return ((size + mask) & -mask);
+		return ((size + mask) & ~mask);
 	}
 
 	/// <summary>
@@ -69,7 +75,8 @@ namespace havana::math
 	/// <param name="size"></param>
 	/// <returns></returns>
 	template<u64 alignment>
-	constexpr u64 align_size_down(u64 size)
+	[[nodiscard]] constexpr u64
+	align_size_down(u64 size)
 	{
 		static_assert(alignment, "Alignment must be non-zero");
 		constexpr u64 mask{ alignment - 1 };
@@ -77,7 +84,36 @@ namespace havana::math
 		return (size & ~mask);
 	}
 
-	[[nodiscard]] constexpr u64 calc_crc32_u64(const u8* const data, u64 size)
+	/// <summary>
+	/// Align by rounding up. Will result in a multiple of 'alignment'
+	/// that is greater than or equal to 'size'
+	/// </summary>
+	[[nodiscard]] constexpr u64
+	align_size_up(u64 size, u64 alignment)
+	{
+		assert(alignment && "Alignment must be non-zero");
+		const u64 mask{ alignment - 1 };
+		assert(!(alignment & mask) && "Alignment must be a power of 2.");
+		return ((size + mask) & ~mask);
+	}
+
+	/// <summary>
+	/// Align by rounding down. Will result in a multiple of 'alignment'
+	/// that is less than or equal to 'size'
+	/// </summary>
+	/// <param name="size"></param>
+	/// <returns></returns>
+	[[nodiscard]] constexpr u64
+	align_size_down(u64 size, u64 alignment)
+	{
+		assert(alignment && "Alignment must be non-zero");
+		const u64 mask{ alignment - 1 };
+		assert(!(alignment & mask) && "Alignment must be a power of 2.");
+		return (size & ~mask);
+	}
+
+	[[nodiscard]] constexpr u64
+	calc_crc32_u64(const u8* const data, u64 size)
 	{
 		assert(size >= sizeof(u64));
 		u64 crc{ 0 };
