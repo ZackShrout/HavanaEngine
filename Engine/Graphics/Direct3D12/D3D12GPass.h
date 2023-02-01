@@ -15,7 +15,7 @@ namespace havana::graphics::d3d12::gpass
 	{
 		enum parameter : u32
 		{
-			per_frame_data,
+			global_shader_data,
 			position_buffer,
 			element_buffer,
 			srv_indices,

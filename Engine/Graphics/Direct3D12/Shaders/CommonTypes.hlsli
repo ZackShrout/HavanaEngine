@@ -11,10 +11,10 @@ struct GlobalShaderData
 	float4x4 InViewProjection;
 
 	float3	CameraPosition;
-	float	ViewWidth;
+	uint	ViewWidth;
 
 	float3	CameraDirection;
-	float	ViewHieght;
+	uint	ViewHieght;
 
 	float	DeltaTime;
 };

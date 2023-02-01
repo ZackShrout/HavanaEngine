@@ -2,6 +2,10 @@
 #include "D3D12Core.h"
 #include "D3D12Shaders.h"
 #include "D3D12Content.h"
+#include "D3D12Camera.h"
+#include "Shaders/SharedTypes.h"
+#include "Components/Entity.h"
+#include "Components/Transform.h"
 
 namespace havana::graphics::d3d12::gpass
 {
@@ -233,9 +237,74 @@ namespace havana::graphics::d3d12::gpass
 		}
 
 		void
+		fill_per_object_data(constant_buffer& cbuffer, const d3d12_frame_info& d3d12_info)
+		{
+			const gpass_cache& cache{ frame_cache };
+			const u32 render_items_count{ (u32)cache.size() };
+			id::id_type current_entity_id{ id::invalid_id };
+			hlsl::PerObjectData* current_data_pointer{ nullptr };
+
+			using namespace DirectX;
+			for (u32 i{ 0 }; i < render_items_count; ++i)
+			{
+				if (current_entity_id != cache.entity_ids[i])
+				{
+					current_entity_id = cache.entity_ids[i];
+					hlsl::PerObjectData data{};
+					transform::get_transform_matrices(game_entity::entity_id{ current_entity_id }, data.World, data.InvWorld);
+					XMMATRIX world{ XMLoadFloat4x4(&data.World) };
+					XMMATRIX wvp{ XMMatrixMultiply(world, d3d12_info.camera->view_projection()) };
+					XMStoreFloat4x4(&data.WorldViewProjection, wvp);
+
+					current_data_pointer = cbuffer.allocate<hlsl::PerObjectData>();
+					memcpy(current_data_pointer, &data, sizeof(hlsl::PerObjectData));
+				}
+
+				assert(current_data_pointer);
+				cache.per_object_data[i] = cbuffer.gpu_address(current_data_pointer);
+			}
+		}
+
+		void
+		set_root_parameters(id3d12_graphics_command_list *const cmd_list, u32 cache_index)
+		{
+			gpass_cache& cache{ frame_cache };
+			assert(cache_index < cache.size());
+
+			const material_type::type mtl_type{ cache.material_types[cache_index] };
+			switch (mtl_type)
+			{
+			case material_type::opaque:
+			{
+				using params = opaque_root_parameters;
+				cmd_list->SetGraphicsRootShaderResourceView(params::position_buffer, cache.position_buffers[cache_index]);
+				cmd_list->SetGraphicsRootShaderResourceView(params::element_buffer, cache.element_buffers[cache_index]);
+				cmd_list->SetGraphicsRootConstantBufferView(params::per_object_data, cache.per_object_data[cache_index]);
+			}
+				break;
+			}
+		}
+
+		void
 		prepare_render_frame(const d3d12_frame_info& d3d12_info)
 		{
+			assert(d3d12_info.info && d3d12_info.camera);
+			assert(d3d12_info.info->render_item_ids && d3d12_info.info->render_item_count);
+			gpass_cache& cache{ frame_cache };
+			cache.clear();
 
+			using namespace content;
+			render_item::get_d3d12_render_item_ids(*d3d12_info.info, cache.d3d12_render_item_ids);
+			cache.resize();
+			const u32 items_count{ cache.size() };
+			const render_item::items_cache items_cache{ cache.items_cache() };
+			render_item::get_items(cache.d3d12_render_item_ids.data(), items_count, items_cache);
+
+			const submesh::views_cache views_cache{ cache.views_cache() };
+			submesh::get_views(items_cache.submesh_gpu_ids, items_count, views_cache);
+
+			const material::materials_cache materials_cache{ cache.materials_cache() };
+			material::get_materials(items_cache.material_ids, items_count, materials_cache);
 		}
 	} // anonymous namespace
 
@@ -283,27 +352,75 @@ namespace havana::graphics::d3d12::gpass
 	depth_prepass(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& d3d12_info)
 	{
 		prepare_render_frame(d3d12_info);
+
+		constant_buffer& cbuffer{ core::cbuffer() };
+		fill_per_object_data(cbuffer, d3d12_info);
+
+		const gpass_cache& cache{ frame_cache };
+		const u32 items_count{ cache.size() };
+
+		ID3D12RootSignature* current_root_signature{ nullptr };
+		ID3D12PipelineState* current_pipline_state{ nullptr };
+
+		for (u32 i{ 0 }; i < items_count; ++i)
+		{
+			if (current_root_signature != cache.root_signatures[i])
+			{
+				current_root_signature = cache.root_signatures[i];
+				cmd_list->SetGraphicsRootSignature(current_root_signature);
+				cmd_list->SetGraphicsRootConstantBufferView(opaque_root_parameters::global_shader_data, d3d12_info.global_shader_data);
+			}
+
+			if (current_pipline_state != cache.depth_pipline_states[i])
+			{
+				current_pipline_state = cache.depth_pipline_states[i];
+				cmd_list->SetPipelineState(current_pipline_state);
+			}
+
+			set_root_parameters(cmd_list, i);
+
+			const D3D12_INDEX_BUFFER_VIEW& ibv{ cache.index_buffer_views[i] };
+			const u32 index_count{ ibv.SizeInBytes >> (ibv.Format == DXGI_FORMAT_R16_UINT ? 1 : 2) };
+
+			cmd_list->IASetIndexBuffer(&ibv);
+			cmd_list->IASetPrimitiveTopology(cache.primitive_topologies[i]);
+			cmd_list->DrawIndexedInstanced(index_count, 1, 0, 0, 0);
+		}
 	}
 
 	void
 	render(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& d3d12_info)
 	{
-		cmd_list->SetGraphicsRootSignature(gpass_root_sig);
-		cmd_list->SetPipelineState(gpass_pso);
+		const gpass_cache& cache{ frame_cache };
+		const u32 items_count{ cache.size() };
 
-		static u32 frame{ 0 };
-		struct
+		ID3D12RootSignature* current_root_signature{ nullptr };
+		ID3D12PipelineState* current_pipline_state{ nullptr };
+
+		for (u32 i{ 0 }; i < items_count; ++i)
 		{
-			f32 width;
-			f32 height;
-			u32 frame;
-		} constants{ (f32)d3d12_info.surface_width, (f32)d3d12_info.surface_height, ++frame };
+			if (current_root_signature != cache.root_signatures[i])
+			{
+				current_root_signature = cache.root_signatures[i];
+				cmd_list->SetGraphicsRootSignature(current_root_signature);
+				cmd_list->SetGraphicsRootConstantBufferView(opaque_root_parameters::global_shader_data, d3d12_info.global_shader_data);
+			}
 
-		using idx = gpass_root_param_indices;
-		cmd_list->SetGraphicsRoot32BitConstants(idx::root_constants, 3, &constants, 0);
+			if (current_pipline_state != cache.gpass_pipline_states[i])
+			{
+				current_pipline_state = cache.gpass_pipline_states[i];
+				cmd_list->SetPipelineState(current_pipline_state);
+			}
 
-		cmd_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		cmd_list->DrawInstanced(3, 1, 0, 0);
+			set_root_parameters(cmd_list, i);
+
+			const D3D12_INDEX_BUFFER_VIEW& ibv{ cache.index_buffer_views[i] };
+			const u32 index_count{ ibv.SizeInBytes >> (ibv.Format == DXGI_FORMAT_R16_UINT ? 1 : 2) };
+
+			cmd_list->IASetIndexBuffer(&ibv);
+			cmd_list->IASetPrimitiveTopology(cache.primitive_topologies[i]);
+			cmd_list->DrawIndexedInstanced(index_count, 1, 0, 0, 0);
+		}
 	}
 
 	void

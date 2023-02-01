@@ -12,4 +12,5 @@ namespace havana::transform
 
 	component create(init_info info, game_entity::entity entity);
 	void remove(component c);
+	void get_transform_matrices(const game_entity::entity_id id, math::m4x4& world, math::m4x4& inverse_world);
 }

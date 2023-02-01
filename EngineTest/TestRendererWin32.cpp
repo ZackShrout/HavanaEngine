@@ -312,7 +312,7 @@ engine_test::run()
 	{
 		if (surfaces[i].surface.is_valid())
 		{
-			surfaces[i].surface.render();
+			surfaces[i].surface.render({});
 		}
 	}
 

@@ -240,7 +240,7 @@ namespace havana::graphics::d3d12::content
 			{
 				using params = gpass::opaque_root_parameters;
 				d3dx::d3d12_root_parameter parameters[params::count]{};
-				parameters[params::per_frame_data].as_cbv(D3D12_SHADER_VISIBILITY_ALL, 0);
+				parameters[params::global_shader_data].as_cbv(D3D12_SHADER_VISIBILITY_ALL, 0);
 
 				D3D12_SHADER_VISIBILITY buffer_visibility{};
 				D3D12_SHADER_VISIBILITY data_visibility{};
@@ -682,7 +682,7 @@ namespace havana::graphics::d3d12::content
 		{
 			assert(d3d12_render_item_ids && id_count);
 			assert(cache.entity_ids && cache.submesh_gpu_ids && cache.material_ids &&
-				   cache.psos && cache.depth_psos);
+				   cache.gpass_psos && cache.depth_psos);
 			std::lock_guard lock{ render_item_mutex };
 
 			for (u32 i{ 0 }; i < id_count; ++i)
@@ -691,7 +691,7 @@ namespace havana::graphics::d3d12::content
 				cache.entity_ids[i] = item.entity_id;
 				cache.submesh_gpu_ids[i] = item.submesh_gpu_id;
 				cache.material_ids[i] = item.material_id;
-				cache.psos[i] = pipeline_states[item.pso_id];
+				cache.gpass_psos[i] = pipeline_states[item.pso_id];
 				cache.depth_psos[i] = pipeline_states[item.depth_pso_id];
 			}
 		}
