@@ -54,7 +54,7 @@ void joint_test_workers()
 /////////////////////////////////////////////////////////////////////////////
 
 id::id_type model_id{ id::invalid_id };
-Graphics::render_surface surfaces[4];
+Graphics::render_surface _surfaces[4];
 time_it timer{};
 
 bool resized{ false };
@@ -120,10 +120,10 @@ test_initialize(void *disp)
 		{nullptr, nullptr, L"Render Window 4", 250, 250, 800, 600},
 	};
 
-	static_assert(_countof(info) == _countof(surfaces));
+	static_assert(_countof(info) == _countof(_surfaces));
 
-	for (u32 i{ 0 }; i < _countof(surfaces); ++i)
-		create_render_surface(surfaces[i], info[i], disp);
+	for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
+		create_render_surface(_surfaces[i], info[i], disp);
 
 	// Load test model
 	std::unique_ptr<u8[]> model;
@@ -149,8 +149,8 @@ test_shutdown()
 		content::destroy_resource(model_id, content::asset_type::mesh);
 	}
 
-	for (u32 i{ 0 }; i < _countof(surfaces); ++i)
-		destroy_render_surface(surfaces[i]);
+	for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
+		destroy_render_surface(_surfaces[i]);
 
 	graphics::shutdown();
 }
@@ -168,11 +168,11 @@ engine_test::run(void *disp)
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-	for (u32 i{ 0 }; i < _countof(surfaces); ++i)
+	for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
 	{
-		if (surfaces[i].surface.is_valid())
+		if (_surfaces[i].surface.is_valid())
 		{
-			surfaces[i].surface.render();
+			_surfaces[i].surface.render();
 		}
 	}
 
@@ -202,14 +202,14 @@ engine_test::run(void *disp)
 			// NOTE: This event is generated for a variety of reasons, so
 			//		 we need to check to see which window generated the event, 
 			//		 and the check if this was a window resize.
-			for (u32 i{ 0 }; i < _countof(surfaces); ++i)
+			for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
 			{
-				if (!surfaces[i].window.is_valid()) continue;
-				if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
+				if (!_surfaces[i].window.is_valid()) continue;
+				if (*((Window*)_surfaces[i].window.Handle()) == xev.xany.window)
 				{
-					if ((u32)xce.width != surfaces[i].window.width() || (u32)xce.height != surfaces[i].window.height())
+					if ((u32)xce.width != _surfaces[i].window.width() || (u32)xce.height != _surfaces[i].window.height())
 					{
-						surfaces[i].window.resize((u32)xce.width, (u32)xce.height);
+						_surfaces[i].window.resize((u32)xce.width, (u32)xce.height);
 					}
 				}
 			}
@@ -219,22 +219,22 @@ engine_test::run(void *disp)
 			if ((Atom)xev.xclient.data.l[0] == wm_delete_window)
 			{
 				// Find which window was sent the close event, and call function
-				for (u32 i{ 0 }; i < _countof(surfaces); ++i)
+				for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
 				{
-					if (!surfaces[i].window.is_valid()) continue;
-					if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
+					if (!_surfaces[i].window.is_valid()) continue;
+					if (*((Window*)_surfaces[i].window.Handle()) == xev.xany.window)
 					{
-						destroy_render_surface(surfaces[i]);
+						destroy_render_surface(_surfaces[i]);
 						break;
 					}
 				}
 
 				// Check if all windows are closed, and exit application if so
 				bool all_closed{ true };
-				for (u32 i{ 0 }; i < _countof(surfaces); i++)
+				for (u32 i{ 0 }; i < _countof(_surfaces); i++)
 				{
-					if (!surfaces[i].window.is_valid()) continue;
-					if (!surfaces[i].window.is_closed())
+					if (!_surfaces[i].window.is_valid()) continue;
+					if (!_surfaces[i].window.is_closed())
 					{
 						all_closed = false;
 					}
@@ -264,12 +264,12 @@ engine_test::run(void *disp)
 			//		 keycode represents - the numeric evaluation is also different.
 			if (xev.xkey.state == 0x18 && xev.xkey.keycode == 36)
 			{
-				for (u32 i{ 0 }; i < _countof(surfaces); i++)
+				for (u32 i{ 0 }; i < _countof(_surfaces); i++)
 				{
-					if (!surfaces[i].window.is_valid()) continue;
-					if (*((Window*)surfaces[i].window.Handle()) == xev.xany.window)
+					if (!_surfaces[i].window.is_valid()) continue;
+					if (*((Window*)_surfaces[i].window.Handle()) == xev.xany.window)
 					{
-						surfaces[i].window.set_fullscreen(!surfaces[i].window.is_fullscreen());
+						_surfaces[i].window.set_fullscreen(!_surfaces[i].window.is_fullscreen());
 					}
 				}
 			}

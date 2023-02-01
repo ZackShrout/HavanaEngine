@@ -65,8 +65,6 @@ namespace havana::transform
 			positions[entity_index] = math::v3{ info.position };
 			scales[entity_index] = math::v3{ info.scale };
 			has_transform[entity_index] = 0;
-			to_world.emplace_back();
-			inv_world.emplace_back();
 #elif __linux__
 			math::v4 rotation{ info.rotation[0], info.rotation[1], info.rotation[2], info.rotation[3] };
 			rotations[entity_index] = rotation;
@@ -74,8 +72,6 @@ namespace havana::transform
 			positions[entity_index] = math::v3(info.position[0], info.position[1], info.position[2]);
 			scales[entity_index] = math::v3(info.scale[0], info.scale[1], info.scale[2]);
 			has_transform[entity_index] = 0;
-			to_world.emplace_back();
-			inv_world.emplace_back();
 #endif
 		}
 		else // If not, place it in the back with our entity
