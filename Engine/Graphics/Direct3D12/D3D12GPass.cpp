@@ -23,6 +23,13 @@ namespace havana::graphics::d3d12::gpass
 		constexpr f32					clear_value[4]{ };
 #endif
 
+// NOTE: don't forget to #undef CONSTEXPR when you copy/paste this block of code
+#if USE_STL_VECTOR
+#define CONSTEXPR
+#else
+#define CONSTEXPR constexpr
+#endif
+
 		struct gpass_cache
 		{
 			utl::vector<id::id_type>	d3d12_render_item_ids;
@@ -72,17 +79,17 @@ namespace havana::graphics::d3d12::gpass
 				};
 			}
 
-			constexpr u32 size() const
+			CONSTEXPR u32 size() const
 			{
 				return (u32)d3d12_render_item_ids.size();
 			}
 
-			constexpr void clear()
+			CONSTEXPR void clear()
 			{
 				d3d12_render_item_ids.clear();
 			}
 
-			constexpr void resize()
+			CONSTEXPR void resize()
 			{
 				const u64 items_count{ d3d12_render_item_ids.size() };
 				const u64 new_buffer_size{ items_count * struct_size };
@@ -131,6 +138,8 @@ namespace havana::graphics::d3d12::gpass
 			utl::vector<u8> _buffer;
 		} frame_cache;
 
+#undef CONSTEXPR
+
 		bool
 		create_buffers(math::u32v2 size)
 		{
@@ -171,7 +180,7 @@ namespace havana::graphics::d3d12::gpass
 				info.desc = &desc;
 				info.initial_state = D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 				info.clear_value.Format = desc.Format;
-				info.clear_value.DepthStencil.Depth = 1.f;
+				info.clear_value.DepthStencil.Depth = 0.f;
 				info.clear_value.DepthStencil.Stencil = 0;
 
 				gpass_depth_buffer = d3d12_depth_buffer{ info };
@@ -184,12 +193,14 @@ namespace havana::graphics::d3d12::gpass
 		}
 
 		void
-		fill_per_object_data(constant_buffer& cbuffer, const d3d12_frame_info& d3d12_info)
+		fill_per_object_data(const d3d12_frame_info& d3d12_info)
 		{
 			const gpass_cache& cache{ frame_cache };
 			const u32 render_items_count{ (u32)cache.size() };
 			id::id_type current_entity_id{ id::invalid_id };
 			hlsl::PerObjectData* current_data_pointer{ nullptr };
+
+			constant_buffer& cbuffer{ core::cbuffer() };
 
 			using namespace DirectX;
 			for (u32 i{ 0 }; i < render_items_count; ++i)
@@ -252,6 +263,8 @@ namespace havana::graphics::d3d12::gpass
 
 			const material::materials_cache materials_cache{ cache.materials_cache() };
 			material::get_materials(items_cache.material_ids, items_count, materials_cache);
+
+			fill_per_object_data(d3d12_info);
 		}
 	} // anonymous namespace
 
@@ -296,9 +309,6 @@ namespace havana::graphics::d3d12::gpass
 	depth_prepass(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& d3d12_info)
 	{
 		prepare_render_frame(d3d12_info);
-
-		constant_buffer& cbuffer{ core::cbuffer() };
-		fill_per_object_data(cbuffer, d3d12_info);
 
 		const gpass_cache& cache{ frame_cache };
 		const u32 items_count{ cache.size() };
@@ -401,7 +411,7 @@ namespace havana::graphics::d3d12::gpass
 	set_render_targets_for_depth_prepass(id3d12_graphics_command_list* cmd_list)
 	{
 		const D3D12_CPU_DESCRIPTOR_HANDLE dsv{ gpass_depth_buffer.dsv() };
-		cmd_list->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
+		cmd_list->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 0.f, 0, 0, nullptr);
 		cmd_list->OMSetRenderTargets(0, nullptr, 0, &dsv);
 	}
 

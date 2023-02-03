@@ -771,7 +771,7 @@ namespace havana::graphics::vulkan::core
     surface
     create_surface(platform::window window)
     {
-        surface_id id{ surfaces.add(window) };
+        surface_id id{ surfaces.add(window) }; // TODO: this causes an error with std::vector "attempting to reference a deleted function"
         surfaces[id].create(instance);
         return surface{ id };
     }

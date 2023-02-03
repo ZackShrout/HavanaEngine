@@ -88,8 +88,8 @@ namespace havana::graphics
 			entity_id = id;
 			type = camera::perspective;
 			up = { 0.0f, 1.0f, 0.0f };
-			near_z = 0.001f;
-			far_z = 10000.0f;
+			near_z = 0.01f;
+			far_z = 1000.0f;
 			field_of_view = 0.25f;
 			aspect_ratio = 16.0f / 10.0f;
 		}
@@ -103,8 +103,8 @@ namespace havana::graphics
 			entity_id = id;
 			type = camera::orthographic;
 			up = { 0.0f, 1.0f, 0.0f };
-			near_z = 0.001f;
-			far_z = 10000.0f;
+			near_z = 0.01f;
+			far_z = 1000.0f;
 			view_height = 1920;
 			view_width = 1080;
 		}

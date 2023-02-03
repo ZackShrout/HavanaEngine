@@ -31,12 +31,12 @@ namespace havana::graphics::d3d12::d3dx
 		{
 			D3D12_FILL_MODE_SOLID,						// FillMode
 			D3D12_CULL_MODE_NONE,						// CullMode
-			0,											// FrontCounterClockwise
+			1,											// FrontCounterClockwise
 			0,											// DepthBias
 			0,											// DepthBiasClamp
 			0,											// SlopeScaledDepthBias
 			1,											// DepthClipEnable
-			1,											// MultisampleEnable
+			0,											// MultisampleEnable
 			0,											// AntialiasedLineEnable
 			0,											// ForcedSampleCount
 			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster
@@ -46,12 +46,12 @@ namespace havana::graphics::d3d12::d3dx
 		{
 			D3D12_FILL_MODE_SOLID,						// FillMode
 			D3D12_CULL_MODE_BACK,						// CullMode
-			0,											// FrontCounterClockwise
+			1,											// FrontCounterClockwise
 			0,											// DepthBias
 			0,											// DepthBiasClamp
 			0,											// SlopeScaledDepthBias
 			1,											// DepthClipEnable
-			1,											// MultisampleEnable
+			0,											// MultisampleEnable
 			0,											// AntialiasedLineEnable
 			0,											// ForcedSampleCount
 			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster
@@ -61,12 +61,12 @@ namespace havana::graphics::d3d12::d3dx
 		{
 			D3D12_FILL_MODE_SOLID,						// FillMode
 			D3D12_CULL_MODE_FRONT,						// CullMode
-			0,											// FrontCounterClockwise
+			1,											// FrontCounterClockwise
 			0,											// DepthBias
 			0,											// DepthBiasClamp
 			0,											// SlopeScaledDepthBias
 			1,											// DepthClipEnable
-			1,											// MultisampleEnable
+			0,											// MultisampleEnable
 			0,											// AntialiasedLineEnable
 			0,											// ForcedSampleCount
 			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster
@@ -76,12 +76,12 @@ namespace havana::graphics::d3d12::d3dx
 		{
 			D3D12_FILL_MODE_WIREFRAME,					// FillMode
 			D3D12_CULL_MODE_NONE,						// CullMode
-			0,											// FrontCounterClockwise
+			1,											// FrontCounterClockwise
 			0,											// DepthBias
 			0,											// DepthBiasClamp
 			0,											// SlopeScaledDepthBias
 			1,											// DepthClipEnable
-			1,											// MultisampleEnable
+			0,											// MultisampleEnable
 			0,											// AntialiasedLineEnable
 			0,											// ForcedSampleCount
 			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster

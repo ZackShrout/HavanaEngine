@@ -140,19 +140,19 @@ __builtin_trap()
 #endif // !ERROR_MSSG
 
 #ifndef GET_INSTANCE_PROC_ADDR
-#define GET_INSTANCE_PROC_ADDR(inst, entry)											\
-{																					\
-    fp##entry = (PFN_vk##entry)vkGetInstanceProcAddr(inst, "vk"#entry);				\
-    if (!fp##entry)																	\
-        throw std::runtime_error("vkGetInstanceProcAddr failed to find vk"#entry);	\
+#define GET_INSTANCE_PROC_ADDR(inst, entry)									\
+{																			\
+    fp##entry = (PFN_vk##entry)vkGetInstanceProcAddr(inst, "vk"#entry);		\
+    if (!fp##entry)															\
+        ERROR_MSSG("vkGetInstanceProcAddr failed to find vk"#entry);        \
 }
 #endif // !GET_INSTANCE_PROC_ADDR
 
 #ifndef GET_DEVICE_PROC_ADDR
-#define GET_DEVICE_PROC_ADDR(dev, entry)										    \
-{																				    \
-    fp##entry = (PFN_vk##entry)vkGetDeviceProcAddr(dev, "vk"#entry);			    \
-    if (!fp##entry)																    \
-        throw std::runtime_error("vkGetDeviceProcAddr failed to find vk"#entry);    \
+#define GET_DEVICE_PROC_ADDR(dev, entry)							        \
+{																	        \
+    fp##entry = (PFN_vk##entry)vkGetDeviceProcAddr(dev, "vk"#entry);        \
+    if (!fp##entry)													        \
+        ERROR_MSSG("vkGetDeviceProcAddr failed to find vk"#entry);          \
 }
 #endif // !GET_DEVICE_PROC_ADDR

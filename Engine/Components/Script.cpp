@@ -1,19 +1,28 @@
 #include "Script.h"
 #include "Entity.h"
+#include "Transform.h"
+
+#define USE_TRANSFORM_CACHE_MAP 1
 
 namespace havana::script
 {
 	namespace // anonymous namespace
 	{
-		utl::vector<detail::script_ptr>		entity_scripts;
-		utl::vector<id::id_type>			id_mapping;
-		utl::vector<id::generation_type>	generations;
-		utl::deque<script_id>				free_ids;
+		utl::vector<detail::script_ptr>			entity_scripts;
+		utl::vector<id::id_type>				id_mapping;
+
+		utl::vector<id::generation_type>		generations;
+		utl::deque<script_id>					free_ids;
+
+		utl::vector<transform::component_cache>	transform_cache;
+#if USE_TRANSFORM_CACHE_MAP
+		std::unordered_map<id::id_type, u32>	cache_map;
+#endif
 
 		using script_registry = std::unordered_map<size_t, detail::script_creator>;
 
 		script_registry&
-		registry()
+			registry()
 		{
 			// NOTE: we put this static variable in a function because of the
 			//		 initialization order of static data. This way, we can be certain
@@ -24,7 +33,7 @@ namespace havana::script
 
 #ifdef USE_WITH_EDITOR
 		utl::vector<std::string>&
-		script_names()
+			script_names()
 		{
 			// NOTE: we put this static variable in a function because of the
 			//		 initialization order of static data. This way, we can be certain
@@ -36,7 +45,7 @@ namespace havana::script
 
 
 		bool
-		exists(script_id id)
+			exists(script_id id)
 		{
 			assert(id::is_valid(id));
 			const id::id_type index{ id::index(id) };
@@ -46,7 +55,56 @@ namespace havana::script
 				entity_scripts[id_mapping[index]] &&
 				entity_scripts[id_mapping[index]]->is_valid();
 		}
-	}
+
+#if USE_TRANSFORM_CACHE_MAP
+		transform::component_cache* const
+			get_cache_ptr(const game_entity::entity* const entity)
+		{
+			assert(game_entity::is_alive((*entity).get_id()));
+			const transform::transform_id id{ (*entity).transform().get_id() };
+
+			u32 index{ u32_invalid_id };
+			auto pair = cache_map.try_emplace(id, id::invalid_id);
+
+			// cache_map didn't have an entry for this id, new entry inserted
+			if (pair.second)
+			{
+				index = (u32)transform_cache.size();
+				transform_cache.emplace_back();
+				transform_cache.back().id = id;
+				cache_map[id] = index;
+			}
+			else
+			{
+				index = cache_map[id];
+			}
+
+			assert(index < transform_cache.size());
+			return &transform_cache[index];
+		}
+#else
+		transform::component_cache* const
+		get_cache_ptr(const game_entity::entity* const entity)
+		{
+			assert(game_entity::is_alive((*entity).get_id()));
+			const transform::transform_id id{ (*entity).transform().get_id() };
+
+			for (auto& cache : transform_cache)
+			{
+				if (cache.id == id)
+				{
+					return &cache;
+				}
+			}
+
+			transform_cache.emplace_back();
+			transform_cache.back().id = id;
+
+			return &transform_cache.back();
+		}
+#endif
+
+	} // anonymous namespace
 
 	namespace detail
 	{
@@ -126,8 +184,50 @@ namespace havana::script
 		{
 			ptr->update(dt);
 		}
+
+		if (transform_cache.size())
+		{
+			transform::update(transform_cache.data(), (u32)transform_cache.size());
+			transform_cache.clear();
+
+#if USE_TRANSFORM_CACHE_MAP
+			cache_map.clear();
+#endif
+		}
 	}
-}
+
+	void
+	entity_script::set_rotation(const game_entity::entity* const entity, math::v4 rotation_quaternion)
+	{
+		transform::component_cache& cache{ *get_cache_ptr(entity) };
+		cache.flags |= transform::component_flags::rotation;
+		cache.rotation = rotation_quaternion;
+	}
+
+	void
+	entity_script::set_orientation(const game_entity::entity* const entity, math::v3 orientation_vector)
+	{
+		transform::component_cache& cache{ *get_cache_ptr(entity) };
+		cache.flags |= transform::component_flags::orientation;
+		cache.orientation = orientation_vector;
+	}
+
+	void
+	entity_script::set_position(const game_entity::entity* const entity, math::v3 position)
+	{
+		transform::component_cache& cache{ *get_cache_ptr(entity) };
+		cache.flags |= transform::component_flags::position;
+		cache.position = position;
+	}
+
+	void
+	entity_script::set_scale(const game_entity::entity* const entity, math::v3 scale)
+	{
+		transform::component_cache& cache{ *get_cache_ptr(entity) };
+		cache.flags |= transform::component_flags::scale;
+		cache.scale = scale;
+	}
+} // namespace havana::script
 
 #ifdef USE_WITH_EDITOR
 #include <atlsafe.h>
