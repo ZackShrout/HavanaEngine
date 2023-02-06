@@ -82,7 +82,7 @@ namespace havana::utl
 		}
 
 	private:
-		constexpr bool already_removed(u32 id)
+		constexpr bool already_removed(u32 id) const
 		{
 			// When sizeof(T) == sizeof(u32) we can't test if the item was already removed
 			if constexpr (sizeof(T) > sizeof(u32))

@@ -183,7 +183,9 @@ namespace havana::graphics::d3d12::camera
 			*entity_id = camera.entity_id();
 		}
 
-		void dummy_set(d3d12_camera&, const void* const, u32) {}
+		constexpr void
+		dummy_set(d3d12_camera&, const void* const, u32)
+		{}
 
 		using set_function = void(*)(d3d12_camera&, const void* const, u32);
 		using get_function = void(*)(d3d12_camera&, void* const, u32);
