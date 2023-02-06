@@ -18,6 +18,14 @@ namespace havana::graphics
 			u32(*height)(surface_id);
 			void(*render)(surface_id, frame_info);
 		} surface;
+		
+		struct
+		{
+			light(*create)(light_init_info);
+			void(*remove)(light_id, u64);
+			void(*set_paramter)(light_id, u64, light_parameter::parameter, const void* const, u32);
+			void(*get_paramter)(light_id, u64, light_parameter::parameter, void* const, u32);
+		} light;
 
 		struct
 		{

@@ -49,6 +49,8 @@
     <ClInclude Include="Graphics\Vulkan\VulkanValidation.h" />
     <ClInclude Include="Graphics\GraphicsPlatform.h" />
     <ClInclude Include="Graphics\Direct3D12\Shaders\SharedTypes.h" />
+    <ClInclude Include="EngineAPI\Light.h" />
+    <ClInclude Include="Graphics\Direct3D12\D3D12Light.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\Entity.cpp" />
@@ -81,6 +83,7 @@
     <ClCompile Include="Graphics\Vulkan\VulkanResources.cpp" />
     <ClCompile Include="Graphics\Vulkan\VulkanSurface.cpp" />
     <ClCompile Include="Graphics\GraphicsPlatform.cpp" />
+    <ClCompile Include="Graphics\Direct3D12\D3D12Light.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

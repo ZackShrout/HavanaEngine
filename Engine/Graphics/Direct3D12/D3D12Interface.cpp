@@ -2,6 +2,7 @@
 #include "D3D12Interface.h"
 #include "D3D12Core.h"
 #include "D3D12Content.h"
+#include "D3D12Light.h"
 #include "D3D12Camera.h"
 #include "Graphics/GraphicsPlatformInterface.h"
 
@@ -20,6 +21,11 @@ namespace havana::graphics
 			pi.surface.width = core::surface_width;
 			pi.surface.height = core::surface_height;
 			pi.surface.render = core::render_surface;
+
+			pi.light.create = light::create;
+			pi.light.remove = light::remove;
+			pi.light.set_paramter = light::set_paramter;
+			pi.light.get_paramter = light::get_paramter;
 
 			pi.camera.create = camera::create;
 			pi.camera.remove = camera::remove;
