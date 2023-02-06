@@ -19,6 +19,7 @@ namespace havana::graphics::d3d12::gpass
 			position_buffer,
 			element_buffer,
 			srv_indices,
+			directional_lights,
 			per_object_data,
 
 			count

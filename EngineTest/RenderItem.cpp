@@ -24,7 +24,7 @@ namespace
 	{
 		std::unique_ptr<u8[]> model;
 		u64 size{ 0 };
-		read_file("..\\..\\enginetest\\model.model", model, size);
+		read_file("..\\..\\enginetest\\robot_model.model", model, size);
 
 		model_id = content::create_resource(model.get(), content::asset_type::mesh);
 		assert(id::is_valid(model_id));

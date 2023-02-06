@@ -5,6 +5,7 @@
 #include "D3D12PostProcess.h"
 #include "D3D12Upload.h"
 #include "D3D12Content.h"
+#include "D3D12Light.h"
 #include "D3D12Camera.h"
 #include "Shaders/SharedTypes.h"
 
@@ -295,8 +296,9 @@ namespace havana::graphics::d3d12::core
 			XMStoreFloat4x4A(&data.InViewProjection, camera.inverse_view_projection());
 			XMStoreFloat3(&data.CameraPosition, camera.position());
 			XMStoreFloat3(&data.CameraDirection, camera.direction());
-			data.ViewWidth = surface.width();
-			data.ViewHieght = surface.height();
+			data.ViewWidth = (f32)surface.width();
+			data.ViewHieght = (f32)surface.height();
+			data.NumDirectionalLights = light::non_cullable_light_count(info.light_set_key);
 			data.DeltaTime = delta_time;
 
 			// NOTE: be careful not to read from this buffer. Reads are very slow.
@@ -309,8 +311,8 @@ namespace havana::graphics::d3d12::core
 				&info,
 				&camera,
 				cbuffer.gpu_address(shader_data),
-				data.ViewWidth,
-				data.ViewHieght,
+				surface.width(),
+				surface.height(),
 				frame_idx,
 				delta_time
 			};
@@ -409,7 +411,8 @@ namespace havana::graphics::d3d12::core
 			  gpass::initialize() &&
 			  fx::initialize() &&
 			  upload::initialize() &&
-			  content::initialize())) 
+			  content::initialize() &&
+			  light::initialize())) 
 			return failed_init();
 
 		NAME_D3D12_OBJECT(main_device, L"Main D3D Device");
@@ -435,6 +438,7 @@ namespace havana::graphics::d3d12::core
 		}
 
 		// Shutdown modules
+		light::shutdown();
 		content::shutdown();
 		upload::shutdown();
 		fx::shutdown();
@@ -597,6 +601,7 @@ namespace havana::graphics::d3d12::core
 		gpass::depth_prepass(cmd_list, d3d12_info);
 
 		// Geometry and Lighting Pass
+		light::update_light_buffers(d3d12_info);
 		gpass::add_transitions_for_gpass(barriers);
 		barriers.apply(cmd_list);
 		gpass::set_render_targets_for_gpass(cmd_list);

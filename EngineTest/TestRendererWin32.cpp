@@ -360,6 +360,8 @@ engine_test::run()
 			info.render_item_ids = &item_id;
 			info.render_item_count = 1;
 			info.thresholds = &threshold;
+			info.light_set_key = 0;
+			info.average_frame_time = timer.dt_avg();
 			info.camera_id = _surfaces[i].camera.get_id();
 
 			_surfaces[i].surface.surface.render(info);

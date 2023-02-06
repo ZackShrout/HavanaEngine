@@ -1,4 +1,5 @@
 #include "D3D12Light.h"
+#include "D3D12Core.h"
 #include "Shaders/SharedTypes.h"
 #include "EngineAPI/GameEntity.h"
 
@@ -79,6 +80,25 @@ namespace havana::graphics::d3d12::light
 				}
 
 				_owners.remove(id);
+			}
+
+			void update_transforms()
+			{
+				// Update direction for non-cullable lights
+				for (const auto& id : _non_cullable_owners)
+				{
+					if (!id::is_valid(id)) continue;
+
+					const light_owner& owner{ _owners[id] };
+					if (owner.is_enabled)
+					{
+						const game_entity::entity entity{ game_entity::entity_id{owner.entity_id} };
+						hlsl::DirectionalLightParameters& params{ _non_cullable_lights[owner.data_index] };
+						params.Direction = entity.orientation();
+					}
+				}
+
+				// TODO: cullable lights
 			}
 
 			constexpr void enable(light_id id, bool is_enabled)
@@ -433,5 +453,33 @@ namespace havana::graphics::d3d12::light
 		assert(light_sets.count(light_set_key));
 		assert(parameter < light_parameter::count);
 		get_functions[parameter](light_sets[light_set_key], id, data, data_size);
+	}
+
+	void
+	update_light_buffers(const d3d12_frame_info& d3d12_info)
+	{
+		const u64 light_set_key{ d3d12_info.info->light_set_key };
+		assert(light_sets.count(light_set_key));
+		light_set& set{ light_sets[light_set_key] };
+		if (!set.has_lights()) return;
+
+		set.update_transforms();
+		const u32 frame_index{ d3d12_info.frame_index };
+		d3d12_light_buffer& light_buffer{ light_buffers[frame_index] };
+		light_buffer.update_light_buffers(set, light_set_key, frame_index);
+	}
+
+	D3D12_GPU_VIRTUAL_ADDRESS
+	non_cullable_light_buffer(u32 frame_index)
+	{
+		const d3d12_light_buffer& light_buffer{ light_buffers[frame_index] };
+		return light_buffer.non_cullable_lights();
+	}
+
+	u32
+	non_cullable_light_count(u64 light_set_key)
+	{
+		assert(light_sets.count(light_set_key));
+		return light_sets[light_set_key].non_cullable_light_count();
 	}
 }
