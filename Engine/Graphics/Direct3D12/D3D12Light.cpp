@@ -201,6 +201,11 @@ namespace havana::graphics::d3d12::light
 				}
 			}
 
+			CONSTEXPR bool has_lights() const
+			{
+				return _owners.size() > 0;
+			}
+
 		private:
 			// NOTE: these are NOT tightly packed
 			utl::free_list<light_owner>						_owners;
@@ -208,9 +213,80 @@ namespace havana::graphics::d3d12::light
 			utl::vector<light_id>							_non_cullable_owners;
 		};
 
+		class d3d12_light_buffer
+		{
+		public:
+			d3d12_light_buffer() = default;
+			CONSTEXPR void update_light_buffers(light_set& set, u64 light_set_key, u32 frame_index)
+			{
+				u32 sizes[light_buffer::count]{};
+				sizes[light_buffer::non_cullable_light] = set.non_cullable_light_count() * sizeof(hlsl::DirectionalLightParameters);
+
+				u32 current_sizes[light_buffer::count]{};
+				current_sizes[light_buffer::non_cullable_light] = _buffers[light_buffer::non_cullable_light].buffer.size();
+
+				if (current_sizes[light_buffer::non_cullable_light] < sizes[light_buffer::non_cullable_light])
+				{
+					resize_buffer(light_buffer::non_cullable_light, sizes[light_buffer::non_cullable_light], frame_index);
+				}
+
+				set.non_cullable_lights((hlsl::DirectionalLightParameters* const)_buffers[light_buffer::non_cullable_light].cpu_address,
+										_buffers[light_buffer::non_cullable_light].buffer.size());
+
+				// TODO: cullable lights
+			}
+
+			constexpr void release()
+			{
+				for (u32 i{ 0 }; i < light_buffer::count; ++i)
+				{
+					_buffers[i].buffer.release();
+					_buffers[i].cpu_address = nullptr;
+				}
+			}
+
+			constexpr D3D12_GPU_VIRTUAL_ADDRESS non_cullable_lights() const { return _buffers[light_buffer::non_cullable_light].buffer.gpu_address();}
+
+		private:
+			struct light_buffer
+			{
+				enum type : u32
+				{
+					non_cullable_light,
+					cullable_light,
+					culling_info,
+
+					count
+				};
+
+				d3d12_buffer	buffer{};
+				u8*				cpu_address{ nullptr };
+			};
+
+			void resize_buffer(light_buffer::type type, u32 size, [[maybe_unused]] u32 frame_index)
+			{
+				assert(type < light_buffer::count);
+				if (!size) return;
+
+				_buffers[type].buffer.release();
+				_buffers[type].buffer = d3d12_buffer{ constant_buffer::get_default_init_info(size), true };
+				NAME_D3D12_OBJECT_INDEXED(_buffers[type].buffer.buffer(), frame_index,
+										  type == light_buffer::non_cullable_light ? L"Non-cullable Light Buffer" :
+										  type == light_buffer::cullable_light ? L"Cullable Light Buffer" : L"Light Culling Info Buffer");
+
+				D3D12_RANGE range{};
+				DXCall(_buffers[type].buffer.buffer()->Map(0, &range, (void**)(&_buffers[type].cpu_address)));
+				assert(_buffers[type].cpu_address);
+			}
+
+			light_buffer	_buffers[light_buffer::count];
+			u64				_current_light_set_key{ 0 };
+		};
+
 #undef CONSTEXPR
 		
 		std::unordered_map<u64, light_set>	light_sets;
+		d3d12_light_buffer					light_buffers[frame_buffer_count];
 
 		constexpr void
 		set_is_enabled(light_set& set, light_id id, const void* const data, [[maybe_unused]] u32 size)
@@ -303,6 +379,30 @@ namespace havana::graphics::d3d12::light
 		static_assert(_countof(get_functions) == light_parameter::count);
 	} // anonimous namespace
 
+	bool
+	initialize()
+	{
+		return true;
+	}
+
+	void
+	shutdown()
+	{
+		// Make sure to remove all lights before shutting down graphics
+		assert([] {
+			bool has_lights{ false };
+			for (const auto& it : light_sets)
+			{
+				has_lights |= it.second.has_lights();
+			}
+			return !has_lights; }());
+
+		for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+		{
+			light_buffers[i].release();
+		}
+	}
+
 	graphics::light
 	create(light_init_info info)
 	{
@@ -313,6 +413,7 @@ namespace havana::graphics::d3d12::light
 	void
 	remove(light_id id, u64 light_set_key)
 	{
+		assert(light_sets.count(light_set_key));
 		light_sets[light_set_key].remove(id);
 	}
 
@@ -320,6 +421,7 @@ namespace havana::graphics::d3d12::light
 	set_paramter(light_id id, u64 light_set_key, light_parameter::parameter parameter, const void* const data, u32 data_size)
 	{
 		assert(data && data_size);
+		assert(light_sets.count(light_set_key));
 		assert(parameter < light_parameter::count && set_functions[parameter] != dummy_set);
 		set_functions[parameter](light_sets[light_set_key], id, data, data_size);
 	}
@@ -328,6 +430,7 @@ namespace havana::graphics::d3d12::light
 	get_paramter(light_id id, u64 light_set_key, light_parameter::parameter parameter, void* const data, u32 data_size)
 	{
 		assert(data && data_size);
+		assert(light_sets.count(light_set_key));
 		assert(parameter < light_parameter::count);
 		get_functions[parameter](light_sets[light_set_key], id, data, data_size);
 	}

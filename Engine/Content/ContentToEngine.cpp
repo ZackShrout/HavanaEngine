@@ -58,6 +58,7 @@ namespace havana::content
 			u32				_lod_count;
 		};
 
+		// NOTE: This is needed to maintain compatibility with STL vector.
 		struct noexcept_map
 		{
 			std::unordered_map<u32, std::unique_ptr<u8[]>> map;

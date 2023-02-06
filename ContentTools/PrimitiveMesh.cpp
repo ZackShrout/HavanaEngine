@@ -79,8 +79,7 @@ namespace havana::tools
 			
 			for (u32 j{ 0 }; j < vertical_count; ++j)
 			{
-				u32 k{ 0 };
-				for (u32 i{ k }; i < horizontal_count; ++i)
+				for (u32 i{ 0 }; i < horizontal_count; ++i)
 				{
 					const u32 index[4]
 					{
@@ -100,7 +99,6 @@ namespace havana::tools
 					m.raw_indices.emplace_back(index[flip_winding ? 3 : 1]);
 					m.raw_indices.emplace_back(index[flip_winding ? 1 : 3]);
 				}
-				++k;
 			}
 
 			const u32 num_indices{ 3 * 2 * horizontal_count * vertical_count };

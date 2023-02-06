@@ -15,7 +15,7 @@ namespace havana::graphics::d3d12::camera
 			camera.up(up_vector);
 		}
 
-		void
+		constexpr void
 		set_field_of_view(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.projection_type() == graphics::camera::perspective);
@@ -24,7 +24,7 @@ namespace havana::graphics::d3d12::camera
 			camera.field_of_view(fov);
 		}
 
-		void
+		constexpr void
 		set_aspect_ratio(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.projection_type() == graphics::camera::perspective);
@@ -33,7 +33,7 @@ namespace havana::graphics::d3d12::camera
 			camera.aspect_ratio(aspect_ratio);
 		}
 
-		void
+		constexpr void
 		set_view_width(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.projection_type() == graphics::camera::orthographic);
@@ -42,7 +42,7 @@ namespace havana::graphics::d3d12::camera
 			camera.view_width(view_width);
 		}
 
-		void
+		constexpr void
 		set_view_height(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.projection_type() == graphics::camera::orthographic);
@@ -51,7 +51,7 @@ namespace havana::graphics::d3d12::camera
 			camera.view_height(view_height);
 		}
 
-		void
+		constexpr void
 		set_near_z(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			f32 near_z{ *(f32*)data };
@@ -59,7 +59,7 @@ namespace havana::graphics::d3d12::camera
 			camera.near_z(near_z);
 		}
 
-		void
+		constexpr void
 		set_far_z(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
 		{
 			f32 far_z{ *(f32*)data };
@@ -115,7 +115,7 @@ namespace havana::graphics::d3d12::camera
 			DirectX::XMStoreFloat3(up_vector, camera.up());
 		}
 
-		void
+		constexpr void
 		get_field_of_view(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.projection_type() == graphics::camera::perspective);
@@ -124,7 +124,7 @@ namespace havana::graphics::d3d12::camera
 			*fov = camera.field_of_view();
 		}
 
-		void
+		constexpr void
 		get_aspect_ratio(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.projection_type() == graphics::camera::perspective);
@@ -133,7 +133,7 @@ namespace havana::graphics::d3d12::camera
 			*aspect_ratio = camera.aspect_ratio();
 		}
 
-		void
+		constexpr void
 		get_view_width(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.projection_type() == graphics::camera::orthographic);
@@ -142,7 +142,7 @@ namespace havana::graphics::d3d12::camera
 			*view_width = camera.view_width();
 		}
 
-		void
+		constexpr void
 		get_view_height(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			assert(camera.projection_type() == graphics::camera::orthographic);
@@ -151,7 +151,7 @@ namespace havana::graphics::d3d12::camera
 			*view_height = camera.view_height();
 		}
 
-		void
+		constexpr void
 		get_near_z(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			f32* const near_z{ (f32* const)data };
@@ -159,7 +159,7 @@ namespace havana::graphics::d3d12::camera
 			*near_z = camera.near_z();
 		}
 
-		void
+		constexpr void
 		get_far_z(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			f32* const far_z{ (f32* const)data };
@@ -167,7 +167,7 @@ namespace havana::graphics::d3d12::camera
 			*far_z = camera.far_z();
 		}
 
-		void
+		constexpr void
 		get_projection_type(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			graphics::camera::type* const type{ (graphics::camera::type* const)data };
@@ -175,7 +175,7 @@ namespace havana::graphics::d3d12::camera
 			*type = camera.projection_type();
 		}
 
-		void
+		constexpr void
 		get_entity_id(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
 		{
 			id::id_type* const entity_id{ (id::id_type* const)data };
@@ -269,7 +269,7 @@ namespace havana::graphics::d3d12::camera
 		_up = DirectX::XMLoadFloat3(&up);
 	}
 
-	void
+	constexpr void
 	d3d12_camera::field_of_view(f32 fov)
 	{
 		assert(_projection_type == graphics::camera::perspective);
@@ -277,7 +277,7 @@ namespace havana::graphics::d3d12::camera
 		_is_dirty = true;
 	}
 
-	void
+	constexpr void
 	d3d12_camera::aspect_ratio(f32 aspect_ratio)
 	{
 		assert(_projection_type == graphics::camera::perspective);
@@ -285,7 +285,7 @@ namespace havana::graphics::d3d12::camera
 		_is_dirty = true;
 	}
 
-	void
+	constexpr void
 	d3d12_camera::view_width(f32 width)
 	{
 		assert(width);
@@ -294,7 +294,7 @@ namespace havana::graphics::d3d12::camera
 		_is_dirty = true;
 	}
 
-	void
+	constexpr void
 	d3d12_camera::view_height(f32 height)
 	{
 		assert(height);
@@ -303,14 +303,14 @@ namespace havana::graphics::d3d12::camera
 		_is_dirty = true;
 	}
 
-	void
+	constexpr void
 	d3d12_camera::near_z(f32 near_z)
 	{
 		_near_z = near_z;
 		_is_dirty = true;
 	}
 
-	void
+	constexpr void
 	d3d12_camera::far_z(f32 far_z)
 	{
 		_far_z = far_z;
