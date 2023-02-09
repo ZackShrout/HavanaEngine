@@ -429,7 +429,7 @@ namespace HavanaEditor.Content
                 }
 
                 // For Testing. Remove Later!
-                // PackForEngine();
+                PackForEngine();
                 // For Testing. Remove Later!
             }
             catch (Exception ex)
@@ -594,7 +594,7 @@ namespace HavanaEditor.Content
             Debug.Assert(data?.Length > 0);
 
             // For testing. Remove later!
-            using (var fs = new FileStream(@"..\..\EngineTest\model.model", FileMode.Create))
+            using (var fs = new FileStream(@"..\..\x64\model.model", FileMode.Create))
             {
                 fs.Write(data, 0, data.Length);
             }

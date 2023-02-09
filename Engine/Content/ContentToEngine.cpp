@@ -404,7 +404,7 @@ namespace havana::content
 		u8* const pointer{ geometry_hierarchies[geometry_content_id] };
 		if ((uintptr_t)pointer & single_mesh_marker)
 		{
-			assert(id_count == 1);
+			//assert(id_count == 1);
 			*gpu_ids = gpu_id_from_fake_pointer(pointer);
 		}
 		else
@@ -435,7 +435,6 @@ namespace havana::content
 			u8* const pointer{ geometry_hierarchies[geometry_ids[i]] };
 			if ((uintptr_t)pointer & single_mesh_marker)
 			{
-				assert(id_count == 1);
 				offsets.emplace_back(lod_offset{ 0, 1 });
 			}
 			else

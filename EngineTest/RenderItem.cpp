@@ -8,26 +8,43 @@
 
 using namespace havana;
 
+game_entity::entity create_one_game_entity(math::v3 position, math::v3 rotation, const char* script_name);
+void remove_game_entity(game_entity::entity_id id);
 bool read_file(std::filesystem::path, std::unique_ptr<u8[]>&, u64&);
 
 namespace
 {
+	id::id_type fan_model_id{ id::invalid_id };
+	id::id_type int_model_id{ id::invalid_id };
+	id::id_type lab_model_id{ id::invalid_id };
+	
+	id::id_type fan_item_id{ id::invalid_id };
+	id::id_type int_item_id{ id::invalid_id };
+	id::id_type lab_item_id{ id::invalid_id };
+	
+	game_entity::entity_id fan_entity_id{ id::invalid_id };
+	game_entity::entity_id int_entity_id{ id::invalid_id };
+	game_entity::entity_id lab_entity_id{ id::invalid_id };
+	
 	id::id_type model_id{ id::invalid_id };
+
 	id::id_type vs_id{ id::invalid_id };
 	id::id_type ps_id{ id::invalid_id };
 	id::id_type mtl_id{ id::invalid_id };
 
-	std::unordered_map<id::id_type, id::id_type> render_item_entity_map;
+	std::unordered_map<id::id_type, game_entity::entity_id> render_item_entity_map;
 
-	void
-	load_model()
+	[[nodiscard]] id::id_type
+	load_model(const char* path)
 	{
 		std::unique_ptr<u8[]> model;
 		u64 size{ 0 };
-		read_file("..\\..\\enginetest\\robot_model.model", model, size);
+		read_file(path, model, size);
 
-		model_id = content::create_resource(model.get(), content::asset_type::mesh);
+		const id::id_type model_id{ content::create_resource(model.get(), content::asset_type::mesh) };
 		assert(id::is_valid(model_id));
+
+		return model_id;
 	}
 
 	void
@@ -80,44 +97,64 @@ namespace
 		info.type = graphics::material_type::opaque;
 		mtl_id = content::create_resource(&info, content::asset_type::material);
 	}
+
+	void
+	remove_item(game_entity::entity_id entity_id, id::id_type item_id, id::id_type model_id)
+	{
+		if (id::is_valid(item_id))
+		{
+			graphics::remove_render_item(item_id);
+			auto pair = render_item_entity_map.find(item_id);
+			if (pair != render_item_entity_map.end())
+			{
+				remove_game_entity(pair->second);
+			}
+
+			if (id::is_valid(model_id))
+			{
+				content::destroy_resource(model_id, content::asset_type::mesh);
+			}
+		}
+	}
 } // anonymous namespace
 
-id::id_type
-create_render_item(id::id_type entity_id)
+void
+create_render_item()
 {
 	// load a model, pretend it belongs to entity_id
-	auto _1 = std::thread{ [] { load_model(); } };
-	// load material:
-	// 1) load textures
-	// 2) load shaders for that material
-	auto _2 = std::thread{ [] { load_shaders(); } };
+	auto _1 = std::thread{ [] { lab_model_id = load_model("..\\..\\x64\\lab_model.model"); } };
+	auto _2 = std::thread{ [] { fan_model_id = load_model("..\\..\\x64\\fan_model.model"); } };
+	auto _3 = std::thread{ [] { int_model_id = load_model("..\\..\\x64\\int_model.model"); } };
+	auto _4 = std::thread{ [] { load_shaders(); } };
+
+	lab_entity_id = create_one_game_entity({}, {}, nullptr).get_id();
+	fan_entity_id = create_one_game_entity({ -10.47f, 5.93f, -6.7f }, {}, "fan_script").get_id();
+	int_entity_id = create_one_game_entity({ 0.f, 1.3f, -6.6f }, {}, "wibbly_wobbly_script").get_id();
 
 	_1.join();
 	_2.join();
-	// add a render item using the model and its materials
+	_3.join();
+	_4.join();
+
+	// NOTE: we need shaders to be ready before creating materials
 	create_material();
-	id::id_type materials[]{ mtl_id, mtl_id, mtl_id, mtl_id, mtl_id };
+	id::id_type materials[]{ mtl_id };
 
-	// TODO: add add_render_item in renderer
-	id::id_type item_id{ graphics::add_render_item(entity_id, model_id, _countof(materials), &materials[0]) };
+	lab_item_id = graphics::add_render_item(lab_entity_id, lab_model_id, _countof(materials), &materials[0]);
+	fan_item_id = graphics::add_render_item(fan_entity_id, fan_model_id, _countof(materials), &materials[0]);
+	int_item_id = graphics::add_render_item(int_entity_id, int_model_id, _countof(materials), &materials[0]);
 
-	render_item_entity_map[item_id] = entity_id;
-	return item_id;
+	render_item_entity_map[lab_item_id] = lab_entity_id;
+	render_item_entity_map[fan_item_id] = fan_entity_id;
+	render_item_entity_map[int_item_id] = int_entity_id;
 }
 
 void
-destroy_render_item(id::id_type item_id)
+destroy_render_item()
 {
-	// remove the render item from engine (also the game entity)
-	if (id::is_valid(item_id))
-	{
-		graphics::remove_render_item(item_id);
-		auto pair = render_item_entity_map.find(item_id);
-		if (pair != render_item_entity_map.end())
-		{
-			game_entity::remove(game_entity::entity_id{ pair->second });
-		}
-	}
+	remove_item(lab_entity_id, lab_item_id, lab_model_id);
+	remove_item(fan_entity_id, fan_item_id, fan_model_id);
+	remove_item(int_entity_id, int_item_id, int_model_id);
 
 	// remove material
 	if (id::is_valid(mtl_id))
@@ -135,10 +172,13 @@ destroy_render_item(id::id_type item_id)
 	{
 		content::remove_shader_group(ps_id);
 	}
+}
 
-	// remove model
-	if (id::is_valid(model_id))
-	{
-		content::destroy_resource(model_id, content::asset_type::mesh);
-	}
+void
+get_render_items(id::id_type* items, [[maybe_unused]] u32 count)
+{
+	assert(count == 3);
+	items[0] = lab_item_id;
+	items[1] = fan_item_id;
+	items[2] = int_item_id;
 }

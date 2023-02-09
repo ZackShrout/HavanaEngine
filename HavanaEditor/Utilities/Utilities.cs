@@ -52,7 +52,7 @@ namespace HavanaEditor.Utilities
             Debug.Assert(alignment > 0, "Alignment must be non-zero");
             long mask = alignment - 1;
             Debug.Assert((alignment & mask) == 0, "Alignment must be a power of 2.");
-            return ((size + mask) & -mask);
+            return ((size + mask) & ~mask);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace HavanaEditor.Utilities
             Debug.Assert(alignment > 0, "Alignment must be non-zero");
             long mask = alignment - 1;
             Debug.Assert((alignment & mask) == 0, "Alignment must be a power of 2.");
-            return (size & -mask);
+            return (size & ~mask);
         }
     }
 
