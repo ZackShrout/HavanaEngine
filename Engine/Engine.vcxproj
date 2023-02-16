@@ -31,6 +31,7 @@
     <ClInclude Include="Content\ContentToEngine.h" />
     <ClInclude Include="EngineAPI\Camera.h" />
     <ClInclude Include="EngineAPI\GameEntity.h" />
+    <ClInclude Include="EngineAPI\Input.h" />
     <ClInclude Include="EngineAPI\Light.h" />
     <ClInclude Include="EngineAPI\ScriptComponent.h" />
     <ClInclude Include="EngineAPI\TransformComponent.h" />
@@ -60,6 +61,8 @@
     <ClInclude Include="Graphics\Vulkan\VulkanResources.h" />
     <ClInclude Include="Graphics\Vulkan\VulkanSurface.h" />
     <ClInclude Include="Graphics\Vulkan\VulkanValidation.h" />
+    <ClInclude Include="Input\Input.h" />
+    <ClInclude Include="Input\InputWin32.h" />
     <ClInclude Include="Platforms\IncludeWindowCpp.h" />
     <ClInclude Include="Platforms\Platform.h" />
     <ClInclude Include="Platforms\PlatformTypes.h" />
@@ -100,6 +103,8 @@
     <ClCompile Include="Graphics\Vulkan\VulkanRenderPass.cpp" />
     <ClCompile Include="Graphics\Vulkan\VulkanResources.cpp" />
     <ClCompile Include="Graphics\Vulkan\VulkanSurface.cpp" />
+    <ClCompile Include="Input\Input.cpp" />
+    <ClCompile Include="Input\InputWin32.cpp" />
     <ClCompile Include="Platforms\PlatformWin32.cpp" />
     <ClCompile Include="Platforms\PlatformLinux.cpp" />
     <ClCompile Include="Platforms\Window.cpp" />
