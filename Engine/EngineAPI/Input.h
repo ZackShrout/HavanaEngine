@@ -185,4 +185,42 @@ namespace havana::input
 			~input_system_base();
 		};
 	} //namespace detail
+
+	template<typename T>
+	class input_system final : public detail::input_system_base
+	{
+	public:
+		using input_callback_t = void(T::*)(input_source::type, input_code::code, const input_value&);
+
+		void add_handler(input_source::type type, T* instance, input_callback_t callback)
+		{
+			assert(instance && callback && type < input_source::count);
+			auto& collection = _input_callbacks[type];
+			for (const auto& func : collection)
+			{
+				// If handler was already added then don't add it again
+				if (func.instance == instance && func.callback == callback) return;
+			}
+
+			collection.emplace_back(input_callback{ instance, callback });
+		}
+
+		void on_event(input_source::type type, input_code::code code, const input_value& value) override
+		{
+			assert(type < input_source::count);
+			for (const auto& item : _input_callbacks[type])
+			{
+				(item.instance->*item.callback)(type, code, value);
+			}
+		}
+
+	private:
+		struct input_callback
+		{
+			T*					instance;
+			input_callback_t	callback;
+		};
+
+		utl::vector<input_callback>		_input_callbacks[input_source::count];
+	};
 }

@@ -334,7 +334,7 @@ namespace havana::input
 		constexpr math::v2
 		get_mouse_position(LPARAM lparam)
 		{
-			return { (float)((s16)(lparam & 0x0000ffff)), (float)((s16)(lparam >> 16)) };
+			return { (f32)((s16)(lparam & 0x0000ffff)), (f32)((s16)(lparam >> 16)) };
 		}
 	} // anonymous namespace
 
@@ -397,7 +397,7 @@ namespace havana::input
 		break;
 		case WM_MOUSEHWHEEL:
 		{
-			set(input_source::mouse, input_code::mouse_wheel, { (float)(GET_WHEEL_DELTA_WPARAM(wparam)), 0.f, 0.f });
+			set(input_source::mouse, input_code::mouse_wheel, { (f32)(GET_WHEEL_DELTA_WPARAM(wparam)), 0.f, 0.f });
 		}
 		break;
 		}
