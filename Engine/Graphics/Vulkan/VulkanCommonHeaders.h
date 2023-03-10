@@ -9,7 +9,7 @@
 #define WIN_32_LEAN_AND_MEAN
 #endif // WIN_32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <volk/volk.h>
+#include <Volk/volk.h>
 #include <wrl.h>
 #elif __linux__
 #define VK_USE_PLATFORM_XLIB_KHR
