@@ -31,12 +31,11 @@ namespace havana::platform
 #include <X11/Xlib.h>
 #include <stdlib.h>
 
-// Prevents collision from our Window class and the XWindow Window define
-using XWindow = Window;
+//#pragma comment (lib, "X11")
 
 namespace havana::platform
 {	
-	using window_handle = XWindow*;
+	using window_handle = Window*;
 
 	struct window_init_info
 	{

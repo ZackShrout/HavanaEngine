@@ -1,10 +1,7 @@
 #pragma once
 
-#include "CommonHeaders.h"
-#include "Graphics/Renderer.h"
-
-#include <vulkan/vulkan.h>
 #ifdef _WIN32
+#define VK_USE_PLATFORM_WIN32_KHR
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif // NOMINMAX
@@ -12,16 +9,18 @@
 #define WIN_32_LEAN_AND_MEAN
 #endif // WIN_32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <vulkan/vulkan_win32.h>
+#include <volk/volk.h>
 #include <wrl.h>
 #elif __linux__
+#define VK_USE_PLATFORM_XLIB_KHR
 #include <iostream>
 #include <X11/Xlib.h>
-#include <vulkan/vulkan_xlib.h>
+#include <volk.h>
+//#include <vulkan/vulkan_xlib.h>
 #endif // _WIN32
 
-#pragma comment(lib, "vulkan-1.lib")
-
+#include "CommonHeaders.h"
+#include "Graphics/Renderer.h"
 
 namespace havana::graphics::vulkan
 {
@@ -134,7 +133,7 @@ OutputDebugStringA("\n");   \
 __debugbreak()
 #elif __linux__
 #define ERROR_MSSG(x)       \
-std::cout << x << std::endl \
+std::cout << x << std::endl;\
 __builtin_trap()
 #endif // _WIN32
 #endif // !ERROR_MSSG

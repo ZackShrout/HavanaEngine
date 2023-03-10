@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __linux__
+#include <smmintrin.h>
+#endif // __linux__
+
 #include "CommonHeaders.h"
 #include "MathTypes.h"
 

@@ -1,3 +1,5 @@
+#define VOLK_IMPLEMENTATION
+
 #include "VulkanCore.h"
 #include "VulkanValidation.h"
 #include "VulkanSurface.h"
@@ -564,6 +566,11 @@ namespace havana::graphics::vulkan::core
     {
         if (instance) shutdown();
 
+        if (volkInitialize() != VK_SUCCESS)
+        {
+            return failed_init();
+        }
+
         if (enable_validation_layers && !validation_layer_supported())
         {
             MESSAGE("Validation layers requested, but not available...");
@@ -627,6 +634,8 @@ namespace havana::graphics::vulkan::core
         VkResult result{ VK_SUCCESS };
         VkCall(result = vkCreateInstance(&info, nullptr, &instance), "Failed to create a Vulkan instance...");
         if (result != VK_SUCCESS) return failed_init();
+
+        volkLoadInstance(instance);
 
         MESSAGE("Vulkan instance created");
 

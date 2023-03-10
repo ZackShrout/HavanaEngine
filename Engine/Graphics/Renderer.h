@@ -14,7 +14,7 @@ namespace havana::graphics
 		f32				last_frame_time{ 16.7f };
 		f32				average_frame_time{ 16.7f };
 		u32				render_item_count{ 0 };
-		camera_id		camera_id{ id::invalid_id };
+		camera_id		camer_id{ id::invalid_id };
 	};
 	
 	DEFINE_TYPED_ID(surface_id);

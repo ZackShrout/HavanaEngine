@@ -6,9 +6,8 @@
 #include "Platforms/PlatformTypes.h"
 #include "Platforms/Platform.h"
 #include "Graphics/Renderer.h"
-#include "Graphics/Direct3D12/D3D12Core.h"
 #include "Content/ContentToEngine.h"
-#include "ShaderCompilation.h"
+//#include "ShaderCompilation.h"
 
 #if TEST_RENDERER
 
@@ -54,7 +53,7 @@ void joint_test_workers()
 /////////////////////////////////////////////////////////////////////////////
 
 id::id_type model_id{ id::invalid_id };
-Graphics::render_surface _surfaces[4];
+graphics::render_surface _surfaces[4];
 time_it timer{};
 
 bool resized{ false };
@@ -85,14 +84,14 @@ read_file(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
 }
 
 void
-create_render_surface(Graphics::render_surface &surface, Platform::window_init_info info, void* disp)
+create_render_surface(graphics::render_surface &surface, platform::window_init_info info, void* disp)
 {
 	surface.window = platform::create_window(&info, disp);
 	surface.surface = graphics::create_surface(surface.window);
 }
 
 void
-destroy_render_surface(Graphics::render_surface &surface)
+destroy_render_surface(graphics::render_surface &surface)
 {
 	graphics::render_surface temp{ surface };
 	surface = {};
@@ -172,7 +171,9 @@ engine_test::run(void *disp)
 	{
 		if (_surfaces[i].surface.is_valid())
 		{
-			_surfaces[i].surface.render();
+			graphics::frame_info info{};
+			
+			_surfaces[i].surface.render(info);
 		}
 	}
 
@@ -205,7 +206,7 @@ engine_test::run(void *disp)
 			for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
 			{
 				if (!_surfaces[i].window.is_valid()) continue;
-				if (*((Window*)_surfaces[i].window.Handle()) == xev.xany.window)
+				if (*((Window*)_surfaces[i].window.handle()) == xev.xany.window)
 				{
 					if ((u32)xce.width != _surfaces[i].window.width() || (u32)xce.height != _surfaces[i].window.height())
 					{
@@ -222,7 +223,7 @@ engine_test::run(void *disp)
 				for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
 				{
 					if (!_surfaces[i].window.is_valid()) continue;
-					if (*((Window*)_surfaces[i].window.Handle()) == xev.xany.window)
+					if (*((Window*)_surfaces[i].window.handle()) == xev.xany.window)
 					{
 						destroy_render_surface(_surfaces[i]);
 						break;
@@ -267,7 +268,7 @@ engine_test::run(void *disp)
 				for (u32 i{ 0 }; i < _countof(_surfaces); i++)
 				{
 					if (!_surfaces[i].window.is_valid()) continue;
-					if (*((Window*)_surfaces[i].window.Handle()) == xev.xany.window)
+					if (*((Window*)_surfaces[i].window.handle()) == xev.xany.window)
 					{
 						_surfaces[i].window.set_fullscreen(!_surfaces[i].window.is_fullscreen());
 					}

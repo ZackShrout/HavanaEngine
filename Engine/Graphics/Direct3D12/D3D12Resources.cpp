@@ -1,3 +1,5 @@
+#if defined(_WIN64)
+
 #include "D3D12Resources.h"
 #include "D3D12Core.h"
 
@@ -285,3 +287,5 @@ namespace havana::graphics::d3d12
 		_texture.release();
 	}
 }
+
+#endif // _WIN64

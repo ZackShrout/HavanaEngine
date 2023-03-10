@@ -1,3 +1,5 @@
+#if defined(_WIN64)
+
 #include "D3D12PostProcess.h"
 #include "D3D12Core.h"
 #include "D3D12Shaders.h"
@@ -89,3 +91,5 @@ namespace havana::graphics::d3d12::fx
 		cmd_list->DrawInstanced(3, 1, 0, 0);
 	}
 }
+
+#endif // _WIN64

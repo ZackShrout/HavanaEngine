@@ -72,8 +72,8 @@ int main(int argc, char* argv[])
     engine_test test{};
 
     // Open an X server connection
-    Display* display { XOpenDisplay(NULL) };
-        if (display == NULL) return 1;
+    Display* display { XOpenDisplay(nullptr) };
+    if (display == nullptr) return 1;
     
     // Set up custom client messages
     Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);

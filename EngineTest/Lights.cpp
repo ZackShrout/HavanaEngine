@@ -1,3 +1,5 @@
+#if defined(_WIN64)
+
 #include "EngineAPI/GameEntity.h"
 #include "EngineAPI/Light.h"
 #include "EngineAPI/TransformComponent.h"
@@ -66,3 +68,5 @@ namespace
 
 		lights.clear();
 	}
+
+	#endif // _WIN64

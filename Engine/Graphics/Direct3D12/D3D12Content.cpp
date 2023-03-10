@@ -1,4 +1,5 @@
-#pragma once
+#if defined(_WIN64)
+
 #include "D3D12Content.h"
 #include "D3D12Core.h"
 #include "Utilities/IOStream.h"
@@ -724,3 +725,5 @@ namespace havana::graphics::d3d12::content
 		}
 	} // namespace render_item
 }
+
+#endif //_WIN64

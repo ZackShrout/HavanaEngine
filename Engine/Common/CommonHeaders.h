@@ -20,7 +20,7 @@
 #endif
 
 #if defined (__linux__)
-	#include <glm/glm.hpp>
+	#include "../../DirectXMath/Inc/DirectXMath.h"
 #endif
 
 #ifndef DISABLE_COPY
@@ -49,5 +49,5 @@
 #include "PrimitiveTypes.h"
 #include "../Utilities/Math.h"
 #include "../Utilities/Utilities.h"
-#include "Id.h"
 #include "../Utilities/MathTypes.h"
+#include "Id.h"

@@ -85,6 +85,7 @@ project "Engine"
     else
         targetname "%{prj.name}"
         includedirs { "%{wks.location}/Engine", "%{wks.location}/Engine/Common" }
+        links { "X11" }
     end
     targetdir (outputdir)
     objdir (intermediatesdir)
@@ -148,6 +149,7 @@ project "EngineTest"
         targetname "%{prj.name}"
         includedirs { "%{wks.location}/Engine", "%{wks.location}/Engine/Common" }
         libdirs (outputdir)
+        links { "X11", "Engine" }
     end
     targetdir (outputdir)
     objdir (intermediatesdir)

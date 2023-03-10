@@ -1,7 +1,7 @@
-#include "CommonHeaders.h"
 #include "VulkanInterface.h"
 #include "VulkanCore.h"
 #include "Graphics/GraphicsPlatformInterface.h"
+#include "CommonHeaders.h"
 
 namespace havana::graphics::vulkan
 {

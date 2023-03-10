@@ -23,8 +23,6 @@ INCLUDES += -I../Engine -I../Engine/Common
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-LIBS +=
-LDDEPS +=
 LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
 define PREBUILDCMDS
 endef
@@ -40,6 +38,8 @@ OBJDIR = ../x64/Debug/x64/Debug/EngineTest
 DEFINES += -DDEBUG
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -std=c++17 -fno-exceptions -fno-rtti
+LIBS += ../x64/Debug/libEngine.a -lX11
+LDDEPS += ../x64/Debug/libEngine.a
 ALL_LDFLAGS += $(LDFLAGS) -L../x64/Debug -L/usr/lib64 -m64
 
 else ifeq ($(config),release_x64)
@@ -49,6 +49,8 @@ OBJDIR = ../x64/Release/x64/Release/EngineTest
 DEFINES += -DNDEBUG
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra -std=c++17 -fno-exceptions -fno-stack-protector -fno-rtti
+LIBS += ../x64/Release/libEngine.a -lX11
+LDDEPS += ../x64/Release/libEngine.a
 ALL_LDFLAGS += $(LDFLAGS) -L../x64/Release -L/usr/lib64 -m64 -flto -s
 
 endif

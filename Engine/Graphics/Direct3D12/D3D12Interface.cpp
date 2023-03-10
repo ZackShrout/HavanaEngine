@@ -1,3 +1,5 @@
+#if defined(_WIN64)
+
 #include "CommonHeaders.h"
 #include "D3D12Interface.h"
 #include "D3D12Core.h"
@@ -43,3 +45,5 @@ namespace havana::graphics
 		}
 	} // d3d12 namespace
 }
+
+#endif // _WIN64

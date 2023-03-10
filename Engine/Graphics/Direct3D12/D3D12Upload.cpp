@@ -1,3 +1,5 @@
+#if defined(_WIN64)
+
 #include "D3D12Upload.h"
 #include "D3D12Core.h"
 
@@ -206,3 +208,5 @@ namespace havana::graphics::d3d12::upload
 		upload_fence_value = 0;
 	}
 }
+
+#endif // _WIN64

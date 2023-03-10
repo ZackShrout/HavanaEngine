@@ -1,6 +1,8 @@
 #pragma once
-#include <combaseapi.h>
 #include "CommonHeaders.h"
+#ifdef _WIN64
+#include <combaseapi.h>
+#endif
 
 #ifndef EDITOR_INTERFACE
 #define EDITOR_INTERFACE extern"C" __declspec(dllexport)

@@ -10,7 +10,7 @@ namespace havana::platform
 		// Linux OS specific window info
 		struct window_info
 		{
-			XWindow window{};
+			Window wnd{};
 			Display* display{ nullptr };
 			s32 left;
 			s32 top;
@@ -25,7 +25,7 @@ namespace havana::platform
 		window_info&
 		get_from_id(window_id id)
 		{
-			assert(windows[id].window);
+			assert(windows[id].wnd);
 			return windows[id];
 		}
 
@@ -38,7 +38,7 @@ namespace havana::platform
 			// NOTE: this is not currently working how I would like... I expected the window to redraw
 			//		 itself with the XClearWindow() call. Eventually, the graphics API will be drawing
 			//		 to the window anyway, so I will not pursue it further, unless it becomes an issue.
-			XClearWindow(info.display, info.window);
+			XClearWindow(info.display, info.wnd);
 		}
 
 		void
@@ -56,7 +56,7 @@ namespace havana::platform
 					Atom fullscreen{ XInternAtom(info.display, "_NET_WM_STATE_FULLSCREEN", false) };
 					memset(&xev, 0, sizeof(xev));
 					xev.type = ClientMessage;
-					xev.xclient.window = info.window;
+					xev.xclient.window = info.wnd;
 					xev.xclient.message_type = wm_state;
 					xev.xclient.format = 32;
 					xev.xclient.data.l[0] = 1; // _NET_WM_STATE_ADD
@@ -72,7 +72,7 @@ namespace havana::platform
 					Atom fullscreen{ XInternAtom(info.display, "_NET_WM_STATE_FULLSCREEN", false) };
 					memset(&xev, 0, sizeof(xev));
 					xev.type = ClientMessage;
-					xev.xclient.window = info.window;
+					xev.xclient.window = info.wnd;
 					xev.xclient.message_type = wm_state;
 					xev.xclient.format = 32;
 					xev.xclient.data.l[0] = 0; // _NET_WM_STATE_REMOVE
@@ -93,7 +93,7 @@ namespace havana::platform
 		window_handle
 		get_window_handle(window_id id)
 		{
-			return &get_from_id(id).window;
+			return &get_from_id(id).wnd;
 		}
 
 		Display*
@@ -109,7 +109,7 @@ namespace havana::platform
 			size_t outSize = (sizeof(caption) * sizeof(wchar_t)) + 1;
 			char title[outSize];
 			wcstombs(title, caption, outSize);
-			XStoreName(info.display, info.window, title);
+			XStoreName(info.display, info.wnd, title);
 		}
 
 		math::u32v4
@@ -130,11 +130,11 @@ namespace havana::platform
 		{
 			window_info& info{ get_from_id(id) };
 			get_from_id(id).is_closed = true;
-			XDestroyWindow(info.display, info.window);
+			XDestroyWindow(info.display, info.wnd);
 		}
 	} // anonymous namespace
 
-	Window
+	window
 	create_window(const window_init_info* const init_info /*= nullptr*/, void* disp /*= nullptr*/)
 	{
 		// Cache a casted pointer of the display to save on casting later
@@ -173,21 +173,21 @@ namespace havana::platform
 		char title[out_size];
 		wcstombs(title, caption, out_size);
 
-		XWindow window{ XCreateWindow(display, *parent, info.left, info.top, info.width, info.height, 0,
+		Window wnd{ XCreateWindow(display, *parent, info.left, info.top, info.width, info.height, 0,
 										DefaultDepth(display, screen), InputOutput, visual,
 										CWColormap | CWEventMask, &attributes) };
-		info.window = window;
+		info.wnd = wnd;
 
 		// Set custom window manager event for closing a window
 		Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
-		XSetWMProtocols(display, window, &wm_delete_window, 1);
+		XSetWMProtocols(display, wnd, &wm_delete_window, 1);
 
 		// Show window
-		XMapWindow(display, window);
-		XStoreName(display, window, title);
+		XMapWindow(display, wnd);
+		XStoreName(display, wnd, title);
 
 		const window_id id{ windows.add(info) };
-		return Window{ id };
+		return window{ id };
 	}
 
 	void
@@ -195,7 +195,7 @@ namespace havana::platform
 	{
 		window_info& info{ get_from_id(id) };
 		get_from_id(id).is_closed = true;
-		XDestroyWindow(info.display, info.window);
+		XDestroyWindow(info.display, info.wnd);
 		windows.remove(id);
 	}
 }

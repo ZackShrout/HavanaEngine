@@ -167,7 +167,7 @@ namespace havana::input
 		float				multiplier{ 0 };
 		bool				is_discrete{ true };
 		axis::type			source_axis{};
-		axis::type			axis{};
+		axis::type			axis_{};
 		modifier_key::key	modifier{};
 	};
 

@@ -1,3 +1,5 @@
+#if defined(_WIN64)
+
 #include <fstream>
 #include <filesystem>
 
@@ -316,3 +318,5 @@ compile_shaders()
 
 	return save_compiled_shaders(shaders);
 }
+
+#endif // _WIN64

@@ -1,3 +1,5 @@
+#if defined(_WIN64)
+
 #include "D3D12Surface.h"
 #include "D3D12Core.h"
 
@@ -129,3 +131,5 @@ namespace havana::graphics::d3d12
 		core::release(_swap_chain);
 	}
 }
+
+#endif // _WIN64

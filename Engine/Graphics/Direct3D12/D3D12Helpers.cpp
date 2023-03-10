@@ -1,3 +1,5 @@
+#if defined(_WIN64)
+
 #include "D3D12Helpers.h"
 #include "D3D12Core.h"
 #include "D3D12Upload.h"
@@ -141,3 +143,5 @@ namespace havana::graphics::d3d12::d3dx
 		return resource;
 	}
 }
+
+#endif // _WIN64

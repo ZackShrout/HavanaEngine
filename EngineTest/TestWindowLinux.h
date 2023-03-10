@@ -131,7 +131,7 @@ public:
 				{
 					for (u32 i{ 0 }; i < _countof(windows); ++i)
 					{
-						if (*((Window*)windows[i].Handle()) == xev.xany.window)
+						if (*((Window*)windows[i].handle()) == xev.xany.window)
 						{
 							windows[i].set_fullscreen(!windows[i].is_fullscreen());
 						}

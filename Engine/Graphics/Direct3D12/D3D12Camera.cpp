@@ -1,3 +1,5 @@
+#if defined(_WIN64)
+
 #include "D3D12Camera.h"
 #include "EngineAPI/GameEntity.h"
 
@@ -355,3 +357,5 @@ namespace havana::graphics::d3d12::camera
 		return cameras[id];
 	}
 }
+
+#endif // _WIN64
