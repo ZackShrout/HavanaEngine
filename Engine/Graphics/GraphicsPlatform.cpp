@@ -12,7 +12,9 @@ namespace havana::graphics
         switch (platform)
         {
         case graphics_platform::direct3d12:
+            #if defined (_WIN64)
             d3d12::get_platform_interface(pi);
+            #endif
             break;
         case graphics_platform::vulkan_1:
             vulkan::get_platform_interface(pi);

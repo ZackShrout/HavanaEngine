@@ -96,11 +96,11 @@ namespace havana::graphics::vulkan
         create_surface(instance);
         core::create_device(_surface);
 
-        GET_DEVICE_PROC_ADDR(core::logical_device(), CreateSwapchainKHR);
-        GET_DEVICE_PROC_ADDR(core::logical_device(), DestroySwapchainKHR);
-        GET_DEVICE_PROC_ADDR(core::logical_device(), GetSwapchainImagesKHR);
-        GET_DEVICE_PROC_ADDR(core::logical_device(), AcquireNextImageKHR);
-        GET_DEVICE_PROC_ADDR(core::logical_device(), QueuePresentKHR);
+        // GET_DEVICE_PROC_ADDR(core::logical_device(), CreateSwapchainKHR);
+        // GET_DEVICE_PROC_ADDR(core::logical_device(), DestroySwapchainKHR);
+        // GET_DEVICE_PROC_ADDR(core::logical_device(), GetSwapchainImagesKHR);
+        // GET_DEVICE_PROC_ADDR(core::logical_device(), AcquireNextImageKHR);
+        // GET_DEVICE_PROC_ADDR(core::logical_device(), QueuePresentKHR);
 
         create_swapchain();
         create_render_pass();

@@ -18,8 +18,22 @@ namespace havana::graphics::vulkan
         pi.surface.height = core::surface_height;
         pi.surface.render = core::render_surface;
 
-        /*pi.resources.add_submesh = content::submesh::add;
-        pi.resources.remove_submesh = content::submesh::remove;*/
+        // pi.light.create = light::create;
+        // pi.light.remove = light::remove;
+        // pi.light.set_paramter = light::set_paramter;
+        // pi.light.get_paramter = light::get_paramter;
+
+        // pi.camera.create = camera::create;
+        // pi.camera.remove = camera::remove;
+        // pi.camera.set_paramter = camera::set_paramter;
+        // pi.camera.get_paramter = camera::get_paramter;
+
+        // pi.resources.add_submesh = content::submesh::add;
+        // pi.resources.remove_submesh = content::submesh::remove;
+        // pi.resources.add_material = content::material::add;
+        // pi.resources.remove_material = content::material::remove;
+        // pi.resources.add_render_item = content::render_item::add;
+        // pi.resources.remove_render_item = content::render_item::remove;
 
         pi.platform = graphics_platform::vulkan_1;
     }

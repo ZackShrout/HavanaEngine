@@ -1,3 +1,5 @@
+#if defined (_WIN64)
+
 #include <filesystem>
 #include <thread> // TODO: this shouldn't need to be here...
 #include "CommonHeaders.h"
@@ -183,3 +185,5 @@ get_render_items(id::id_type* items, [[maybe_unused]] u32 count)
 	items[1] = fan_item_id;
 	items[2] = int_item_id;
 }
+
+#endif // _WIN64
