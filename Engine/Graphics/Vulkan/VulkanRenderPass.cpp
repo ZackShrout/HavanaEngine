@@ -147,7 +147,7 @@ namespace havana::graphics::vulkan::renderpass
     }
 
     void
-    end_renderpass(VkCommandBuffer cmd_buffer, vulkan_cmd_buffer::state state, vulkan_renderpass& renderpass)
+    end_renderpass(VkCommandBuffer cmd_buffer, vulkan_cmd_buffer::state state, [[maybe_unused]] vulkan_renderpass& renderpass)
     {
         vkCmdEndRenderPass(cmd_buffer);
         state = vulkan_cmd_buffer::CMD_RECORDING;

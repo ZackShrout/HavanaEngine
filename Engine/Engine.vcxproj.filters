@@ -89,6 +89,7 @@
     <ClCompile Include="Graphics\Direct3D12\D3D12Light.cpp" />
     <ClCompile Include="Input\Input.cpp" />
     <ClCompile Include="Input\InputWin32.cpp" />
+    <ClCompile Include="Content\ContentLoaderLinux.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

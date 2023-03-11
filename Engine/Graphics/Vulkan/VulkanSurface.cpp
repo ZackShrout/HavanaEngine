@@ -102,7 +102,7 @@ namespace havana::graphics::vulkan
     }
 
     void
-    vulkan_surface::present(VkSemaphore image_available, VkSemaphore render_finished, VkFence fence, VkQueue presentation_queue)
+    vulkan_surface::present([[maybe_unused]] VkSemaphore image_available, VkSemaphore render_finished, [[maybe_unused]] VkFence fence, VkQueue presentation_queue)
     {
         // Present image
         VkPresentInfoKHR info{ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };

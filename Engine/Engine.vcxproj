@@ -78,6 +78,7 @@
     <ClCompile Include="Components\Entity.cpp" />
     <ClCompile Include="Components\Script.cpp" />
     <ClCompile Include="Components\Transform.cpp" />
+    <ClCompile Include="Content\ContentLoaderLinux.cpp" />
     <ClCompile Include="Content\ContentLoaderWin32.cpp" />
     <ClCompile Include="Content\ContentToEngine.cpp" />
     <ClCompile Include="Core\EngineWin32.cpp" />

@@ -213,7 +213,7 @@ namespace havana::graphics::vulkan::core
             [[nodiscard]] constexpr VkCommandPool const command_pool() const { return _cmd_pool; }
 
         private:
-            void create_command_buffers(VkDevice device, u32 queue_family_idx)
+            void create_command_buffers(VkDevice device, [[maybe_unused]] u32 queue_family_idx)
             {
                 _cmd_buffers.resize(_swapchain_image_count);
 
@@ -797,7 +797,7 @@ namespace havana::graphics::vulkan::core
     }
 
     void
-    render_surface(surface_id id, frame_info info)
+    render_surface(surface_id id, [[maybe_unused]] frame_info info)
     {
         if (gfx_command.begin_frame(&surfaces[id]))
         {

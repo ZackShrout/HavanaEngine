@@ -198,7 +198,7 @@ namespace havana::platform
 	/// <param name="initInfo"> - Initialization information for the new window.</param>
 	/// <returns>A havana::Platform::Window object.</returns>
 	window
-	create_window(const window_init_info* init_info /*= nullptr*/, void* disp /*= nullptr*/)
+	create_window(const window_init_info* init_info /*= nullptr*/, [[maybe_unused]] void* disp /*= nullptr*/)
 	{
 		window_proc callback{init_info ? init_info->callback : nullptr};
 		window_handle parent{init_info ? init_info->parent : nullptr};

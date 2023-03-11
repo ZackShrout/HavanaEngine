@@ -3,7 +3,7 @@
 namespace havana::graphics::vulkan
 {
     bool
-    vulkan_success(VkResult result)
+    vulkan_success([[maybe_unused]] VkResult result)
     {
         return false;
     }
