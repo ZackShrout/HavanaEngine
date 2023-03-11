@@ -1,14 +1,13 @@
-#if !defined(SHIPPING) && defined(_WIN64)
+#if !defined(SHIPPING) && defined(__linux__)
+
+#include <fstream>
+#include <filesystem>
 
 #include "ContentLoader.h"
 #include "Components/Entity.h"
 #include "Components/Transform.h"
 #include "Components/Script.h"
 #include "Graphics/Renderer.h"
-
-#include <fstream>
-#include <filesystem>
-#include <Windows.h>
 
 namespace havana::content
 {

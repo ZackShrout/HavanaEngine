@@ -94,7 +94,6 @@ namespace havana::transform
 		// transform component into that same slot in the vector of transforms
 		if (positions.size() > entity_index)
 		{
-#ifdef _WIN64
 			math::v4 rotation{ info.rotation };
 			rotations[entity_index] = rotation;
 			orientations[entity_index] = calculate_orientation(rotation);
@@ -102,20 +101,10 @@ namespace havana::transform
 			scales[entity_index] = math::v3{ info.scale };
 			has_transform[entity_index] = 0;
 			changes_from_previous_frame[entity_index] = (u8)component_flags::all;
-#elif __linux__
-			math::v4 rotation{ info.rotation[0], info.rotation[1], info.rotation[2], info.rotation[3] };
-			rotations[entity_index] = rotation;
-			orientations[entity_index] = calculate_orientation(rotation);
-			positions[entity_index] = math::v3(info.position[0], info.position[1], info.position[2]);
-			scales[entity_index] = math::v3(info.scale[0], info.scale[1], info.scale[2]);
-			has_transform[entity_index] = 0;
-			changes_from_previous_frame[entity_index] = (u8)component_flags::all;
-#endif
 		}
 		else // If not, place it in the back with our entity
 		{
 			assert(positions.size() == entity_index);
-#ifdef _WIN64
 			to_world.emplace_back();
 			inv_world.emplace_back();
 			rotations.emplace_back(info.rotation);
@@ -124,16 +113,6 @@ namespace havana::transform
 			scales.emplace_back(info.scale);
 			has_transform.emplace_back((u8)0);
 			changes_from_previous_frame.emplace_back((u8)component_flags::all);
-#elif __linux__
-			to_world.emplace_back();
-			inv_world.emplace_back();
-			positions.emplace_back(math::v3(info.position[0], info.position[1], info.position[2]));
-			rotations.emplace_back(math::v4(info.rotation[0], info.rotation[1], info.rotation[2], 
-											info.rotation[3]));
-			scales.emplace_back(math::v3(info.scale[0], info.scale[1], info.scale[2]));
-			has_transform.emplace_back((u8)0);
-			changes_from_previous_frame.emplace_back((u8)component_flags::all);
-#endif
 		}
 
 		// NOTE: each entity has a transform component. Therefore, id's for transform components

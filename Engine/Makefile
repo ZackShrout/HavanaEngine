@@ -81,6 +81,7 @@ endif
 GENERATED :=
 OBJECTS :=
 
+GENERATED += $(OBJDIR)/ContentLoaderLinux.o
 GENERATED += $(OBJDIR)/ContentLoaderWin32.o
 GENERATED += $(OBJDIR)/ContentToEngine.o
 GENERATED += $(OBJDIR)/D3D12Camera.o
@@ -114,6 +115,7 @@ GENERATED += $(OBJDIR)/VulkanRenderPass.o
 GENERATED += $(OBJDIR)/VulkanResources.o
 GENERATED += $(OBJDIR)/VulkanSurface.o
 GENERATED += $(OBJDIR)/Window.o
+OBJECTS += $(OBJDIR)/ContentLoaderLinux.o
 OBJECTS += $(OBJDIR)/ContentLoaderWin32.o
 OBJECTS += $(OBJDIR)/ContentToEngine.o
 OBJECTS += $(OBJDIR)/D3D12Camera.o
@@ -217,6 +219,9 @@ $(OBJDIR)/Script.o: Components/Script.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Transform.o: Components/Transform.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/ContentLoaderLinux.o: Content/ContentLoaderLinux.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/ContentLoaderWin32.o: Content/ContentLoaderWin32.cpp
