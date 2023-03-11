@@ -57,8 +57,6 @@ namespace havana::graphics::vulkan
         constexpr u32 current_frame() const { return _frame_index; }
         constexpr bool is_recreating() const { return _is_recreating; }
         constexpr bool is_resized() const { return _framebuffer_resized; }
-        /*constexpr const VkViewport& viewport() const {}
-        constexpr const VkRect2D& scissor_rect() const {}*/
 
     private:
         void create_surface(VkInstance instance);
@@ -77,13 +75,6 @@ namespace havana::graphics::vulkan
         bool							_is_recreating{ false };
         u32								_image_index{ 0 };
         u32								_frame_index{ 0 };
-
-        // Function Pointers
-        PFN_vkCreateSwapchainKHR		fpCreateSwapchainKHR;
-        PFN_vkDestroySwapchainKHR		fpDestroySwapchainKHR;
-        PFN_vkGetSwapchainImagesKHR		fpGetSwapchainImagesKHR;
-        PFN_vkAcquireNextImageKHR		fpAcquireNextImageKHR;
-        PFN_vkQueuePresentKHR			fpQueuePresentKHR;
     };
 
 #undef CONSTEXPR

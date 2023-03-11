@@ -24,8 +24,6 @@
 
 namespace havana::graphics::vulkan
 {
-    constexpr u32 frame_buffer_count{ 3 };
-
     struct vulkan_image
     {
         VkImage			image;

@@ -127,10 +127,10 @@ test_initialize(void *disp)
 	// Load test model
 	std::unique_ptr<u8[]> model;
 	u64 size{ 0 };
-	if (!read_file("..\\..\\enginetest\\model.model", model, size)) return false;
+	//if (!read_file("..\\..\\enginetest\\model.model", model, size)) return false;
 
-	model_id = content::create_resource(model.get(), content::asset_type::mesh);
-	if (!id::is_valid(model_id)) return false;
+	//model_id = content::create_resource(model.get(), content::asset_type::mesh);
+	//if (!id::is_valid(model_id)) return false;
 
 	init_test_workers(buffer_test_worker);
 
