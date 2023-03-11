@@ -35,7 +35,7 @@ ifeq ($(config),debug_x64)
 TARGETDIR = ../x64/Debug
 TARGET = $(TARGETDIR)/EngineTest
 OBJDIR = ../x64/Debug/x64/Debug/EngineTest
-DEFINES += -DDEBUG
+DEFINES += -D_DEBUG
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -std=c++17 -fno-exceptions -fno-rtti
 LIBS += ../x64/Debug/libEngine.a -lX11

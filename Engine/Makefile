@@ -37,7 +37,7 @@ ifeq ($(config),debug_x64)
 TARGETDIR = ../x64/Debug
 TARGET = $(TARGETDIR)/libEngine.a
 OBJDIR = ../x64/Debug/x64/Debug/Engine
-DEFINES += -DDEBUG
+DEFINES += -D_DEBUG
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -std=c++17 -fno-exceptions -fno-rtti
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
@@ -55,7 +55,7 @@ else ifeq ($(config),debugeditor_x64)
 TARGETDIR = ../x64/DebugEditor
 TARGET = $(TARGETDIR)/libEngine.a
 OBJDIR = ../x64/DebugEditor
-DEFINES += -DDEBUG -DUSE_WITH_EDITOR
+DEFINES += -D_DEBUG -DUSE_WITH_EDITOR
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -std=c++17 -fno-exceptions -fno-rtti
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64

@@ -12,11 +12,11 @@ workspace "Havana"
     end
 
     filter "configurations:Debug"
-        defines "DEBUG"
+        defines "_DEBUG"
         symbols "On"
     
     filter "configurations:DebugEditor"
-        defines { "DEBUG", "USE_WITH_EDITOR" }
+        defines { "_DEBUG", "USE_WITH_EDITOR" }
         symbols "On"
     
     filter "configurations:Release"
