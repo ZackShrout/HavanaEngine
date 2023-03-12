@@ -37,6 +37,8 @@ namespace havana::platform
 {	
 	using window_handle = Window*;
 
+	void process_input_message();
+
 	struct window_init_info
 	{
 		void*			callback{ nullptr };

@@ -100,6 +100,7 @@ GENERATED += $(OBJDIR)/EngineWin32.o
 GENERATED += $(OBJDIR)/Entity.o
 GENERATED += $(OBJDIR)/GraphicsPlatform.o
 GENERATED += $(OBJDIR)/Input.o
+GENERATED += $(OBJDIR)/InputLinux.o
 GENERATED += $(OBJDIR)/InputWin32.o
 GENERATED += $(OBJDIR)/MainWin32.o
 GENERATED += $(OBJDIR)/PlatformLinux.o
@@ -134,6 +135,7 @@ OBJECTS += $(OBJDIR)/EngineWin32.o
 OBJECTS += $(OBJDIR)/Entity.o
 OBJECTS += $(OBJDIR)/GraphicsPlatform.o
 OBJECTS += $(OBJDIR)/Input.o
+OBJECTS += $(OBJDIR)/InputLinux.o
 OBJECTS += $(OBJDIR)/InputWin32.o
 OBJECTS += $(OBJDIR)/MainWin32.o
 OBJECTS += $(OBJDIR)/PlatformLinux.o
@@ -300,6 +302,9 @@ $(OBJDIR)/VulkanSurface.o: Graphics/Vulkan/VulkanSurface.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Input.o: Input/Input.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/InputLinux.o: Input/InputLinux.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/InputWin32.o: Input/InputWin32.cpp

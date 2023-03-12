@@ -157,7 +157,7 @@ test_shutdown()
 bool
 engine_test::initialize(void *disp)
 {
-	return test_initialize(disp);
+	return test_initialize(disp) ;
 }
 
 void
@@ -274,6 +274,9 @@ engine_test::run(void *disp)
 					}
 				}
 			}
+
+			// TODO: pass junk
+			platform::process_input_message();
 		}
 	}
 }

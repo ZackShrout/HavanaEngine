@@ -2,6 +2,7 @@
 
 #include "Platform.h"
 #include "PlatformTypes.h"
+#include "Input/InputLinux.h"
 
 namespace havana::platform
 {
@@ -198,7 +199,14 @@ namespace havana::platform
 		XDestroyWindow(info.display, info.wnd);
 		windows.remove(id);
 	}
+
+	void
+	process_input_message()
+	{
+		input::process_input_message();
+	}
 }
+
 
 #include "IncludeWindowCpp.h"
 
