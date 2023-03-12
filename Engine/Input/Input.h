@@ -1,6 +1,6 @@
 #pragma once
-//#include "CommonHeaders.h"
 #include "EngineAPI/Input.h"
+#include "CommonHeaders.h"
 
 namespace havana::input
 {

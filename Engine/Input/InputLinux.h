@@ -6,8 +6,7 @@
 
 namespace havana::input
 {
-	// TODO: change this from Win32 to XLib
-    void process_input_message();
+    void process_input_message(XEvent xev, Display* display);
 }
 
-#endif // !_WIN64
+#endif // !__linux__

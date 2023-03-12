@@ -274,10 +274,9 @@ engine_test::run(void *disp)
 					}
 				}
 			}
-
-			// TODO: pass junk
-			platform::process_input_message();
 		}
+
+		platform::process_input_message(xev, display);
 	}
 }
 

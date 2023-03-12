@@ -201,9 +201,9 @@ namespace havana::platform
 	}
 
 	void
-	process_input_message()
+	process_input_message(XEvent xev, Display* display)
 	{
-		input::process_input_message();
+		input::process_input_message(xev, display);
 	}
 }
 

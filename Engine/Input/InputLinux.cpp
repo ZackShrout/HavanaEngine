@@ -1,3 +1,5 @@
+#ifdef __linux__
+
 #include "InputLinux.h"
 #include "Input.h"
 
@@ -5,8 +7,7 @@ namespace havana::input
 {
 	namespace
 	{
-		std::unordered_map<u32, u32>	xk_mapping;
-		bool							mapped{ false };
+		std::unordered_map<u32, u32> xk_mapping;
 		
 		bool fill_keys()
 		{
@@ -117,29 +118,11 @@ namespace havana::input
 			xk_mapping[XK_Num_Lock] = input_code::code::key_numlock;
 			xk_mapping[XK_Scroll_Lock] = input_code::code::key_scrollock;
 
-			return (mapped = true);
+			return true;
 		}
-		
-		
-		
-		
-		
 
-		struct modifier_flags
-		{
-			enum flags : u8
-			{
-				left_shift = 0x10,
-				left_control = 0x20,
-				left_alt = 0x40,
-
-				right_shift = 0x01,
-				right_control = 0x02,
-				right_alt = 0x03,
-			};
-		};
-
-		u8 modifier_keys_state{ 0 };
+		// Initialize xk_mapping key map once when everything else is loading
+		bool keymap_ready{ fill_keys() };
 
 		// void
 		// set_modifier_input(u8 virtual_key, input_code::code code, modifier_flags::flags flags)
@@ -183,10 +166,55 @@ namespace havana::input
 		// }
 	} // anonymous namespace
 
-	void
-	process_input_message()
+	u32
+	get_key(u32 xk_keysym)
 	{
+		assert(keymap_ready);
 
+		if (xk_mapping.find(xk_keysym) == xk_mapping.end())
+			return u32_invalid_id;
+		else
+			return xk_mapping[xk_keysym];
+	}
+
+	void
+	process_input_message(XEvent xev, Display* display)
+	{
+		switch (xev.type)
+		{
+			case KeyPress:
+			{
+				KeySym key_sym = XKeycodeToKeysym(display, xev.xkey.keycode, 0); // TODO: 0 is a placeholder
+				const input_code::code code{ get_key(key_sym) };
+				set(input_source::keyboard, code, {1.f, 0.f, 0.f});
+				// TODO: Modifiers
+			}
+			break;
+			case KeyRelease:
+			{
+
+			}
+			break;
+			case MotionNotify:
+			{
+
+			}
+			break;
+			case ButtonPress:
+			{
+
+			}
+			break;
+			case ButtonRelease:
+			{
+
+			}
+			break;
+			// TODO: check for mouse wheel handling
+		}
+
+
+		
 	}
 	
 	// HRESULT
@@ -255,13 +283,6 @@ namespace havana::input
 
 	// 	return S_OK;
 	// }
-
-	bool
-	keymap_ready()
-	{
-		if (!mapped)
-			return fill_keys();
-		else
-			return true;
-	}
 }
+
+#endif // __linux__
