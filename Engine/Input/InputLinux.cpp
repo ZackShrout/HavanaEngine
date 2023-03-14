@@ -22,15 +22,9 @@ namespace havana::input
 			xk_mapping[XK_BackSpace] = input_code::code::key_backspace;
 			xk_mapping[XK_Tab] = input_code::code::key_tab;
 			xk_mapping[XK_Return] = input_code::code::key_return;
-			//xk_mapping[] = input_code::code::key_shift;
-			xk_mapping[XK_Shift_L] = input_code::code::key_left_shift;
-			xk_mapping[XK_Shift_R] = input_code::code::key_right_shift;
-			//xk_mapping[] = input_code::code::key_control;
-			xk_mapping[XK_Control_L] = input_code::code::key_left_control;
-			xk_mapping[XK_Control_R] = input_code::code::key_right_control;
-			//xk_mapping[] = input_code::code::key_alt;
-			xk_mapping[XK_Alt_L] = input_code::code::key_left_alt;
-			xk_mapping[XK_Alt_R] = input_code::code::key_right_alt;
+			xk_mapping[XK_Shift_L] = xk_mapping[XK_Shift_R] = input_code::code::key_shift;
+			xk_mapping[XK_Control_L] = xk_mapping[XK_Control_R] = input_code::code::key_control;
+			xk_mapping[XK_Alt_L] = xk_mapping[XK_Alt_R] = input_code::code::key_alt;
 			xk_mapping[XK_Pause] = input_code::code::key_pause;
 			xk_mapping[XK_Caps_Lock] = input_code::code::key_capslock;
 			xk_mapping[XK_Escape] = input_code::code::key_escape;
@@ -121,43 +115,58 @@ namespace havana::input
 			return true;
 		}
 
+		struct modifier_flags
+		{
+			enum flags : u8
+			{
+				left_shift = 0x10,
+				left_control = 0x20,
+				left_alt = 0x40,
+
+				right_shift = 0x01,
+				right_control = 0x02,
+				right_alt = 0x03,
+			};
+		};
+
 		// Initialize xk_mapping key map once when everything else is loading
 		bool keymap_ready{ fill_keys() };
+		u8 modifier_keys_state{ 0 };
 
-		// void
-		// set_modifier_input(u8 virtual_key, input_code::code code, modifier_flags::flags flags)
-		// {
-		// 	if (GetKeyState(virtual_key) < 0)
-		// 	{
-		// 		set(input_source::keyboard, code, { 1.f, 0.f, 0.f });
-		// 		modifier_keys_state |= flags;
-		// 	}
-		// 	else if (modifier_keys_state & flags)
-		// 	{
-		// 		set(input_source::keyboard, code, { 0.f, 0.f, 0.f });
-		// 		modifier_keys_state &= ~flags;
-		// 	}
-		// }
+		void
+		set_modifier_input(u32 keypress_type, KeySym key_sym, KeySym check_key, input_code::code code, modifier_flags::flags flags)
+		{
+			if (keypress_type == KeyPress && key_sym == check_key)
+			{
+				set(input_source::keyboard, code, { 1.f, 0.f, 0.f });
+				modifier_keys_state |= flags;
+			}
+			else if (modifier_keys_state & flags)
+			{
+				set(input_source::keyboard, code, { 0.f, 0.f, 0.f });
+				modifier_keys_state &= ~flags;
+			}
+		}
 
-		// void
-		// set_modifier_inputs(input_code::code code)
-		// {
-		// 	if (code == input_code::key_shift)
-		// 	{
-		// 		set_modifier_input(VK_LSHIFT, input_code::key_left_shift, modifier_flags::left_shift);
-		// 		set_modifier_input(VK_RSHIFT, input_code::key_right_shift, modifier_flags::right_shift);
-		// 	}
-		// 	else if (code == input_code::key_control)
-		// 	{
-		// 		set_modifier_input(VK_LCONTROL, input_code::key_left_control, modifier_flags::left_control);
-		// 		set_modifier_input(VK_RCONTROL, input_code::key_right_control, modifier_flags::right_control);
-		// 	}
-		// 	else if (code == input_code::key_alt)
-		// 	{
-		// 		set_modifier_input(VK_LMENU, input_code::key_left_alt, modifier_flags::left_alt);
-		// 		set_modifier_input(VK_RMENU, input_code::key_right_alt, modifier_flags::right_alt);
-		// 	}
-		// }
+		void
+		set_modifier_inputs(input_code::code code, KeySym key_sym, u32 keypress_type)
+		{
+			if (code == input_code::key_shift)
+			{
+				set_modifier_input(keypress_type, key_sym, XK_Shift_L, input_code::key_left_shift, modifier_flags::left_shift);
+				set_modifier_input(keypress_type, key_sym, XK_Shift_R, input_code::key_right_shift, modifier_flags::right_shift);
+			}
+			else if (code == input_code::key_control)
+			{
+				set_modifier_input(keypress_type, key_sym, XK_Control_L, input_code::key_left_control, modifier_flags::left_control);
+				set_modifier_input(keypress_type, key_sym, XK_Control_R, input_code::key_right_control, modifier_flags::right_control);
+			}
+			else if (code == input_code::key_alt)
+			{
+				set_modifier_input(keypress_type, key_sym, XK_Alt_L, input_code::key_left_alt, modifier_flags::left_alt);
+				set_modifier_input(keypress_type, key_sym, XK_Alt_R, input_code::key_right_alt, modifier_flags::right_alt);
+			}
+		}
 
 		// constexpr math::v2
 		// get_mouse_position(LPARAM lparam)
@@ -186,13 +195,23 @@ namespace havana::input
 			{
 				KeySym key_sym = XKeycodeToKeysym(display, xev.xkey.keycode, 0); // TODO: 0 is a placeholder
 				const input_code::code code{ get_key(key_sym) };
-				set(input_source::keyboard, code, {1.f, 0.f, 0.f});
-				// TODO: Modifiers
+				if (code != u32_invalid_id)
+				{
+					set(input_source::keyboard, code, {1.f, 0.f, 0.f});
+					set_modifier_inputs(code, key_sym, KeyPress);
+				}
+				
 			}
 			break;
 			case KeyRelease:
 			{
-
+				KeySym key_sym = XKeycodeToKeysym(display, xev.xkey.keycode, 0); // TODO: 0 is a placeholder
+				const input_code::code code{ get_key(key_sym) };
+				if (code != u32_invalid_id)
+				{
+					set(input_source::keyboard, code, { 0.f, 0.f, 0.f });
+					set_modifier_inputs(code, key_sym, KeyRelease);
+				}
 			}
 			break;
 			case MotionNotify:
