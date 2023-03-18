@@ -148,7 +148,7 @@ namespace havana::input
 			return;
 		}
 
-		utl::vector<input_source>& sources{ input_bindings[binding].sources}; // TODO: Not just input_binding?
+		utl::vector<input_source>& sources{ input_binding.sources};
 		input_value sub_value{};
 		input_value result{};
 
