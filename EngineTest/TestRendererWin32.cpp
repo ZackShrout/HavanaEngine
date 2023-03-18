@@ -10,6 +10,7 @@
 #include "Components/Entity.h"
 #include "Components/Transform.h"
 #include "Components/Script.h"
+#include "Input/Input.h"
 #include "TestRendererWin32.h"
 #include "ShaderCompilation.h"
 
@@ -290,6 +291,36 @@ test_initialize()
 
 	generate_lights();
 
+	input::input_source source{};
+	source.binding = std::hash<std::string>()("move");
+	source.source_type = input::input_source::keyboard;
+	source.code = input::input_code::key_a;
+	source.multiplier = 1.f;
+	source.axis_ = input::axis::x;
+	input::bind(source);
+
+	source.code = input::input_code::key_d;
+	source.multiplier = -1.f;
+	input::bind(source);
+
+	source.code = input::input_code::key_w;
+	source.multiplier = 1.f;
+	source.axis_ = input::axis::z;
+	input::bind(source);
+
+	source.code = input::input_code::key_s;
+	source.multiplier = -1.f;
+	input::bind(source);
+
+	source.code = input::input_code::key_q;
+	source.multiplier = -1.f;
+	source.axis_ = input::axis::y;
+	input::bind(source);
+
+	source.code = input::input_code::key_e;
+	source.multiplier = 1.f;
+	input::bind(source);
+
 	is_restarting = false;
 	return true;
 }
@@ -297,6 +328,7 @@ test_initialize()
 void
 test_shutdown()
 {
+	input::unbind(std::hash<std::string>()("move"));
 	remove_lights();
 	destroy_render_item();
 	joint_test_workers();

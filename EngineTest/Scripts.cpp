@@ -112,21 +112,31 @@ public:
 
 		math::v3 move{};
 		input::input_value value;
-		constexpr input::input_source::type kb{ input::input_source::keyboard };
+		/*constexpr input::input_source::type kb{ input::input_source::keyboard };
 		input::get(kb, input::input_code::key_w, value); move.z += value.current.x;
 		input::get(kb, input::input_code::key_s, value); move.z -= value.current.x;
 		input::get(kb, input::input_code::key_a, value); move.x += value.current.x;
 		input::get(kb, input::input_code::key_d, value); move.x -= value.current.x;
 		input::get(kb, input::input_code::key_q, value); move.y -= value.current.x;
-		input::get(kb, input::input_code::key_e, value); move.y += value.current.x;
+		input::get(kb, input::input_code::key_e, value); move.y += value.current.x;*/
+
+		static u64 binding{ std::hash<std::string>()("move") };
+		input::get(binding, value);
+		move = value.current;
 
 		if (!(math::is_equal(move.x, 0.f) && math::is_equal(move.y, 0.f) && math::is_equal(move.z, 0.f)))
 		{
 			using namespace DirectX;
+			const f32 fps_scale{ dt / 0.016667f };
 			math::v4 rot{ rotation() };
-			XMVECTOR d{ XMVector3Rotate(XMLoadFloat3(&move) * 0.2f, XMLoadFloat4(&rot)) };
-			_desired_position += d;
+			XMVECTOR d{ XMVector3Rotate(XMLoadFloat3(&move) * 0.05f * fps_scale, XMLoadFloat4(&rot)) };
+			if (_position_acceleration < 1.f) _position_acceleration += 0.02f * fps_scale;
+			_desired_position += (d * _position_acceleration);
 			_move_position = true;
+		}
+		else if (_move_position)
+		{
+			_position_acceleration = 0.f;
 		}
 
 		if (_move_position || _move_rotation)
@@ -201,6 +211,7 @@ private:
 	DirectX::XMVECTOR					_position;
 	DirectX::XMVECTOR					_spherical;
 	f32									_dt;
+	f32									_position_acceleration{ 0.f };
 	bool								_move_position{ false };
 	bool								_move_rotation{ false };
 };

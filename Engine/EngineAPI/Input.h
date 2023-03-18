@@ -173,6 +173,7 @@ namespace havana::input
 
 	// Poll for a given input
 	void get(input_source::type type, input_code::code code, input_value& value);
+	void get(u64 binding, input_value& value);
 
 	namespace detail
 	{
@@ -180,6 +181,7 @@ namespace havana::input
 		{
 		public:
 			virtual void on_event(input_source::type, input_code::code, const input_value&) = 0;
+			virtual void on_event(u64 binding, const input_value& value) = 0;
 		protected:
 			input_system_base();
 			~input_system_base();
@@ -191,6 +193,7 @@ namespace havana::input
 	{
 	public:
 		using input_callback_t = void(T::*)(input_source::type, input_code::code, const input_value&);
+		using binding_callback_t = void(T::*)(u64, const input_value&);
 
 		void add_handler(input_source::type type, T* instance, input_callback_t callback)
 		{
@@ -205,12 +208,36 @@ namespace havana::input
 			collection.emplace_back(input_callback{ instance, callback });
 		}
 
+		void add_handler(u64 binding, T* instance, binding_callback_t callback)
+		{
+			assert(instance && callback);
+
+			for (const auto& func : _binding_callbacks)
+			{
+				// If handler was already added then don't add it again
+				if (func.binding == binding && func.instance == instance && func.callback == callback) return;
+			}
+
+			_binding_callbacks.emplace_back(binding_callback{ binding, instance, callback });
+		}
+
 		void on_event(input_source::type type, input_code::code code, const input_value& value) override
 		{
 			assert(type < input_source::count);
 			for (const auto& item : _input_callbacks[type])
 			{
 				(item.instance->*item.callback)(type, code, value);
+			}
+		}
+
+		void on_event(u64 binding, const input_value& value) override
+		{
+			for (const auto& item : _binding_callbacks)
+			{
+				if (item.binding == binding)
+				{
+					(item.instance->*item.callback)(binding, value);
+				}
 			}
 		}
 
@@ -221,6 +248,14 @@ namespace havana::input
 			input_callback_t	callback;
 		};
 
+		struct binding_callback
+		{
+			u64					binding;
+			T*					instance;
+			binding_callback_t	callback;
+		};
+
 		utl::vector<input_callback>		_input_callbacks[input_source::count];
+		utl::vector<binding_callback>	_binding_callbacks;
 	};
 }
