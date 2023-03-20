@@ -11,14 +11,6 @@ namespace havana::input
 		
 		bool fill_keys()
 		{
-			// input_code::code::mouse_position;
-			// input_code::code::mouse_position_x;
-			// input_code::code::mouse_position_y;
-			// input_code::code::mouse_left;
-			// input_code::code::mouse_right;
-			// input_code::code::mouse_middle;
-			// input_code::code::mouse_wheel;
-
 			xk_mapping[XK_BackSpace] = input_code::code::key_backspace;
 			xk_mapping[XK_Tab] = input_code::code::key_tab;
 			xk_mapping[XK_Return] = input_code::code::key_return;
@@ -167,12 +159,6 @@ namespace havana::input
 				set_modifier_input(keypress_type, key_sym, XK_Alt_R, input_code::key_right_alt, modifier_flags::right_alt);
 			}
 		}
-
-		// constexpr math::v2
-		// get_mouse_position(LPARAM lparam)
-		// {
-		// 	return { (f32)((s16)(lparam & 0x0000ffff)), (f32)((s16)(lparam >> 16)) };
-		// }
 	} // anonymous namespace
 
 	u32
@@ -191,117 +177,53 @@ namespace havana::input
 	{
 		switch (xev.type)
 		{
+			// KeyPress and KeyRelease are the same event.
 			case KeyPress:
+			case KeyRelease:
 			{
-				KeySym key_sym = XKeycodeToKeysym(display, xev.xkey.keycode, 0); // TODO: 0 is a placeholder
+				KeySym key_sym = XKeycodeToKeysym(display, xev.xkey.keycode, 0);
 				const input_code::code code{ get_key(key_sym) };
 				if (code != u32_invalid_id)
 				{
 					set(input_source::keyboard, code, {1.f, 0.f, 0.f});
-					set_modifier_inputs(code, key_sym, KeyPress);
+					set_modifier_inputs(code, key_sym, xev.xkey.type == KeyPress ? KeyPress : KeyRelease);
 				}
 				
 			}
 			break;
-			case KeyRelease:
+			case MotionNotify:
 			{
-				KeySym key_sym = XKeycodeToKeysym(display, xev.xkey.keycode, 0); // TODO: 0 is a placeholder
-				const input_code::code code{ get_key(key_sym) };
-				if (code != u32_invalid_id)
+				set(input_source::mouse, input_code::mouse_position_x, { xev.xmotion.x, 0.f, 0.f });
+				set(input_source::mouse, input_code::mouse_position_y, { xev.xmotion.y, 0.f, 0.f });
+				set(input_source::mouse, input_code::mouse_position, { xev.xmotion.x, xev.xmotion.y, 0.f });
+			}
+			break;
+			// ButtonPress and ButtonRelease are the same event. Scroll wheel is also a button press event.
+			case ButtonPress:
+			case ButtonRelease:
+			{
+				bool is_press { xev.xbutton.type == ButtonPress };
+				const input_code::code code{ xev.xbutton.button == Button1 ? input_code::mouse_left : xev.xbutton.button == Button2 ? input_code::mouse_middle : 
+											 xev.xbutton.button == Button3 ? input_code::mouse_right : input_code::mouse_wheel };
+				
+				if (code != input_code::mouse_wheel)
 				{
-					set(input_source::keyboard, code, { 0.f, 0.f, 0.f });
-					set_modifier_inputs(code, key_sym, KeyRelease);
+					set(input_source::mouse, code, { xev.xbutton.x, xev.xbutton.y, is_press ? 1.f : 0.f });
+				}
+				else
+				{
+					// NOTE: Button4 is scroll wheel up, Button5 is scroll wheel down. There can be Button6 and Button7 which are scroll wheel push left and right,
+					//		 respectively, so to insulate aginst any extended buttons here, we will record a delta of 0. X11 doesn't have a GET_WHEEL_DELTA function
+					//		 like Win32, so it lacks the ability to handle precision wheel scrolling. A wheel delta of 120.f was chosen to indicate one click scroll up,
+					//		 and a delta of -120.f was chosen to indicate one click scroll down, because WHEEL_DELTA in Win32 are multiples of 120 for up, and -120 for down.
+					//		 This allows the engine to treat the wheel delta in the same fashion between OSes.
+					f32 wheel_delta = xev.xbutton.button == Button4 ? 120.f : xev.xbutton.button == Button5 ? -120.f : 0.f;
+					set(input_source::mouse, input_code::mouse_wheel, { wheel_delta, 0.f, 0.f });
 				}
 			}
 			break;
-			case MotionNotify:
-			{
-
-			}
-			break;
-			case ButtonPress:
-			{
-
-			}
-			break;
-			case ButtonRelease:
-			{
-
-			}
-			break;
-			// TODO: check for mouse wheel handling
 		}
-
-
-		
 	}
-	
-	// HRESULT
-	// process_input_message(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-	// {
-	// 	switch (msg)
-	// 	{
-	// 	case WM_KEYDOWN:
-	// 	case WM_SYSKEYDOWN:
-	// 	{
-	// 		assert(wparam <= 0xff);
-	// 		const input_code::code code{ vk_mapping[wparam & 0xff] };
-	// 		if (code != u32_invalid_id)
-	// 		{
-	// 			set(input_source::keyboard, code, { 1.f, 0.f, 0.f });
-	// 			set_modifier_inputs(code);
-	// 		}
-	// 	}
-	// 	break;
-	// 	case WM_KEYUP:
-	// 	case WM_SYSKEYUP:
-	// 	{
-	// 		assert(wparam <= 0xff);
-	// 		const input_code::code code{ vk_mapping[wparam & 0xff] };
-	// 		if (code != u32_invalid_id)
-	// 		{
-	// 			set(input_source::keyboard, code, { 0.f, 0.f, 0.f });
-	// 			set_modifier_inputs(code);
-	// 		}
-	// 	}
-	// 	break;
-	// 	case WM_MOUSEMOVE:
-	// 	{
-	// 		const math::v2 pos{ get_mouse_position(lparam) };
-	// 		set(input_source::mouse, input_code::mouse_position_x, { pos.x, 0.f, 0.f });
-	// 		set(input_source::mouse, input_code::mouse_position_y, { pos.y, 0.f, 0.f });
-	// 		set(input_source::mouse, input_code::mouse_position, { pos.x, pos.y, 0.f });
-	// 	}
-	// 	break;
-	// 	case WM_LBUTTONDOWN:
-	// 	case WM_RBUTTONDOWN:
-	// 	case WM_MBUTTONDOWN:
-	// 	{
-	// 		SetCapture(hwnd);
-	// 		const input_code::code code{ msg == WM_LBUTTONDOWN ? input_code::mouse_left : msg == WM_RBUTTONDOWN ? input_code::mouse_right : input_code::mouse_middle };
-	// 		const math::v2 pos{ get_mouse_position(lparam) };
-	// 		set(input_source::mouse, code, { pos.x, pos.y, 1.f });
-	// 	}
-	// 	break;
-	// 	case WM_LBUTTONUP:
-	// 	case WM_RBUTTONUP:
-	// 	case WM_MBUTTONUP:
-	// 	{
-	// 		ReleaseCapture();
-	// 		const input_code::code code{ msg == WM_LBUTTONUP ? input_code::mouse_left : msg == WM_RBUTTONUP ? input_code::mouse_right : input_code::mouse_middle };
-	// 		const math::v2 pos{ get_mouse_position(lparam) };
-	// 		set(input_source::mouse, code, { pos.x, pos.y, 0.f });
-	// 	}
-	// 	break;
-	// 	case WM_MOUSEHWHEEL:
-	// 	{
-	// 		set(input_source::mouse, input_code::mouse_wheel, { (f32)(GET_WHEEL_DELTA_WPARAM(wparam)), 0.f, 0.f });
-	// 	}
-	// 	break;
-	// 	}
-
-	// 	return S_OK;
-	// }
 }
 
 #endif // __linux__
