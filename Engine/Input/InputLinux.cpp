@@ -181,12 +181,13 @@ namespace havana::input
 			case KeyPress:
 			case KeyRelease:
 			{
-				KeySym key_sym = XKeycodeToKeysym(display, xev.xkey.keycode, 0);
+				const bool is_press { xev.xkey.type == KeyPress };
+				const KeySym key_sym = XKeycodeToKeysym(display, xev.xkey.keycode, 0);
 				const input_code::code code{ get_key(key_sym) };
 				if (code != u32_invalid_id)
 				{
-					set(input_source::keyboard, code, {1.f, 0.f, 0.f});
-					set_modifier_inputs(code, key_sym, xev.xkey.type == KeyPress ? KeyPress : KeyRelease);
+					set(input_source::keyboard, code, { is_press ? 1.f : 0.f, 0.f, 0.f });
+					set_modifier_inputs(code, key_sym, is_press ? KeyPress : KeyRelease);
 				}
 				
 			}
@@ -202,7 +203,7 @@ namespace havana::input
 			case ButtonPress:
 			case ButtonRelease:
 			{
-				bool is_press { xev.xbutton.type == ButtonPress };
+				const bool is_press { xev.xbutton.type == ButtonPress };
 				const input_code::code code{ xev.xbutton.button == Button1 ? input_code::mouse_left : xev.xbutton.button == Button2 ? input_code::mouse_middle : 
 											 xev.xbutton.button == Button3 ? input_code::mouse_right : input_code::mouse_wheel };
 				
@@ -210,14 +211,14 @@ namespace havana::input
 				{
 					set(input_source::mouse, code, { xev.xbutton.x, xev.xbutton.y, is_press ? 1.f : 0.f });
 				}
-				else
+				else if (is_press) // Mouse wheel will generate a ButtonPress followed by an immediate ButtonRelease event. We can safely ignore ButtonRelease
 				{
 					// NOTE: Button4 is scroll wheel up, Button5 is scroll wheel down. There can be Button6 and Button7 which are scroll wheel push left and right,
 					//		 respectively, so to insulate aginst any extended buttons here, we will record a delta of 0. X11 doesn't have a GET_WHEEL_DELTA function
 					//		 like Win32, so it lacks the ability to handle precision wheel scrolling. A wheel delta of 120.f was chosen to indicate one click scroll up,
 					//		 and a delta of -120.f was chosen to indicate one click scroll down, because WHEEL_DELTA in Win32 are multiples of 120 for up, and -120 for down.
 					//		 This allows the engine to treat the wheel delta in the same fashion between OSes.
-					f32 wheel_delta = xev.xbutton.button == Button4 ? 120.f : xev.xbutton.button == Button5 ? -120.f : 0.f;
+					const f32 wheel_delta = xev.xbutton.button == Button4 ? 120.f : xev.xbutton.button == Button5 ? -120.f : 0.f;
 					set(input_source::mouse, input_code::mouse_wheel, { wheel_delta, 0.f, 0.f });
 				}
 			}
