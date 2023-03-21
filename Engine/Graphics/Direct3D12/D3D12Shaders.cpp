@@ -1,5 +1,3 @@
-#if defined(_WIN64)
-
 #include "D3D12Shaders.h"
 #include "Content/ContentLoader.h"
 #include "Content/ContentToEngine.h"
@@ -71,5 +69,3 @@ namespace havana::graphics::d3d12::shaders
 		return { shader->byte_code(), shader->byte_code_size() };
 	}
 }
-
-#endif // _WIN64

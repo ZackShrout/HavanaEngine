@@ -84,18 +84,6 @@ OBJECTS :=
 GENERATED += $(OBJDIR)/ContentLoaderLinux.o
 GENERATED += $(OBJDIR)/ContentLoaderWin32.o
 GENERATED += $(OBJDIR)/ContentToEngine.o
-GENERATED += $(OBJDIR)/D3D12Camera.o
-GENERATED += $(OBJDIR)/D3D12Content.o
-GENERATED += $(OBJDIR)/D3D12Core.o
-GENERATED += $(OBJDIR)/D3D12GPass.o
-GENERATED += $(OBJDIR)/D3D12Helpers.o
-GENERATED += $(OBJDIR)/D3D12Interface.o
-GENERATED += $(OBJDIR)/D3D12Light.o
-GENERATED += $(OBJDIR)/D3D12PostProcess.o
-GENERATED += $(OBJDIR)/D3D12Resources.o
-GENERATED += $(OBJDIR)/D3D12Shaders.o
-GENERATED += $(OBJDIR)/D3D12Surface.o
-GENERATED += $(OBJDIR)/D3D12Upload.o
 GENERATED += $(OBJDIR)/EngineWin32.o
 GENERATED += $(OBJDIR)/Entity.o
 GENERATED += $(OBJDIR)/GraphicsPlatform.o
@@ -119,18 +107,6 @@ GENERATED += $(OBJDIR)/Window.o
 OBJECTS += $(OBJDIR)/ContentLoaderLinux.o
 OBJECTS += $(OBJDIR)/ContentLoaderWin32.o
 OBJECTS += $(OBJDIR)/ContentToEngine.o
-OBJECTS += $(OBJDIR)/D3D12Camera.o
-OBJECTS += $(OBJDIR)/D3D12Content.o
-OBJECTS += $(OBJDIR)/D3D12Core.o
-OBJECTS += $(OBJDIR)/D3D12GPass.o
-OBJECTS += $(OBJDIR)/D3D12Helpers.o
-OBJECTS += $(OBJDIR)/D3D12Interface.o
-OBJECTS += $(OBJDIR)/D3D12Light.o
-OBJECTS += $(OBJDIR)/D3D12PostProcess.o
-OBJECTS += $(OBJDIR)/D3D12Resources.o
-OBJECTS += $(OBJDIR)/D3D12Shaders.o
-OBJECTS += $(OBJDIR)/D3D12Surface.o
-OBJECTS += $(OBJDIR)/D3D12Upload.o
 OBJECTS += $(OBJDIR)/EngineWin32.o
 OBJECTS += $(OBJDIR)/Entity.o
 OBJECTS += $(OBJDIR)/GraphicsPlatform.o
@@ -236,42 +212,6 @@ $(OBJDIR)/EngineWin32.o: Core/EngineWin32.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/MainWin32.o: Core/MainWin32.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12Camera.o: Graphics/Direct3D12/D3D12Camera.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12Content.o: Graphics/Direct3D12/D3D12Content.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12Core.o: Graphics/Direct3D12/D3D12Core.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12GPass.o: Graphics/Direct3D12/D3D12GPass.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12Helpers.o: Graphics/Direct3D12/D3D12Helpers.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12Interface.o: Graphics/Direct3D12/D3D12Interface.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12Light.o: Graphics/Direct3D12/D3D12Light.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12PostProcess.o: Graphics/Direct3D12/D3D12PostProcess.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12Resources.o: Graphics/Direct3D12/D3D12Resources.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12Shaders.o: Graphics/Direct3D12/D3D12Shaders.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12Surface.o: Graphics/Direct3D12/D3D12Surface.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/D3D12Upload.o: Graphics/Direct3D12/D3D12Upload.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/GraphicsPlatform.o: Graphics/GraphicsPlatform.cpp

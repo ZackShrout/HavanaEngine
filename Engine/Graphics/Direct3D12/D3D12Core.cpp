@@ -1,5 +1,3 @@
-#if defined(_WIN64)
-
 #include "D3D12Core.h"
 #include "D3D12Surface.h"
 #include "D3D12Shaders.h"
@@ -626,5 +624,3 @@ namespace havana::graphics::d3d12::core
 		gfx_command.end_frame(surface);
 	}
 }
-
-#endif // _WIN64

@@ -1,5 +1,3 @@
-#if defined(_WIN64)
-
 #include "D3D12GPass.h"
 #include "D3D12Core.h"
 #include "D3D12Shaders.h"
@@ -429,5 +427,3 @@ namespace havana::graphics::d3d12::gpass
 		cmd_list->OMSetRenderTargets(1, &rtv, 0, &dsv);
 	}
 }
-
-#endif // _WIN64

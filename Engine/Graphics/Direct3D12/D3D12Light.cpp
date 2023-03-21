@@ -1,5 +1,3 @@
-#if defined(_WIN64)
-
 #include "D3D12Light.h"
 #include "D3D12Core.h"
 #include "Shaders/SharedTypes.h"
@@ -485,5 +483,3 @@ namespace havana::graphics::d3d12::light
 		return light_sets[light_set_key].non_cullable_light_count();
 	}
 }
-
-#endif // _WIN64
