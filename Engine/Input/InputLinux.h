@@ -1,12 +1,11 @@
 #pragma once
 #ifdef __linux__
 
-#include <X11/Xlib.h>
-#include <X11/keysym.h>
+#include "../Platforms/LinuxWindowManager.h"
 
 namespace havana::input
 {
-    void process_input_message(XEvent xev, Display* display);
+    void process_input_message(const platform::event* const ev, Display* display);
 }
 
 #endif // !__linux__

@@ -312,7 +312,7 @@ namespace havana::graphics::vulkan::core
             u32 presentation_family{ u32_invalid_id };		// Location of Presentation Queue Family
 
             // Check if queue families are valid
-            bool is_valid() { return graphics_family >= 0 && presentation_family >= 0; }
+            bool is_valid() { return graphics_family != u32_invalid_id && presentation_family != u32_invalid_id; }
         } queue_family_indices;
 
         struct device_group

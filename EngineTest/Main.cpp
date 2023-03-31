@@ -63,57 +63,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 }
 
 #elif __linux__
-#include <X11/Xlib.h>
+#include "Platforms/LinuxWindowManager.h"
 
 int main(int argc, char* argv[])
-{
-	XInitThreads();
-    
+{   
+    using namespace havana;
     engine_test test{};
-
-    // Open an X server connection
-    Display* display { XOpenDisplay(nullptr) };
-    if (display == nullptr) return 1;
     
-    // Set up custom client messages
-    Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
-    Atom quit_msg = XInternAtom(display, "QUIT_MSG", false);
+    if (!platform::display()) return 1;
 
-	if (test.initialize(display))
+	if (test.initialize())
 	{
-        XEvent xev;
+        platform::event ev;
         bool is_running{ true };
+        
         while (is_running)
         {
-            // NOTE: we use an if statement here because we are not handling all events in this translation
-            //       unit, so XPending(display) will often not ever be 0, and therefore this can create
-            //       an infinite loop... but this protects XNextEvent from blocking if there are no events.
-            if (XPending(display) > 0)
+            while(platform::pending_events())
             {
-                XNextEvent(display, &xev);
-
-                switch (xev.type)
-                {
-                    case KeyPress:
-                        
-                        break;
-                    case ClientMessage:
-                        if ((Atom)xev.xclient.data.l[0] == wm_delete_window)
-                        {
-                            // Dont handle this here
-                            XPutBackEvent(display, &xev);
-                        }
-                        if ((Atom)xev.xclient.data.l[0] == quit_msg)
-                        {
-                            is_running = false;
-                        }
-                        break;
-                }
+                platform::next_event(&ev);
+                platform::dispatch_event(&ev);
+                is_running = !platform::quit_msg_received(&ev);
             }
-            test.run(display);
+            test.run();
         }
+
         test.shutdown();
-        XCloseDisplay(display);
+        platform::close_display();
         return 0;
 	}
 }

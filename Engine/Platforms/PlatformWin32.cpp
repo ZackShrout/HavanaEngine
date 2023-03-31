@@ -36,12 +36,6 @@ namespace havana::platform
 			return get_from_id(id);
 		}
 
-		HINSTANCE
-		get_display(window_id id)
-		{
-			return get_from_id(id).hinstance;
-		}
-
 		bool resized{ false };
 
 		// Callback method for message handling
@@ -198,7 +192,7 @@ namespace havana::platform
 	/// <param name="initInfo"> - Initialization information for the new window.</param>
 	/// <returns>A havana::Platform::Window object.</returns>
 	window
-	create_window(const window_init_info* init_info /*= nullptr*/, [[maybe_unused]] void* disp /*= nullptr*/)
+	create_window(const window_init_info* init_info /*= nullptr*/)
 	{
 		window_proc callback{init_info ? init_info->callback : nullptr};
 		window_handle parent{init_info ? init_info->parent : nullptr};

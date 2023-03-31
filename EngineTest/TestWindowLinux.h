@@ -23,7 +23,7 @@ enum State
 class engine_test : public test
 {
 public:
-	bool initialize(void* disp) override
+	bool initialize() override
 	{
 		platform::window_init_info info[]
 		{
@@ -37,31 +37,29 @@ public:
 
 		for (u32 i{ 0 }; i < _countof(windows); i++)
 		{
-			windows[i] = platform::create_window(&info[i], disp);
+			windows[i] = platform::create_window(&info[i], platform::get_display());
 		}
 
 		return true;
 	}
 
-	void run(void* disp) override
+	void run() override
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-		// Cache a casted pointer of the display to save on casting later
-		Display* display{ (Display*)disp };
 		// Open dummy window to send close msg with
-		Window window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, 100, 100, 0, 0, 0);
+		Window window = XCreateSimpleWindow(platform::get_display(), DefaultRootWindow(platform::get_display()), 0, 0, 100, 100, 0, 0, 0);
 		// Set up custom client messages
-		Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
-		Atom quit_msg = XInternAtom(display, "QUIT_MSG", false);
+		Atom wm_delete_window = XInternAtom(platform::get_display(), "WM_DELETE_WINDOW", false);
+		Atom quit_msg = XInternAtom(platform::get_display(), "QUIT_MSG", false);
 
 		XEvent xev;
 		// NOTE: we use an if statement here because we are not handling all events in this translation
 		//       unit, so XPending(display) will often not ever be 0, and therefore this can create
 		//       an infinite loop... but this protects XNextEvent from blocking if there are no events.
-		if (XPending(display) > 0)
+		if (XPending(platform::get_display()) > 0)
 		{
-			XNextEvent(display, &xev);
+			XNextEvent(platform::get_display(), &xev);
 			switch (xev.type)
 			{
 			case ConfigureNotify:
@@ -111,17 +109,17 @@ public:
 						close.xclient.type = ClientMessage;
 						close.xclient.serial = window;
 						close.xclient.send_event = true;
-						close.xclient.message_type = XInternAtom(display, "QUIT_MSG", false);
+						close.xclient.message_type = XInternAtom(platform::get_display(), "QUIT_MSG", false);
 						close.xclient.format = 32;
 						close.xclient.window = 0;
-						close.xclient.data.l[0] = XInternAtom(display, "QUIT_MSG", false);
-						XSendEvent(display, window, false, NoEventMask, &close);
+						close.xclient.data.l[0] = XInternAtom(platform::get_display(), "QUIT_MSG", false);
+						XSendEvent(platform::get_display(), window, false, NoEventMask, &close);
 					}
 				}
 				else
 				{
 					// Dont handle this here
-					XPutBackEvent(display, &xev);
+					XPutBackEvent(platform::get_display(), &xev);
 				}
 				break;
 			case KeyPress:

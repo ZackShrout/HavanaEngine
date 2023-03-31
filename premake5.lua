@@ -77,6 +77,7 @@ project "Engine"
     language "C++"
     cppdialect "C++17"
     staticruntime "Off"
+    files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
     if _TARGET_OS == "windows" then
         targetname "$(ProjectName)"
         includedirs { "$(SolutionDir)Engine", "$(SolutionDir)Engine/Common", "$(VULKAN_SDK)/Include" }
@@ -85,16 +86,15 @@ project "Engine"
     else
         targetname "%{prj.name}"
         includedirs { "%{wks.location}/Engine", "%{wks.location}/Engine/Common" }
+        removefiles { "%{prj.name}/Graphics/Direct3D12/**.cpp" }
+        buildoptions { "-Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder" }
         links { "X11" }
+        if _ARGS[1] == "wayland" then
+            defines "PLATFORM_WAYLAND"
+        end
     end
     targetdir (outputdir)
     objdir (intermediatesdir)
-    files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
-    if _TARGET_OS == "windows" then
-        -- leave as is
-    else
-        removefiles { "%{prj.name}/Graphics/Direct3D12/**.cpp" }
-    end
     rtti "Off"
     floatingpoint "Fast"
     conformancemode "On"
@@ -153,6 +153,7 @@ project "EngineTest"
     else
         targetname "%{prj.name}"
         includedirs { "%{wks.location}/Engine", "%{wks.location}/Engine/Common" }
+        buildoptions { "-Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder" }
         libdirs (outputdir)
         links { "X11", "Engine" }
     end

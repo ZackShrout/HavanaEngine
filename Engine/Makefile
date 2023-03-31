@@ -38,8 +38,8 @@ TARGETDIR = ../x64/Debug
 TARGET = $(TARGETDIR)/libEngine.a
 OBJDIR = ../x64/Debug/x64/Debug/Engine
 DEFINES += -D_DEBUG
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -std=c++17 -fno-exceptions -fno-rtti
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -std=c++17 -fno-exceptions -fno-rtti -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
 
 else ifeq ($(config),release_x64)
@@ -47,8 +47,8 @@ TARGETDIR = ../x64/Release
 TARGET = $(TARGETDIR)/libEngine.a
 OBJDIR = ../x64/Release/x64/Release/Engine
 DEFINES += -DNDEBUG
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra -std=c++17 -fno-exceptions -fno-stack-protector -fno-rtti
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra -std=c++17 -fno-exceptions -fno-stack-protector -fno-rtti -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s
 
 else ifeq ($(config),debugeditor_x64)
@@ -56,8 +56,8 @@ TARGETDIR = ../x64/DebugEditor
 TARGET = $(TARGETDIR)/libEngine.a
 OBJDIR = ../x64/DebugEditor
 DEFINES += -D_DEBUG -DUSE_WITH_EDITOR
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -std=c++17 -fno-exceptions -fno-rtti
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -std=c++17 -fno-exceptions -fno-rtti -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
 
 else ifeq ($(config),releaseeditor_x64)
@@ -65,8 +65,8 @@ TARGETDIR = ../x64/ReleaseEditor
 TARGET = $(TARGETDIR)/libEngine.a
 OBJDIR = ../x64/ReleaseEditor
 DEFINES += -DNDEBUG -DUSE_WITH_EDITOR
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra -std=c++17 -fno-exceptions -fno-stack-protector -fno-rtti
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra -std=c++17 -fno-exceptions -fno-stack-protector -fno-rtti -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s
 
 endif
@@ -104,6 +104,7 @@ GENERATED += $(OBJDIR)/VulkanRenderPass.o
 GENERATED += $(OBJDIR)/VulkanResources.o
 GENERATED += $(OBJDIR)/VulkanSurface.o
 GENERATED += $(OBJDIR)/Window.o
+GENERATED += $(OBJDIR)/X11Manager.o
 OBJECTS += $(OBJDIR)/ContentLoaderLinux.o
 OBJECTS += $(OBJDIR)/ContentLoaderWin32.o
 OBJECTS += $(OBJDIR)/ContentToEngine.o
@@ -127,6 +128,7 @@ OBJECTS += $(OBJDIR)/VulkanRenderPass.o
 OBJECTS += $(OBJDIR)/VulkanResources.o
 OBJECTS += $(OBJDIR)/VulkanSurface.o
 OBJECTS += $(OBJDIR)/Window.o
+OBJECTS += $(OBJDIR)/X11Manager.o
 
 # Rules
 # #############################################
@@ -257,6 +259,9 @@ $(OBJDIR)/PlatformWin32.o: Platforms/PlatformWin32.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Window.o: Platforms/Window.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/X11Manager.o: Platforms/X11Manager.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

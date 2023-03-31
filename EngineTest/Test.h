@@ -11,13 +11,8 @@
 class test
 {
 public:
-#ifdef _WIN64
 	virtual bool initialize() = 0;
 	virtual void run() = 0;
-#elif __linux__
-	virtual bool initialize(void* disp) = 0;
-	virtual void run(void* disp) = 0;
-#endif
 	virtual void shutdown() = 0;
 };
 

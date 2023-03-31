@@ -232,9 +232,9 @@ activate_console()
 }
 
 void
-create_camera_surface(camera_surface &surface, platform::window_init_info info, void* disp)
+create_camera_surface(camera_surface &surface, platform::window_init_info info)
 {
-	surface.surface.window = platform::create_window(&info, disp);
+	surface.surface.window = platform::create_window(&info);
 	surface.surface.surface = graphics::create_surface(surface.surface.window);
 	surface.entity = create_one_game_entity({ 13.76f, 3.f, -1.1f }, { -0.117f, -2.1f, 0.f }, "camera_script");
 	surface.camera = graphics::create_camera(graphics::perspective_camera_init_info{ surface.entity.get_id() });
@@ -275,7 +275,7 @@ test_initialize()
 	static_assert(_countof(info) == _countof(_surfaces));
 
 	for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
-		create_camera_surface(_surfaces[i], info[i], nullptr);
+		create_camera_surface(_surfaces[i], info[i]);
 
 	// Load test model
 	std::unique_ptr<u8[]> model;

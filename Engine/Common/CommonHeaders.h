@@ -14,13 +14,16 @@
 #include <mutex>
 #include <cstring>
 
-// TODO: check Linux implementation now that it has DirectXMath, not GLM
 #if defined (_WIN64)
 	#include <DirectXMath.h>
 #endif
 
 #if defined (__linux__)
+	// In gcc, DirectXMath.h throws -Wunused-but-set-variable warnings, which we will disregard
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 	#include "../../DirectXMath/Inc/DirectXMath.h"
+	#pragma GCC diagnostic pop
 #endif
 
 #ifndef DISABLE_COPY

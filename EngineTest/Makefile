@@ -36,8 +36,8 @@ TARGETDIR = ../x64/Debug
 TARGET = $(TARGETDIR)/EngineTest
 OBJDIR = ../x64/Debug/x64/Debug/EngineTest
 DEFINES += -D_DEBUG
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -std=c++17 -fno-exceptions -fno-rtti
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -ffast-math -g -Wall -Wextra -std=c++17 -fno-exceptions -fno-rtti -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
 LIBS += ../x64/Debug/libEngine.a -lX11
 LDDEPS += ../x64/Debug/libEngine.a
 ALL_LDFLAGS += $(LDFLAGS) -L../x64/Debug -L/usr/lib64 -m64
@@ -47,8 +47,8 @@ TARGETDIR = ../x64/Release
 TARGET = $(TARGETDIR)/EngineTest
 OBJDIR = ../x64/Release/x64/Release/EngineTest
 DEFINES += -DNDEBUG
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra -std=c++17 -fno-exceptions -fno-stack-protector -fno-rtti
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -ffast-math -fomit-frame-pointer -O2 -Wall -Wextra -std=c++17 -fno-exceptions -fno-stack-protector -fno-rtti -Wno-switch -Wno-missing-field-initializers -Wno-unused-parameter -Wno-ignored-qualifiers -Wno-unknown-pragmas -Wno-class-memaccess -Wno-reorder
 LIBS += ../x64/Release/libEngine.a -lX11
 LDDEPS += ../x64/Release/libEngine.a
 ALL_LDFLAGS += $(LDFLAGS) -L../x64/Release -L/usr/lib64 -m64 -flto -s

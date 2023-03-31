@@ -62,6 +62,79 @@ void destroy_render_surface(graphics::render_surface &surface);
 bool test_initialize();
 void test_shutdown();
 
+void
+win_proc(const platform::event* const ev)
+{
+	switch (ev->event_type)
+	{
+		case platform::event::configure_notify:
+		{
+			// Check if any of the windows resized
+			for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
+			{
+				if (!_surfaces[i].window.is_valid()) continue;
+				if (*((platform::window_handle)_surfaces[i].window.handle()) == ev->window)
+				{
+					if (ev->width != _surfaces[i].window.width() || ev->height != _surfaces[i].window.height())
+					{
+						_surfaces[i].window.resize(ev->width, ev->height);
+					}
+				}
+			}
+		}
+		break;
+		case platform::event::client_message:
+		{
+			if (platform::window_close_received(ev))
+			{
+				// Find which window was sent the close event, and call function
+				for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
+				{
+					if (!_surfaces[i].window.is_valid()) continue;
+					if (*((platform::window_handle)_surfaces[i].window.handle()) == ev->window)
+					{
+						destroy_render_surface(_surfaces[i]);
+						break;
+					}
+				}
+	
+				// Check if all windows are closed, and exit application if so
+				bool all_closed{ true };
+				for (u32 i{ 0 }; i < _countof(_surfaces); i++)
+				{
+					if (!_surfaces[i].window.is_valid()) continue;
+					if (!_surfaces[i].window.is_closed())
+					{
+						all_closed = false;
+					}
+				}
+				if (all_closed)
+				{
+					platform::send_quit_event();
+				}
+			}
+		}
+		break;
+		case platform::event::key_press:
+		{
+			// NOTE: This represents "alt + enter"
+			if (ev->mod_key == 0x18 && ev->keycode == 36)
+			{
+				for (u32 i{ 0 }; i < _countof(_surfaces); i++)
+				{
+					if (!_surfaces[i].window.is_valid()) continue;
+					if (*((platform::window_handle)_surfaces[i].window.handle()) == ev->window)
+					{
+						_surfaces[i].window.set_fullscreen(!_surfaces[i].window.is_fullscreen());
+					}
+				}
+			}
+		}
+	}
+	
+	platform::process_input_message(ev, platform::get_display());
+}
+
 bool
 read_file(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
 {
@@ -84,9 +157,9 @@ read_file(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
 }
 
 void
-create_render_surface(graphics::render_surface &surface, platform::window_init_info info, void* disp)
+create_render_surface(graphics::render_surface &surface, platform::window_init_info info)
 {
-	surface.window = platform::create_window(&info, disp);
+	surface.window = platform::create_window(&info);
 	surface.surface = graphics::create_surface(surface.window);
 }
 
@@ -102,7 +175,7 @@ destroy_render_surface(graphics::render_surface &surface)
 }
 
 bool
-test_initialize(void *disp)
+test_initialize()
 {
 	// if (!CompileShaders())
 	// {
@@ -113,20 +186,20 @@ test_initialize(void *disp)
 	if (!graphics::initialize(graphics::graphics_platform::vulkan_1)) return false;
 
 	platform::window_init_info info[]{
-		{nullptr, nullptr, L"Render Window 1", 100, 100, 400, 800},
-		{nullptr, nullptr, L"Render Window 2", 150, 150, 800, 400},
-		{nullptr, nullptr, L"Render Window 3", 200, 200, 400, 400},
-		{nullptr, nullptr, L"Render Window 4", 250, 250, 800, 600},
+		{win_proc, nullptr, L"Render Window 1", 100, 100, 400, 800},
+		{win_proc, nullptr, L"Render Window 2", 150, 150, 800, 400},
+		{win_proc, nullptr, L"Render Window 3", 200, 200, 400, 400},
+		{win_proc, nullptr, L"Render Window 4", 250, 250, 800, 600},
 	};
 
 	static_assert(_countof(info) == _countof(_surfaces));
 
 	for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
-		create_render_surface(_surfaces[i], info[i], disp);
+		create_render_surface(_surfaces[i], info[i]);
 
 	// Load test model
 	std::unique_ptr<u8[]> model;
-	u64 size{ 0 };
+	//u64 size{ 0 };
 	//if (!read_file("..\\..\\enginetest\\model.model", model, size)) return false;
 
 	//model_id = content::create_resource(model.get(), content::asset_type::mesh);
@@ -155,13 +228,13 @@ test_shutdown()
 }
 
 bool
-engine_test::initialize(void *disp)
+engine_test::initialize()
 {
-	return test_initialize(disp) ;
+	return test_initialize() ;
 }
 
 void
-engine_test::run(void *disp)
+engine_test::run()
 {
 	timer.begin();
 
@@ -178,106 +251,6 @@ engine_test::run(void *disp)
 	}
 
 	timer.end();
-
-	// Cache a casted pointer of the display to save on casting later
-	Display* display{ (Display*)disp };
-	// Open dummy window to send close msg with
-	Window window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, 100, 100, 0, 0, 0);
-	// Set up custom client messages
-	Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
-	Atom quit_msg = XInternAtom(display, "QUIT_MSG", false);
-
-	XEvent xev;
-	// NOTE: we use an if statement here because we are not handling all events in this translation
-	//       unit, so XPending(display) will often not ever be 0, and therefore this can create
-	//       an infinite loop... but this protects XNextEvent from blocking if there are no events.
-	if (XPending(display) > 0)
-	{
-		XNextEvent(display, &xev);
-		switch (xev.type)
-		{
-		case ConfigureNotify:
-		{
-			XConfigureEvent xce{ xev.xconfigure };
-
-			// NOTE: This event is generated for a variety of reasons, so
-			//		 we need to check to see which window generated the event, 
-			//		 and the check if this was a window resize.
-			for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
-			{
-				if (!_surfaces[i].window.is_valid()) continue;
-				if (*((Window*)_surfaces[i].window.handle()) == xev.xany.window)
-				{
-					if ((u32)xce.width != _surfaces[i].window.width() || (u32)xce.height != _surfaces[i].window.height())
-					{
-						_surfaces[i].window.resize((u32)xce.width, (u32)xce.height);
-					}
-				}
-			}
-			break;
-		}
-		case ClientMessage:
-			if ((Atom)xev.xclient.data.l[0] == wm_delete_window)
-			{
-				// Find which window was sent the close event, and call function
-				for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
-				{
-					if (!_surfaces[i].window.is_valid()) continue;
-					if (*((Window*)_surfaces[i].window.handle()) == xev.xany.window)
-					{
-						destroy_render_surface(_surfaces[i]);
-						break;
-					}
-				}
-
-				// Check if all windows are closed, and exit application if so
-				bool all_closed{ true };
-				for (u32 i{ 0 }; i < _countof(_surfaces); i++)
-				{
-					if (!_surfaces[i].window.is_valid()) continue;
-					if (!_surfaces[i].window.is_closed())
-					{
-						all_closed = false;
-					}
-				}
-				if (all_closed)
-				{
-					// Set up quit message and send it using dummy window
-					XEvent close;
-					close.xclient.type = ClientMessage;
-					close.xclient.serial = window;
-					close.xclient.send_event = true;
-					close.xclient.message_type = XInternAtom(display, "QUIT_MSG", false);
-					close.xclient.format = 32;
-					close.xclient.window = 0;
-					close.xclient.data.l[0] = XInternAtom(display, "QUIT_MSG", false);
-					XSendEvent(display, window, false, NoEventMask, &close);
-				}
-			}
-			else
-			{
-				// Dont handle this here
-				XPutBackEvent(display, &xev);
-			}
-			break;
-		case KeyPress:
-			// NOTE: "state" represents the keys held down prior to the key press the
-			//		 keycode represents - the numeric evaluation is also different.
-			if (xev.xkey.state == 0x18 && xev.xkey.keycode == 36)
-			{
-				for (u32 i{ 0 }; i < _countof(_surfaces); i++)
-				{
-					if (!_surfaces[i].window.is_valid()) continue;
-					if (*((Window*)_surfaces[i].window.handle()) == xev.xany.window)
-					{
-						_surfaces[i].window.set_fullscreen(!_surfaces[i].window.is_fullscreen());
-					}
-				}
-			}
-		}
-
-		platform::process_input_message(xev, display);
-	}
 }
 
 void

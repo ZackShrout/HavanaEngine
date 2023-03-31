@@ -24,13 +24,6 @@ namespace havana::platform
 		return get_window_handle(_id);
 	}
 
-	void*
-	window::display() const
-	{
-		assert(is_valid());
-		return get_display(_id);
-	}
-
 	void
 	window::set_caption(const wchar_t* caption) const
 	{

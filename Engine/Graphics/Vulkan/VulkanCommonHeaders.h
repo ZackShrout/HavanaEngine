@@ -14,9 +14,8 @@
 #elif __linux__
 #define VK_USE_PLATFORM_XLIB_KHR
 #include <iostream>
-#include <X11/Xlib.h>
 #include <volk.h>
-//#include <vulkan/vulkan_xlib.h>
+#include "../Platforms/X11Manager.h"
 #endif // _WIN32
 
 #include "CommonHeaders.h"

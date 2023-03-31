@@ -6,8 +6,8 @@
 class engine_test : public test
 {
 public:
-	bool initialize(void* disp) override;
-	void run(void* disp) override;
+	bool initialize() override;
+	void run() override;
 	void shutdown() override;
 };
 

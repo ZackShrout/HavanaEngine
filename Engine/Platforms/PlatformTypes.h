@@ -28,20 +28,15 @@ namespace havana::platform
 #endif // _WIN64
 
 #ifdef __linux__
-#include <X11/Xlib.h>
-#include <stdlib.h>
-
-//#pragma comment (lib, "X11")
+#include "LinuxWindowManager.h"
 
 namespace havana::platform
 {	
-	using window_handle = Window*;
-
-	void process_input_message(XEvent xev, Display* display);
-
+	void process_input_message(const event* const ev, Display* display);
+	
 	struct window_init_info
 	{
-		void*			callback{ nullptr };
+		lwin_proc		callback{ nullptr };
 		window_handle	parent{ nullptr };
 		const wchar_t*	caption{ nullptr };
 		s32				left{ 0 };
