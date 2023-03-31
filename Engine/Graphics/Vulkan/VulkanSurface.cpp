@@ -154,6 +154,8 @@ namespace havana::graphics::vulkan
         create_info.hwnd = (HWND)_window.handle();
 
         VkCall(vkCreateWin32SurfaceKHR(instance, &create_info, nullptr, &_surface), "Failed to create a surface...");
+    #elif __linux__ && PLATFORM_WAYLAND
+        // TODO: Wayland Vulkan goes here
     #elif __linux__
         VkXlibSurfaceCreateInfoKHR create_info{ VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR };
         create_info.dpy = platform::get_display();

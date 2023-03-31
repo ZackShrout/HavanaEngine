@@ -131,8 +131,6 @@ win_proc(const platform::event* const ev)
 			}
 		}
 	}
-	
-	platform::process_input_message(ev, platform::get_display());
 }
 
 bool

@@ -32,8 +32,6 @@ namespace havana::platform
 
 namespace havana::platform
 {	
-	void process_input_message(const event* const ev, Display* display);
-	
 	struct window_init_info
 	{
 		lwin_proc		callback{ nullptr };

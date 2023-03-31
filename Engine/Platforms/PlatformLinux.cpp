@@ -68,14 +68,7 @@ namespace havana::platform
 
 		void internal_lwin_proc(const event* const ev)
 		{
-			switch (ev->event_type)
-			{
-			case ev->key_press:
-			{
-				
-			}
-			break;
-			}
+			input::process_input_message(ev, get_display());
 		}
 
 		void
@@ -146,14 +139,7 @@ namespace havana::platform
 		set_window_closed(id);
 		windows.remove(id);
 	}
-
-	void
-	process_input_message(const event* const ev, Display* display)
-	{
-		input::process_input_message(ev, display);
-	}
 }
-
 
 #include "IncludeWindowCpp.h"
 
