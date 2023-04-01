@@ -92,7 +92,7 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	case WM_DESTROY:
 	{
 		bool all_closed{ true };
-		for (u32 i{ 0 }; i < _countof(_surfaces); i++)
+		for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
 		{
 			if (_surfaces[i].surface.window.is_valid())
 			{

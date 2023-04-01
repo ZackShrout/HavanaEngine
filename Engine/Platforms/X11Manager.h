@@ -126,6 +126,7 @@ namespace havana::platform
         key_f12 = XK_F12,
         key_numlock = XK_Num_Lock,
         key_scrolllock = XK_Scroll_Lock,
+        key_tilde = XK_asciitilde,
     };
 
     struct event
@@ -167,4 +168,6 @@ namespace havana::platform
     using lwin_proc = void(*)(const event* const);
     
     Display* get_display();
+    void add_id(window_type wnd, u32 id);
+    u32 fetch_id(window_type wnd);
 }

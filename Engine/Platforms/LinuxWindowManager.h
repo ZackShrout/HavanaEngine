@@ -23,7 +23,7 @@ namespace havana::platform
     void name_window(window_handle wnd, const char* const name);
     bool pending_events();
     void next_event(event* ev);
-    u32 add_listener(lwin_proc callback);
+    u32 add_listener(lwin_proc callback, window_type wnd);
     void remove_listener(u32 id);
     void dispatch_event(const event* const ev);
     void send_fullscreen_event(window_handle wnd, bool is_fullscreen);

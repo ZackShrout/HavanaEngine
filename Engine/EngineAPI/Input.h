@@ -146,6 +146,7 @@ namespace havana::input
 
 			key_numlock,
 			key_scrollock,
+			key_tilde
 		};
 	};
 

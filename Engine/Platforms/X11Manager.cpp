@@ -4,15 +4,17 @@ namespace havana::platform
 {
     namespace
     {
-        Display*                    disp{ nullptr };
-        u32                         screen;
-        Window                      dummy_window;
-        Atom                        wm_delete_window{ u32_invalid_id };
-        Atom                        quit_msg { u32_invalid_id };
-        XEvent                      xev{};
-        utl::free_list<lwin_proc>   win_procs;
-        utl::vector<u32>            removed_procs;
-        utl::vector<u32>            active_procs;
+        Display*                                disp{ nullptr };
+        u32                                     screen;
+        Window                                  dummy_window;
+        Atom                                    wm_delete_window{ u32_invalid_id };
+        Atom                                    quit_msg { u32_invalid_id };
+        XEvent                                  xev{};
+        utl::free_list<lwin_proc>               win_procs;
+        utl::vector<u32>                        removed_procs;
+        utl::vector<u32>                        active_procs;
+        utl::vector<window_type>                window_ids;
+        std::unordered_map<window_type, u32>    window_map;
 
         void
         remove_inactive_listeners()
@@ -86,8 +88,8 @@ namespace havana::platform
 		XSetWMProtocols(get_display(), wnd, &wm_delete_window, 1);
 
 		// Show window
-		XMapWindow(get_display(), wnd);
 		XStoreName(get_display(), wnd, name);
+		XMapWindow(get_display(), wnd);
 
 		return wnd;
     }
@@ -145,10 +147,11 @@ namespace havana::platform
     }
 
     u32
-    add_listener(lwin_proc callback)
+    add_listener(lwin_proc callback, window_type wnd)
     {
         u32 index = win_procs.add((lwin_proc)callback);
         active_procs.emplace_back(index);
+        window_ids.emplace_back(wnd);
         return index;
     }
 
@@ -170,7 +173,9 @@ namespace havana::platform
             if (index == u32_invalid_id) continue;
             assert(win_procs[index]);
 
-            win_procs[index](ev);
+            // Only dispatch the event to window the event triggered from
+            if (ev->window == window_ids[i])
+                win_procs[index](ev);
         }
     }
 
@@ -223,5 +228,18 @@ namespace havana::platform
     {
         assert(disp);
         return disp;
+    }
+
+    void
+    add_id(window_type wnd, u32 id)
+    {
+        if (window_map.count(wnd)) return;
+        window_map[wnd] = id;
+    }
+
+    u32
+    fetch_id(window_type wnd)
+    {
+        return window_map.count(wnd) ? window_map[wnd] : u32_invalid_id;
     }
 }

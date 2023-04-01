@@ -14,8 +14,9 @@ namespace havana::graphics
         case graphics_platform::direct3d12:
             #if defined (_WIN64)
             d3d12::get_platform_interface(pi);
+            #else
+            return false;
             #endif
-            break;
         case graphics_platform::vulkan_1:
             vulkan::get_platform_interface(pi);
             break;
