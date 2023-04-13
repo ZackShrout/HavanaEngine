@@ -17,6 +17,7 @@ namespace havana::graphics
             #else
             return false;
             #endif
+            break;
         case graphics_platform::vulkan_1:
             vulkan::get_platform_interface(pi);
             break;
