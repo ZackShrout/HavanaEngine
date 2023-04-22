@@ -83,6 +83,10 @@ namespace havana::graphics
 			is_enabled,
 			intensity,
 			color,
+			attenuation,
+			range,
+			umbra,
+			penumbra,
 			type,
 			entity_id,
 
