@@ -14,7 +14,7 @@ struct GlobalShaderData
 	float		ViewWidth;
 
 	float3		CameraDirection;
-	float		ViewHieght;
+	float		ViewHeight;
 
 	uint		NumDirectionalLights;
 	float		DeltaTime;
@@ -25,6 +25,35 @@ struct PerObjectData
 	float4x4 World;
 	float4x4 InvWorld;
 	float4x4 WorldViewProjection;
+};
+
+struct Plane
+{
+	float3	Normal;
+	float	Distance;
+};
+
+// View frustum plabes (in view space)
+// Plane order: left, right, top, bottom
+// Front and back planes are computed in light culling compute shader.
+struct Frustum
+{
+	Plane Planes[4];
+};
+
+struct LightCullingDispatchParameters
+{
+	// Number of groups dispatched. (This paramater is not available as an HLSL system value!)
+	uint2	NumThreadGroups;
+	// Total number of threads dispatched. (Also not available as an HLSL system value!)
+	// NOTE: This value may be less than the actual number of threads executed if the
+	//		 screen size is not evenly divisible by the block size.
+	uint2	NumThreads;
+
+	// Number of light for culling (doesn't include directinoal lights, because those can't be culled)
+	uint	NumLights;
+	// The index of current depth buffer in SRV descriptor heap
+	uint	DepthBufferSrvIndex;
 };
 
 // Contains light culling data that's formatted and ready to be copied
@@ -74,7 +103,9 @@ struct DirectionalLightParameters
 static_assert((sizeof(PerObjectData) % 16) == 0,
 			   "Make sure PerObjectData is formatted in 16-byte chunks without any implicit padding.");
 static_assert((sizeof(LightParameters) % 16) == 0,
-	"Make sure LightParameters is formatted in 16-byte chunks without any implicit padding.");
+			   "Make sure LightParameters is formatted in 16-byte chunks without any implicit padding.");
+static_assert((sizeof(LightCullingLightInfo) % 16) == 0,
+			   "Make sure LightCullingLightInfo is formatted in 16-byte chunks without any implicit padding.");
 static_assert((sizeof(DirectionalLightParameters) % 16) == 0,
-	"Make sure DirectionalLightParameters is formatted in 16-byte chunks without any implicit padding.");
+			   "Make sure DirectionalLightParameters is formatted in 16-byte chunks without any implicit padding.");
 #endif

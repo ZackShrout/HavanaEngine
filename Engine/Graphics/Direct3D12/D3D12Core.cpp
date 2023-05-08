@@ -297,7 +297,7 @@ namespace havana::graphics::d3d12::core
 			XMStoreFloat3(&data.CameraPosition, camera.position());
 			XMStoreFloat3(&data.CameraDirection, camera.direction());
 			data.ViewWidth = (f32)surface.width();
-			data.ViewHieght = (f32)surface.height();
+			data.ViewHeight = (f32)surface.height();
 			data.NumDirectionalLights = light::non_cullable_light_count(info.light_set_key);
 			data.DeltaTime = delta_time;
 
