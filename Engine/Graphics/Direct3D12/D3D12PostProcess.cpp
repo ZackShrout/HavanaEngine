@@ -3,6 +3,7 @@
 #include "D3D12Shaders.h"
 #include "D3D12Surface.h"
 #include "D3D12GPass.h"
+#include "D3D12LightCulling.h"
 
 namespace havana::graphics::d3d12::fx
 {
@@ -12,7 +13,11 @@ namespace havana::graphics::d3d12::fx
 		{
 			enum : u32
 			{
+				global_shader_data,
 				root_constants,
+
+				// TODO: temporary for visualizing light culling. Remove later.
+				frustums,
 
 				count
 			};
@@ -28,7 +33,9 @@ namespace havana::graphics::d3d12::fx
 			// Create Post-Process FX root signature
 			using idx = fx_root_param_indices;
 			d3dx::d3d12_root_parameter paramters[idx::count]{};
+			paramters[idx::global_shader_data].as_cbv(D3D12_SHADER_VISIBILITY_PIXEL, 0);
 			paramters[idx::root_constants].as_constants(1, D3D12_SHADER_VISIBILITY_PIXEL, 1);
+			paramters[idx::frustums].as_srv(D3D12_SHADER_VISIBILITY_PIXEL, 0);
 
 			d3dx::d3d12_root_signature_desc root_signature{ &paramters[0], _countof(paramters) };
 			root_signature.Flags &= ~D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
@@ -76,11 +83,16 @@ namespace havana::graphics::d3d12::fx
 	void
 	post_process(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& d3d12_info, D3D12_CPU_DESCRIPTOR_HANDLE target_rtv)
 	{
+		const u32 frame_index{ d3d12_info.frame_index };
+		const id::id_type light_culling_id{ d3d12_info.light_culling_id };
+		
 		cmd_list->SetGraphicsRootSignature(fx_root_sig);
 		cmd_list->SetPipelineState(fx_pso);
 
 		using idx = fx_root_param_indices;
+		cmd_list->SetGraphicsRootConstantBufferView(idx::global_shader_data, d3d12_info.global_shader_data);
 		cmd_list->SetGraphicsRoot32BitConstant(idx::root_constants, gpass::main_buffer().srv().index, 0);
+		cmd_list->SetGraphicsRootShaderResourceView(idx::frustums, delight::frustums(light_culling_id, frame_index));
 		cmd_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		// NOTE: we don't need to clear the render target, because each pixel will
 		//		 be overwritten by pixels from the gpass main buffer.
