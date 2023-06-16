@@ -118,7 +118,7 @@ namespace havana::graphics::d3d12::delight
 		void
 		calculate_grid_frustums(culling_parameters& culler,
 								id3d12_graphics_command_list* const cmd_list,
-								const d3d12_frame_info d3d12_info,
+								const d3d12_frame_info& d3d12_info,
 								d3dx::d3d12_resource_barrier& barriers)
 		{
 			constant_buffer& cbuffer{ core::cbuffer() };
@@ -152,7 +152,7 @@ namespace havana::graphics::d3d12::delight
 		void _declspec(noinline)
 		resize_and_recalculate_grid_frustums(culling_parameters& culler, 
 											 id3d12_graphics_command_list* const cmd_list,
-											 const d3d12_frame_info d3d12_info,
+											 const d3d12_frame_info& d3d12_info,
 											 d3dx::d3d12_resource_barrier& barriers)
 		{
 			culler.camera_fov = d3d12_info.camera->field_of_view();

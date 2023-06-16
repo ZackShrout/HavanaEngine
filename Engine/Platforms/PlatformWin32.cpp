@@ -74,6 +74,8 @@ namespace havana::platform
 				resized = false;
 			}
 
+			if (msg == WM_SYSCOMMAND && wparam == SC_KEYMENU) return 0;
+
 			// "Extra" bytes for handling windows messages via callback
 			LONG_PTR longPtr{GetWindowLongPtr(hwnd, 0)};
 			return longPtr

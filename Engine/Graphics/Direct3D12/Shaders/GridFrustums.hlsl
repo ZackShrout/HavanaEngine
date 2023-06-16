@@ -5,7 +5,7 @@ ConstantBuffer<LightCullingDispatchParameters>	ShaderParams	: register(b1, space
 RWStructuredBuffer<Frustum>						Frustums		: register(u0, space0);
 
 // Implementation of grid frustums shader is based on
-// "Forward vs Deffered vs Forward+ Rendering with DirectX 11" (2005) by Jeremiah vsn Dosten.
+// "Forward vs Deffered vs Forward+ Rendering with DirectX 11" (2005) by Jeremiah van Oosten.
 // https://www.3dgep.com/forward-plus/#grid-frustums-compute-shader
 //
 // NOTE: TILE_SIZE is defined by the engine at compile time

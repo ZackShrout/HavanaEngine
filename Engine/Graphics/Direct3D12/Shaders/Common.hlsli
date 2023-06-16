@@ -3,5 +3,6 @@
 
 #include "CommonTypes.hlsli"
 #include "CommonFunctions.hlsli"
+#include "CommonConstants.hlsli"
 
 #endif // HAVANA_COMMON_HLSLI
