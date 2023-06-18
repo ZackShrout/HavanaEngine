@@ -24,8 +24,8 @@ namespace havana::graphics
 
 			pi.light.create = light::create;
 			pi.light.remove = light::remove;
-			pi.light.set_paramter = light::set_paramter;
-			pi.light.get_paramter = light::get_paramter;
+			pi.light.set_paramter = light::set_parameter;
+			pi.light.get_paramter = light::get_parameter;
 
 			pi.camera.create = camera::create;
 			pi.camera.remove = camera::remove;

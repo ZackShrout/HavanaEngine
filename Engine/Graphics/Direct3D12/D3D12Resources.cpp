@@ -1,4 +1,5 @@
 #include "D3D12Resources.h"
+
 #include "D3D12Core.h"
 
 namespace havana::graphics::d3d12
@@ -11,12 +12,10 @@ namespace havana::graphics::d3d12
 		assert(capacity && capacity < D3D12_MAX_SHADER_VISIBLE_DESCRIPTOR_HEAP_SIZE_TIER_2);
 		assert(!(_type == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER &&
 			capacity > D3D12_MAX_SHADER_VISIBLE_SAMPLER_HEAP_SIZE));
-		
+
 		if (_type == D3D12_DESCRIPTOR_HEAP_TYPE_DSV ||
 			_type == D3D12_DESCRIPTOR_HEAP_TYPE_RTV)
-		{
 			is_shader_visible = false;
-		}
 
 		release();
 
@@ -48,7 +47,7 @@ namespace havana::graphics::d3d12
 
 		return true;
 	}
-	
+
 	void
 	descriptor_heap::process_deferred_free(u32 frame_idx)
 	{
@@ -66,7 +65,7 @@ namespace havana::graphics::d3d12
 			indices.clear();
 		}
 	}
-	
+
 	void
 	descriptor_heap::release()
 	{
@@ -87,11 +86,9 @@ namespace havana::graphics::d3d12
 
 		descriptor_handle handle;
 		handle.cpu.ptr = _cpu_start.ptr + offset;
-		
+
 		if (is_shader_visible())
-		{
 			handle.gpu.ptr = _gpu_start.ptr + offset;
-		}
 
 		handle.index = index;
 		DEBUG_OP(handle.container = this);
@@ -109,7 +106,7 @@ namespace havana::graphics::d3d12
 		assert(handle.cpu.ptr >= _cpu_start.ptr);
 		assert((handle.cpu.ptr - _cpu_start.ptr) % _descriptor_size == 0);
 		assert(handle.index < _capacity);
-		const u32 index{ (u32)(handle.cpu.ptr - _cpu_start.ptr) / _descriptor_size };
+		const u32 index{ static_cast<u32>(handle.cpu.ptr - _cpu_start.ptr) / _descriptor_size };
 		assert(handle.index == index);
 
 		const u32 frame_idx{ core::current_frame_index() };
@@ -122,9 +119,9 @@ namespace havana::graphics::d3d12
 	d3d12_buffer::d3d12_buffer(d3d12_buffer_init_info info, bool is_cpu_accessible)
 	{
 		assert(!_buffer && info.size && info.alignment);
-		_size = (u32)math::align_size_up(info.size, info.alignment);
+		_size = static_cast<u32>(math::align_size_up(info.size, info.alignment));
 		_buffer = d3dx::create_buffer(info.data, _size, is_cpu_accessible, info.initial_state, info.flags,
-									  info.heap, info.allocation_info.Offset);
+		                              info.heap, info.allocation_info.Offset);
 		_gpu_address = _buffer->GetGPUVirtualAddress();
 		NAME_D3D12_OBJECT_INDEXED(_buffer, _size, L"D3D12 Buffer - size");
 	}
@@ -138,7 +135,7 @@ namespace havana::graphics::d3d12
 	}
 
 	//// CONSTANT BUFFER //////////////////////////////////////////////////////////////////////////
-	constant_buffer::constant_buffer(d3d12_buffer_init_info info) : _buffer{info, true}
+	constant_buffer::constant_buffer(d3d12_buffer_init_info info) : _buffer{ info, true }
 	{
 		NAME_D3D12_OBJECT_INDEXED(buffer(), size(), L"Constant Buffer - size");
 
@@ -151,7 +148,7 @@ namespace havana::graphics::d3d12
 	constant_buffer::allocate(u32 size)
 	{
 		std::lock_guard lock{ _mutex };
-		const u32 aligned_size{ (u32)d3dx::align_size_for_constant_buffer(size) };
+		const u32 aligned_size{ static_cast<u32>(d3dx::align_size_for_constant_buffer(size)) };
 		assert(_cpu_offset + aligned_size <= _buffer.size());
 		if (_cpu_offset + aligned_size <= _buffer.size())
 		{
@@ -162,7 +159,42 @@ namespace havana::graphics::d3d12
 
 		return nullptr;
 	}
-	
+
+	//// STRUCTURED BUFFER //////////////////////////////////////////////////////////////////////////
+	structured_buffer::structured_buffer(const d3d12_buffer_init_info& info)
+		: _buffer{ info, false }, _stride{ info.stride }
+	{
+		assert(info.size && info.size == (info.stride * info.element_count));
+		assert(info.alignment);
+		NAME_D3D12_OBJECT_INDEXED(buffer(), info.size, L"Structured Buffer - size");
+
+		if (info.create_uav)
+		{
+			assert(info.flags && D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+			_uav = core::uav_heap().allocate();
+			_uav_shader_visible = core::srv_heap().allocate();
+			D3D12_UNORDERED_ACCESS_VIEW_DESC desc{};
+			desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+			desc.Format = DXGI_FORMAT_UNKNOWN;
+			desc.Buffer.CounterOffsetInBytes = 0;
+			desc.Buffer.FirstElement = 0;
+			desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+			desc.Buffer.NumElements = info.element_count;
+			desc.Buffer.StructureByteStride = info.stride;
+
+			core::device()->CreateUnorderedAccessView(buffer(), nullptr, &desc, _uav.cpu);
+			core::device()->CopyDescriptorsSimple(1, _uav_shader_visible.cpu, _uav.cpu, core::srv_heap().type());
+		}
+	}
+
+	void
+	structured_buffer::release()
+	{
+		core::srv_heap().free(_uav_shader_visible);
+		core::uav_heap().free(_uav);
+		_buffer.release();
+	}
+
 	//// D3D12 TEXTURE ////////////////////////////////////////////////////////////////////////////
 	d3d12_texture::d3d12_texture(d3d12_texture_init_info info)
 	{
@@ -172,9 +204,10 @@ namespace havana::graphics::d3d12
 		D3D12_CLEAR_VALUE* const clear_value
 		{
 			(info.desc &&
-			(info.desc->Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET ||
-			 info.desc->Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL))
-			? &info.clear_value : nullptr
+				(info.desc->Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET ||
+					info.desc->Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL))
+				? &info.clear_value
+				: nullptr
 		};
 
 		if (info.resource)
@@ -189,7 +222,7 @@ namespace havana::graphics::d3d12
 				info.heap, info.allocation_info.Offset, info.desc, info.initial_state,
 				clear_value, IID_PPV_ARGS(&_resource)));
 		}
-		else if(info.desc)
+		else if (info.desc)
 		{
 			assert(!info.resource);
 
@@ -269,7 +302,8 @@ namespace havana::graphics::d3d12
 		D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
 		dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 		dsv_desc.Flags = D3D12_DSV_FLAG_NONE;
-		dsv_desc.Format = dsv_format; // Now that info was used to make the texture, revert the depth stencil view to it's previous format
+		dsv_desc.Format = dsv_format;
+		// Now that info was used to make the texture, revert the depth stencil view to it's previous format
 		dsv_desc.Texture2D.MipSlice = 0;
 
 		_dsv = core::dsv_heap().allocate();
@@ -277,7 +311,7 @@ namespace havana::graphics::d3d12
 		assert(device);
 		device->CreateDepthStencilView(resource(), &dsv_desc, _dsv.cpu);
 	}
-	
+
 	void
 	d3d12_depth_buffer::release()
 	{

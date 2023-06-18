@@ -1,5 +1,8 @@
 #include "Common.hlsli"
 
+// NOTE: this constant is larger than max_lights_per_tile in the light culling module (defined to be 256)
+//		 This is because 256 is the maximum for the *average* number of lights per tile, whereas
+//		 this constant is the maximum lights per tile.
 static const uint		MaxLightsPerGroup = 1024;
 
 groupshared uint		_minDepthVS;							// tile's minimum depth in view-space

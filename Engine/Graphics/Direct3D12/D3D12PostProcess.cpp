@@ -1,9 +1,10 @@
 #include "D3D12PostProcess.h"
+
 #include "D3D12Core.h"
-#include "D3D12Shaders.h"
-#include "D3D12Surface.h"
 #include "D3D12GPass.h"
 #include "D3D12LightCulling.h"
+#include "D3D12Shaders.h"
+#include "D3D12Surface.h"
 
 namespace havana::graphics::d3d12::fx
 {
@@ -23,13 +24,13 @@ namespace havana::graphics::d3d12::fx
 			};
 		};
 
-		ID3D12RootSignature*	fx_root_sig{ nullptr };
-		ID3D12PipelineState*	fx_pso{ nullptr };
+		ID3D12RootSignature* fx_root_sig{ nullptr };
+		ID3D12PipelineState* fx_pso{ nullptr };
 
 		bool create_fx_pso_and_root_signature()
 		{
 			assert(!fx_root_sig && !fx_pso);
-			
+
 			// Create Post-Process FX root signature
 			using idx = fx_root_param_indices;
 			d3dx::d3d12_root_parameter paramters[idx::count]{};
@@ -46,12 +47,18 @@ namespace havana::graphics::d3d12::fx
 			// Create Post-Process FX Pipeline State Object
 			struct
 			{
-				d3dx::d3d12_pipeline_state_subobject_root_signature			root_signature{ fx_root_sig };
-				d3dx::d3d12_pipeline_state_subobject_vs						vs{ shaders::get_engine_shader(shaders::engine_shader::fullscreen_triangle_vs) };
-				d3dx::d3d12_pipeline_state_subobject_ps						ps{ shaders::get_engine_shader(shaders::engine_shader::post_process_ps) };
-				d3dx::d3d12_pipeline_state_subobject_primitive_topology		primitive_topology{ D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE };
-				d3dx::d3d12_pipeline_state_subobject_render_target_formats	render_target_formats;
-				d3dx::d3d12_pipeline_state_subobject_rasterizer				rasterizer{ d3dx::rasterizer_state.no_cull };
+				d3dx::d3d12_pipeline_state_subobject_root_signature root_signature{ fx_root_sig };
+				d3dx::d3d12_pipeline_state_subobject_vs vs{
+					get_engine_shader(shaders::engine_shader::fullscreen_triangle_vs)
+				};
+				d3dx::d3d12_pipeline_state_subobject_ps ps{
+					get_engine_shader(shaders::engine_shader::post_process_ps)
+				};
+				d3dx::d3d12_pipeline_state_subobject_primitive_topology primitive_topology{
+					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE
+				};
+				d3dx::d3d12_pipeline_state_subobject_render_target_formats render_target_formats;
+				d3dx::d3d12_pipeline_state_subobject_rasterizer rasterizer{ d3dx::rasterizer_state.no_cull };
 			} stream;
 
 			D3D12_RT_FORMAT_ARRAY rtf_array{};
@@ -81,11 +88,12 @@ namespace havana::graphics::d3d12::fx
 	}
 
 	void
-	post_process(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& d3d12_info, D3D12_CPU_DESCRIPTOR_HANDLE target_rtv)
+	post_process(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& d3d12_info,
+	             D3D12_CPU_DESCRIPTOR_HANDLE target_rtv)
 	{
 		const u32 frame_index{ d3d12_info.frame_index };
 		const id::id_type light_culling_id{ d3d12_info.light_culling_id };
-		
+
 		cmd_list->SetGraphicsRootSignature(fx_root_sig);
 		cmd_list->SetPipelineState(fx_pso);
 

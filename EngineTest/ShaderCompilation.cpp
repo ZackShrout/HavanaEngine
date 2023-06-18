@@ -1,15 +1,15 @@
 #if defined(_WIN64)
 
-#include <fstream>
-#include <filesystem>
-
 #include "ShaderCompilation.h"
+
+#include <filesystem>
+#include <fstream>
+
 #include "../packages/DirectXShaderCompiler/inc/d3d12shader.h"
 #include "../packages/DirectXShaderCompiler/inc/dxcapi.h"
-
+#include "Content/ContentToEngine.h"
 #include "Graphics/Direct3D12/D3D12Core.h"
 #include "Graphics/Direct3D12/D3D12Shaders.h"
-#include "Content/ContentToEngine.h"
 #include "Utilities/IOStream.h"
 
 #pragma comment(lib, "../packages/DirectXShaderCompiler/lib/x64/dxcompiler.lib")
