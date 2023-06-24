@@ -18,7 +18,7 @@ StructuredBuffer<LightCullingLightInfo>			Lights					: register(t1, space0);
 
 RWStructuredBuffer<uint>						LightIndexCounter		: register(u0, space0);
 RWStructuredBuffer<uint2>						LightGrid_Opaque		: register(u1, space0);
-RWStructuredBuffer<uint2>						LightIndexList_Opaque	: register(u3, space0);
+RWStructuredBuffer<uint>						LightIndexList_Opaque	: register(u3, space0);
 
 // Implementation of light culling shader is based on
 // "Forward vs Deffered vs Forward+ Rendering with DirectX 11" (2005) by Jeremiah van Oosten.

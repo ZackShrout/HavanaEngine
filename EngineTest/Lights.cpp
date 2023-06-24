@@ -105,14 +105,15 @@ namespace
 
 #if !RANDOM_LIGHTS
 		create_light({ 0, -3, 0 }, {}, graphics::light::point, left_set);
-		create_light({ 0, 0, 1 }, {}, graphics::light::point, left_set);
+		create_light({ 0, 0.2f, 1.f }, {}, graphics::light::point, left_set);
 		create_light({ 0, 3, 2.5f }, {}, graphics::light::point, left_set);
-		create_light({ 0, 0, 7 }, { 0, 3.14f, 0 }, graphics::light::spot, left_set);
+		create_light({ 0, 0.1f, 7 }, { 0, 3.14f, 0 }, graphics::light::spot, left_set);
 #else
 		srand(37);
 
-		constexpr math::v3 scale{ 1.f, 0.5f, 1.f };
-		constexpr s32 dim{ 5 };
+		constexpr f32 scale1{ 1 };
+		constexpr math::v3 scale{ 1.f * scale1, 0.5f * scale1, 1.f * scale1 };
+		constexpr s32 dim{ 20 };
 		for(s32 x{ -dim }; x < dim; ++x)
 			for(s32 y{ 0 }; y < 2 * dim; ++y)
 				for (s32 z{ -dim }; z < dim; ++z)

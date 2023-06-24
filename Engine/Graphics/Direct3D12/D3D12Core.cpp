@@ -171,13 +171,13 @@ namespace havana::graphics::d3d12::core
 				}
 			};
 
-			ID3D12CommandQueue*			_cmd_queue{ nullptr };
+			ID3D12CommandQueue*				_cmd_queue{ nullptr };
 			id3d12_graphics_command_list*	_cmd_list{ nullptr };
-			ID3D12Fence1*				_fence{ nullptr };
-			HANDLE						_fence_event{ nullptr };
-			u64							_fence_value{ 0 };
-			command_frame				_cmd_frames[frame_buffer_count]{};
-			u32							_frame_index{ 0 };
+			ID3D12Fence1*					_fence{ nullptr };
+			HANDLE							_fence_event{ nullptr };
+			u64								_fence_value{ 0 };
+			command_frame					_cmd_frames[frame_buffer_count]{};
+			u32								_frame_index{ 0 };
 		};
 
 		using surface_collection = utl::free_list<d3d12_surface>;

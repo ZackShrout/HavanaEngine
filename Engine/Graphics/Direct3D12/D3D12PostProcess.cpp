@@ -19,6 +19,7 @@ namespace havana::graphics::d3d12::fx
 
 				// TODO: temporary for visualizing light culling. Remove later.
 				frustums,
+				light_grid_opaque,
 
 				count
 			};
@@ -33,12 +34,13 @@ namespace havana::graphics::d3d12::fx
 
 			// Create Post-Process FX root signature
 			using idx = fx_root_param_indices;
-			d3dx::d3d12_root_parameter paramters[idx::count]{};
-			paramters[idx::global_shader_data].as_cbv(D3D12_SHADER_VISIBILITY_PIXEL, 0);
-			paramters[idx::root_constants].as_constants(1, D3D12_SHADER_VISIBILITY_PIXEL, 1);
-			paramters[idx::frustums].as_srv(D3D12_SHADER_VISIBILITY_PIXEL, 0);
+			d3dx::d3d12_root_parameter parameters[idx::count]{};
+			parameters[idx::global_shader_data].as_cbv(D3D12_SHADER_VISIBILITY_PIXEL, 0);
+			parameters[idx::root_constants].as_constants(1, D3D12_SHADER_VISIBILITY_PIXEL, 1);
+			parameters[idx::frustums].as_srv(D3D12_SHADER_VISIBILITY_PIXEL, 0);
+			parameters[idx::light_grid_opaque].as_srv(D3D12_SHADER_VISIBILITY_PIXEL, 1);
 
-			d3dx::d3d12_root_signature_desc root_signature{ &paramters[0], _countof(paramters) };
+			d3dx::d3d12_root_signature_desc root_signature{ &parameters[0], _countof(parameters) };
 			root_signature.Flags &= ~D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
 			fx_root_sig = root_signature.create();
 			assert(fx_root_sig);
@@ -101,6 +103,7 @@ namespace havana::graphics::d3d12::fx
 		cmd_list->SetGraphicsRootConstantBufferView(idx::global_shader_data, d3d12_info.global_shader_data);
 		cmd_list->SetGraphicsRoot32BitConstant(idx::root_constants, gpass::main_buffer().srv().index, 0);
 		cmd_list->SetGraphicsRootShaderResourceView(idx::frustums, delight::frustums(light_culling_id, frame_index));
+		cmd_list->SetGraphicsRootShaderResourceView(idx::light_grid_opaque, delight::light_grid_opaque(light_culling_id, frame_index));
 		cmd_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		// NOTE: we don't need to clear the render target, because each pixel will
 		//		 be overwritten by pixels from the gpass main buffer.

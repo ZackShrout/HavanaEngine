@@ -7,24 +7,25 @@
 #include "Shaders/SharedTypes.h"
 #include "Components/Entity.h"
 #include "Components/Transform.h"
+#include "D3D12LightCulling.h"
 
 namespace havana::graphics::d3d12::gpass
 {
 	namespace
 	{
-		constexpr math::u32v2			initial_dimensions{ 100, 100 };
-		
-		d3d12_render_texture			gpass_main_buffer{};
-		d3d12_depth_buffer				gpass_depth_buffer{};
-		math::u32v2						dimensions{ initial_dimensions };
+		constexpr math::u32v2	initial_dimensions{ 100, 100 };
+
+		d3d12_render_texture	gpass_main_buffer{};
+		d3d12_depth_buffer		gpass_depth_buffer{};
+		math::u32v2				dimensions{ initial_dimensions };
 
 #if _DEBUG
-		constexpr f32					clear_value[4]{ 0.5f, 0.5f, 0.5f, 1.0f };
+		constexpr f32 clear_value[4]{ 0.5f, 0.5f, 0.5f, 1.0f };
 #else
 		constexpr f32					clear_value[4]{ };
 #endif
 
-// NOTE: don't forget to #undef CONSTEXPR when you copy/paste this block of code
+		// NOTE: don't forget to #undef CONSTEXPR when you copy/paste this block of code
 #if USE_STL_VECTOR
 #define CONSTEXPR
 #else
@@ -33,22 +34,22 @@ namespace havana::graphics::d3d12::gpass
 
 		struct gpass_cache
 		{
-			utl::vector<id::id_type>	d3d12_render_item_ids;
+			utl::vector<id::id_type> d3d12_render_item_ids;
 
 			// NOTE: when adding new arrays, make sure to update resize() and struct_size.
-			id::id_type* entity_ids{ nullptr };
-			id::id_type* submesh_gpu_ids{ nullptr };
-			id::id_type* material_ids{ nullptr };
-			ID3D12PipelineState** gpass_pipline_states{ nullptr };
-			ID3D12PipelineState** depth_pipline_states{ nullptr };
-			ID3D12RootSignature** root_signatures{ nullptr };
-			material_type::type* material_types{ nullptr };
-			D3D12_GPU_VIRTUAL_ADDRESS* position_buffers{ nullptr };
-			D3D12_GPU_VIRTUAL_ADDRESS* element_buffers{ nullptr };
-			D3D12_INDEX_BUFFER_VIEW* index_buffer_views{ nullptr };
-			D3D12_PRIMITIVE_TOPOLOGY* primitive_topologies{ nullptr };
-			u32* elements_types{ nullptr };
-			D3D12_GPU_VIRTUAL_ADDRESS* per_object_data{ nullptr };
+			id::id_type*				entity_ids{ nullptr };
+			id::id_type*				submesh_gpu_ids{ nullptr };
+			id::id_type*				material_ids{ nullptr };
+			ID3D12PipelineState**		gpass_pipline_states{ nullptr };
+			ID3D12PipelineState**		depth_pipline_states{ nullptr };
+			ID3D12RootSignature**		root_signatures{ nullptr };
+			material_type::type*		material_types{ nullptr };
+			D3D12_GPU_VIRTUAL_ADDRESS*	position_buffers{ nullptr };
+			D3D12_GPU_VIRTUAL_ADDRESS*	element_buffers{ nullptr };
+			D3D12_INDEX_BUFFER_VIEW*	index_buffer_views{ nullptr };
+			D3D12_PRIMITIVE_TOPOLOGY*	primitive_topologies{ nullptr };
+			u32*						elements_types{ nullptr };
+			D3D12_GPU_VIRTUAL_ADDRESS*	per_object_data{ nullptr };
 
 			constexpr content::render_item::items_cache items_cache() const
 			{
@@ -121,19 +122,19 @@ namespace havana::graphics::d3d12::gpass
 		private:
 			constexpr static u32 struct_size
 			{
-				sizeof(id::id_type) +					// entity_ids
-				sizeof(id::id_type) +					// submesh_ids
-				sizeof(id::id_type) +					// material_ids
-				sizeof(ID3D12PipelineState*) +			// gpass_pipline_states
-				sizeof(ID3D12PipelineState*) +			// depth_pipline_states
-				sizeof(ID3D12RootSignature*) +			// root_signatures
-				sizeof(material_type::type) +			// material_types
-				sizeof(D3D12_GPU_VIRTUAL_ADDRESS) +		// position_buffers
-				sizeof(D3D12_GPU_VIRTUAL_ADDRESS) +		// element_buffers
-				sizeof(D3D12_INDEX_BUFFER_VIEW) +		// index_buffer_views
-				sizeof(D3D12_PRIMITIVE_TOPOLOGY) +		// primitive_topologies
-				sizeof(u32) +							// element_types
-				sizeof(D3D12_GPU_VIRTUAL_ADDRESS)		// per_object_data
+				sizeof(id::id_type) + // entity_ids
+				sizeof(id::id_type) + // submesh_ids
+				sizeof(id::id_type) + // material_ids
+				sizeof(ID3D12PipelineState*) + // gpass_pipline_states
+				sizeof(ID3D12PipelineState*) + // depth_pipline_states
+				sizeof(ID3D12RootSignature*) + // root_signatures
+				sizeof(material_type::type) + // material_types
+				sizeof(D3D12_GPU_VIRTUAL_ADDRESS) + // position_buffers
+				sizeof(D3D12_GPU_VIRTUAL_ADDRESS) + // element_buffers
+				sizeof(D3D12_INDEX_BUFFER_VIEW) + // index_buffer_views
+				sizeof(D3D12_PRIMITIVE_TOPOLOGY) + // primitive_topologies
+				sizeof(u32) + // element_types
+				sizeof(D3D12_GPU_VIRTUAL_ADDRESS) // per_object_data
 			};
 
 			utl::vector<u8> _buffer;
@@ -167,19 +168,20 @@ namespace havana::graphics::d3d12::gpass
 				info.initial_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 				info.clear_value.Format = desc.Format;
 				memcpy(&info.clear_value.Color, &clear_value[0], sizeof(clear_value));
-				
+
 				gpass_main_buffer = d3d12_render_texture{ info };
 			}
 
 			desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 			desc.Format = depth_buffer_format;
 			desc.MipLevels = 1;
-			
+
 			// Create the depth buffer
 			{
 				d3d12_texture_init_info info{};
 				info.desc = &desc;
-				info.initial_state = D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+				info.initial_state = D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+					D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 				info.clear_value.Format = desc.Format;
 				info.clear_value.DepthStencil.Depth = 0.f;
 				info.clear_value.DepthStencil.Stencil = 0;
@@ -210,7 +212,8 @@ namespace havana::graphics::d3d12::gpass
 				{
 					current_entity_id = cache.entity_ids[i];
 					hlsl::PerObjectData data{};
-					transform::get_transform_matrices(game_entity::entity_id{ current_entity_id }, data.World, data.InvWorld);
+					transform::get_transform_matrices(game_entity::entity_id{ current_entity_id }, data.World,
+					                                  data.InvWorld);
 					XMMATRIX world{ XMLoadFloat4x4(&data.World) };
 					XMMATRIX wvp{ XMMatrixMultiply(world, d3d12_info.camera->view_projection()) };
 					XMStoreFloat4x4(&data.WorldViewProjection, wvp);
@@ -225,7 +228,7 @@ namespace havana::graphics::d3d12::gpass
 		}
 
 		void
-		set_root_parameters(id3d12_graphics_command_list *const cmd_list, u32 cache_index)
+		set_root_parameters(id3d12_graphics_command_list* const cmd_list, u32 cache_index)
 		{
 			gpass_cache& cache{ frame_cache };
 			assert(cache_index < cache.size());
@@ -234,12 +237,15 @@ namespace havana::graphics::d3d12::gpass
 			switch (mtl_type)
 			{
 			case material_type::opaque:
-			{
-				using params = opaque_root_parameters;
-				cmd_list->SetGraphicsRootShaderResourceView(params::position_buffer, cache.position_buffers[cache_index]);
-				cmd_list->SetGraphicsRootShaderResourceView(params::element_buffer, cache.element_buffers[cache_index]);
-				cmd_list->SetGraphicsRootConstantBufferView(params::per_object_data, cache.per_object_data[cache_index]);
-			}
+				{
+					using params = opaque_root_parameter;
+					cmd_list->SetGraphicsRootShaderResourceView(params::position_buffer,
+					                                            cache.position_buffers[cache_index]);
+					cmd_list->SetGraphicsRootShaderResourceView(params::element_buffer,
+					                                            cache.element_buffers[cache_index]);
+					cmd_list->SetGraphicsRootConstantBufferView(params::per_object_data,
+					                                            cache.per_object_data[cache_index]);
+				}
 				break;
 			}
 		}
@@ -305,7 +311,7 @@ namespace havana::graphics::d3d12::gpass
 			create_buffers(d);
 		}
 	}
-	
+
 	void
 	depth_prepass(id3d12_graphics_command_list* cmd_list, const d3d12_frame_info& d3d12_info)
 	{
@@ -323,7 +329,8 @@ namespace havana::graphics::d3d12::gpass
 			{
 				current_root_signature = cache.root_signatures[i];
 				cmd_list->SetGraphicsRootSignature(current_root_signature);
-				cmd_list->SetGraphicsRootConstantBufferView(opaque_root_parameters::global_shader_data, d3d12_info.global_shader_data);
+				cmd_list->SetGraphicsRootConstantBufferView(opaque_root_parameter::global_shader_data,
+				                                            d3d12_info.global_shader_data);
 			}
 
 			if (current_pipline_state != cache.depth_pipline_states[i])
@@ -348,6 +355,8 @@ namespace havana::graphics::d3d12::gpass
 	{
 		const gpass_cache& cache{ frame_cache };
 		const u32 items_count{ cache.size() };
+		const u32 frame_index{ d3d12_info.frame_index };
+		const id::id_type light_culling_id{ d3d12_info.light_culling_id };
 
 		ID3D12RootSignature* current_root_signature{ nullptr };
 		ID3D12PipelineState* current_pipline_state{ nullptr };
@@ -356,10 +365,20 @@ namespace havana::graphics::d3d12::gpass
 		{
 			if (current_root_signature != cache.root_signatures[i])
 			{
+				using idx = opaque_root_parameter;
 				current_root_signature = cache.root_signatures[i];
 				cmd_list->SetGraphicsRootSignature(current_root_signature);
-				cmd_list->SetGraphicsRootConstantBufferView(opaque_root_parameters::global_shader_data, d3d12_info.global_shader_data);
-				cmd_list->SetGraphicsRootShaderResourceView(opaque_root_parameters::directional_lights, light::non_cullable_light_buffer(d3d12_info.frame_index));
+				cmd_list->SetGraphicsRootConstantBufferView(idx::global_shader_data,
+				                                            d3d12_info.global_shader_data);
+				cmd_list->SetGraphicsRootShaderResourceView(idx::directional_lights,
+				                                            light::non_cullable_light_buffer(frame_index));
+				cmd_list->SetGraphicsRootShaderResourceView(idx::cullable_lights,
+				                                            light::cullable_light_buffer(frame_index));
+				cmd_list->SetGraphicsRootShaderResourceView(idx::light_grid,
+				                                            delight::light_grid_opaque(light_culling_id, frame_index));
+				cmd_list->SetGraphicsRootShaderResourceView(idx::light_index_list,
+				                                            delight::light_index_list_opaque(
+					                                            light_culling_id, frame_index));
 			}
 
 			if (current_pipline_state != cache.gpass_pipline_states[i])
@@ -383,30 +402,32 @@ namespace havana::graphics::d3d12::gpass
 	add_transitions_for_depth_prepass(d3dx::d3d12_resource_barrier& barriers)
 	{
 		barriers.add(gpass_main_buffer.resource(),
-					 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-					 D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
+		             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		             D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
 		barriers.add(gpass_depth_buffer.resource(),
-					 D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-					 D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		             D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+		             D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+		             D3D12_RESOURCE_STATE_DEPTH_WRITE);
 	}
 
 	void
 	add_transitions_for_gpass(d3dx::d3d12_resource_barrier& barriers)
 	{
 		barriers.add(gpass_main_buffer.resource(),
-					 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-					 D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_END_ONLY);
+		             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		             D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_END_ONLY);
 		barriers.add(gpass_depth_buffer.resource(),
-					 D3D12_RESOURCE_STATE_DEPTH_WRITE,
-					 D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		             D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		             D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+		             D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	}
 
 	void
 	add_transitions_for_post_process(d3dx::d3d12_resource_barrier& barriers)
 	{
 		barriers.add(gpass_main_buffer.resource(),
-					 D3D12_RESOURCE_STATE_RENDER_TARGET,
-					 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		             D3D12_RESOURCE_STATE_RENDER_TARGET,
+		             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	}
 
 	void

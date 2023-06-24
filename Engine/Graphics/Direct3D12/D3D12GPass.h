@@ -11,16 +11,19 @@ namespace havana::graphics::d3d12::gpass
 	constexpr DXGI_FORMAT			main_buffer_format{ DXGI_FORMAT_R16G16B16A16_FLOAT };
 	constexpr DXGI_FORMAT			depth_buffer_format{ DXGI_FORMAT_D32_FLOAT };
 	
-	struct opaque_root_parameters
+	struct opaque_root_parameter
 	{
 		enum parameter : u32
 		{
 			global_shader_data,
+			per_object_data,
 			position_buffer,
 			element_buffer,
 			srv_indices,
 			directional_lights,
-			per_object_data,
+			cullable_lights,
+			light_grid,
+			light_index_list,
 
 			count
 		};
