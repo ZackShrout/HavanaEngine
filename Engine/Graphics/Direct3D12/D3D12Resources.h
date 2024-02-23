@@ -66,10 +66,7 @@ namespace havana::graphics::d3d12
 		D3D12_RESOURCE_STATES				initial_state{};
 		D3D12_RESOURCE_FLAGS				flags{ D3D12_RESOURCE_FLAG_NONE };
 		u32									size{ 0 };
-		u32									stride{ 0 };
-		u32									element_count{ 0 };
 		u32									alignment { 0 };
-		bool								create_uav{ false };
 	};
 
 	class d3d12_buffer
@@ -181,19 +178,19 @@ namespace havana::graphics::d3d12
 		std::mutex		_mutex{};
 	};
 
-	class structured_buffer
+	class uav_clearable_buffer
 	{
 	public:
-		structured_buffer() = default;
-		explicit structured_buffer(const d3d12_buffer_init_info& info);
-		DISABLE_COPY(structured_buffer);
-		constexpr structured_buffer(structured_buffer&& o) noexcept
-			: _buffer{ std::move(o._buffer) }, _uav{ o._uav }, _uav_shader_visible{ o._uav_shader_visible }, _stride{ o._stride }
+		uav_clearable_buffer() = default;
+		explicit uav_clearable_buffer(const d3d12_buffer_init_info& info);
+		DISABLE_COPY(uav_clearable_buffer);
+		constexpr uav_clearable_buffer(uav_clearable_buffer&& o) noexcept
+			: _buffer{ std::move(o._buffer) }, _uav{ o._uav }, _uav_shader_visible{ o._uav_shader_visible }
 		{
 			o.reset();
 		}
 
-		constexpr structured_buffer& operator=(structured_buffer&& o) noexcept
+		constexpr uav_clearable_buffer& operator=(uav_clearable_buffer&& o) noexcept
 		{
 			assert(this != &o);
 			if (this != &o)
@@ -205,17 +202,23 @@ namespace havana::graphics::d3d12
 			return *this;
 		}
 
-		~structured_buffer() { release(); }
+		~uav_clearable_buffer() { release(); }
 
 		void release();
 
 		void clear_uav(id3d12_graphics_command_list* const cmd_list, const u32* const values) const
 		{
+			assert(buffer());
+			assert(_uav.is_vaild() && _uav_shader_visible.is_vaild() && _uav_shader_visible.is_shader_visible());
+
 			cmd_list->ClearUnorderedAccessViewUint(_uav_shader_visible.gpu, _uav.cpu, buffer(), values, 0, nullptr);
 		}
 
 		void clear_uav(id3d12_graphics_command_list* const cmd_list, const f32* const values) const
 		{
+			assert(buffer());
+			assert(_uav.is_vaild() && _uav_shader_visible.is_vaild() && _uav_shader_visible.is_shader_visible());
+
 			cmd_list->ClearUnorderedAccessViewFloat(_uav_shader_visible.gpu, _uav.cpu, buffer(), values, 0, nullptr);
 		}
 
@@ -224,26 +227,23 @@ namespace havana::graphics::d3d12
 		[[nodiscard]] constexpr u32 size() const { return _buffer.size(); }
 		[[nodiscard]] constexpr descriptor_handle uav() const { return _uav; }
 		[[nodiscard]] constexpr descriptor_handle uav_shader_visible() const { return _uav_shader_visible; }
-		[[nodiscard]] constexpr static d3d12_buffer_init_info get_default_init_info(const u32 stride, const u32 element_count)
+		[[nodiscard]] constexpr static d3d12_buffer_init_info get_default_init_info(u32 size)
 		{
-			assert(stride && element_count);
 			d3d12_buffer_init_info info{};
-			info.size = stride * element_count;
-			info.stride = stride;
-			info.element_count = element_count;
-			info.alignment = stride;
+			info.size = size;
+			info.alignment = sizeof(math::v4);
 			info.flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
 			return info;
 		}
 
 	private:
-		constexpr void move(structured_buffer& o)
+		constexpr void move(uav_clearable_buffer& o)
 		{
 			_buffer = std::move(o._buffer);
 			_uav = o._uav;
 			_uav_shader_visible = o._uav_shader_visible;
-			_stride = o._stride;
+			_uav_shader_visible = o._uav_shader_visible;
 			o.reset();
 		}
 
@@ -251,13 +251,11 @@ namespace havana::graphics::d3d12
 		{
 			_uav = {};
 			_uav_shader_visible = {};
-			_stride = 0;
 		}
 
 		d3d12_buffer		_buffer{};
 		descriptor_handle	_uav{};
 		descriptor_handle	_uav_shader_visible{};
-		u32					_stride{ 0 };
 	};
 
 	struct d3d12_texture_init_info

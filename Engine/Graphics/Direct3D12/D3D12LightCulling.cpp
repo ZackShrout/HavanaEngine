@@ -31,7 +31,7 @@ namespace havana::graphics::d3d12::delight
 		{
 			d3d12_buffer							frustums;
 			d3d12_buffer							light_grid_and_index_list;
-			structured_buffer						light_index_counter;
+			uav_clearable_buffer					light_index_counter;
 			hlsl::LightCullingDispatchParameters	grid_frustums_dispatch_params{};
 			hlsl::LightCullingDispatchParameters	light_culling_dispatch_parameters{};
 			u32										frustum_count{ 0 };
@@ -150,9 +150,8 @@ namespace havana::graphics::d3d12::delight
 				                          L"Light Grid and Index List Buffer - size");
 				if (!culler.light_index_counter.buffer())
 				{
-					info = structured_buffer::get_default_init_info(sizeof(math::u32v4), 1);
-					info.create_uav = true;
-					culler.light_index_counter = structured_buffer{ info };
+					info = uav_clearable_buffer::get_default_init_info(1);
+					culler.light_index_counter = uav_clearable_buffer{ info };
 					NAME_D3D12_OBJECT_INDEXED(culler.light_index_counter.buffer(), core::current_frame_index(),
 					                          L"Light Index Count Buffer");
 				}
