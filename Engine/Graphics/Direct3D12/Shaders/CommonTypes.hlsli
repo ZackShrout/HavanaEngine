@@ -2,6 +2,8 @@
 #error Do not include this header directly in shader files. Only include this file via Common.hlsli.
 #endif
 
+#define USE_BOUNDING_SPHERES 1
+
 struct GlobalShaderData
 {
 	float4x4	View;
@@ -89,8 +91,11 @@ struct LightCullingLightInfo
 	float	Range;
 
 	float3	Direction;
+#if USE_BOUNDING_SPHERES
+    float	CosPenumbra;
+#else
 	float	ConeRadius;
-	
+#endif
 	uint	Type;
 	float3	_pad;
 };

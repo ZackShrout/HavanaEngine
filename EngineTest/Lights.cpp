@@ -60,7 +60,7 @@ namespace
 		else if (type == graphics::light::spot)
 		{
 			info.spot_params.range = 2.f;
-			info.spot_params.umbra = 0.1f * math::pi;
+			info.spot_params.umbra = 0.7f * math::pi;
 			info.spot_params.penumbra = info.spot_params.umbra + (0.1f * math::pi);
 			info.spot_params.attenuation = { 1,1,1 };
 		}
@@ -115,7 +115,7 @@ namespace
 
 		constexpr f32 scale1{ 1 };
 		constexpr math::v3 scale{ 1.f * scale1, 0.5f * scale1, 1.f * scale1 };
-		constexpr s32 dim{ 0 };
+		constexpr s32 dim{ 20 };
 		for(s32 x{ -dim }; x < dim; ++x)
 			for(s32 y{ 0 }; y < 2 * dim; ++y)
 				for (s32 z{ -dim }; z < dim; ++z)
@@ -205,7 +205,7 @@ namespace
 		constexpr f32 scale1{ 1 };
 		constexpr math::v3 scale{ 1.f * scale1, 0.5f * scale1, 1.f * scale1 };
 		count = (u32)(random(0.1f) * 50);
-		for (s32 i{ 0 }; i < count; ++i)
+		for (u32 i{ 0 }; i < count; ++i)
 		{
 			math::v3 p1{ (random() * 2 - 1.f) * 13.f * scale.x, random() * 2 * 13.f * scale.y, (random() * 2 - 1.f) * 13.f * scale.z };
 			math::v3 p2{ (random() * 2 - 1.f) * 13.f * scale.x, random() * 2 * 13.f * scale.y, (random() * 2 - 1.f) * 13.f * scale.z };
